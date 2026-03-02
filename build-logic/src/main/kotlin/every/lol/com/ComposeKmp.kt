@@ -21,18 +21,6 @@ internal fun Project.configureComposeKmp() {
 
     extensions.configure<KotlinMultiplatformExtension> {
         androidTarget()
-
-        listOf(
-            iosX64(),
-            iosArm64(),
-            iosSimulatorArm64()
-        ).forEach { iosTarget ->
-            iosTarget.binaries.framework {
-                baseName = "ComposeApp"
-                isStatic = true
-            }
-        }
-
         sourceSets.apply {
             getByName("commonMain").dependencies {
                 implementation(libs.findLibrary("compose-runtime").get())

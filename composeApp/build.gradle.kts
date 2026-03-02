@@ -29,6 +29,7 @@ kotlin {
             implementation(projects.feature.home)
             implementation(projects.feature.intro)
             implementation(projects.feature.main)
+            implementation(projects.feature.matches)
             implementation(projects.feature.mypage)
 
         }

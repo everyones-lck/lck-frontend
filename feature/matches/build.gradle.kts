@@ -4,7 +4,7 @@ plugins {
     alias(libs.plugins.everylol.feature)
 }
 
-setNamespace("feature.community")
+setNamespace("feature.matches")
 
 kotlin {
     sourceSets {
