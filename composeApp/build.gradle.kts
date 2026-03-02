@@ -1,69 +1,54 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
-import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidApplication)
-    alias(libs.plugins.composeMultiplatform)
-    alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.everylol.application)
 }
 
 kotlin {
-    androidTarget {
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
-        }
-    }
-    
-    listOf(
-        iosArm64(),
-        iosSimulatorArm64()
-    ).forEach { iosTarget ->
-        iosTarget.binaries.framework {
-            baseName = "ComposeApp"
-            isStatic = true
-        }
-    }
-    
-    js {
-        browser()
-        binaries.executable()
-    }
-    
-    @OptIn(ExperimentalWasmDsl::class)
-    wasmJs {
-        browser()
-        binaries.executable()
-    }
-    
+
     sourceSets {
         androidMain.dependencies {
-            implementation(libs.compose.uiToolingPreview)
-            implementation(libs.androidx.activity.compose)
+
         }
+
         commonMain.dependencies {
-            implementation(libs.compose.runtime)
-            implementation(libs.compose.foundation)
-            implementation(libs.compose.material3)
-            implementation(libs.compose.ui)
-            implementation(libs.compose.components.resources)
-            implementation(libs.compose.uiToolingPreview)
-            implementation(libs.androidx.lifecycle.viewmodelCompose)
-            implementation(libs.androidx.lifecycle.runtimeCompose)
+
+            implementation(projects.core.common)
+            implementation(projects.core.data)
+            implementation(projects.core.datastore)
+            implementation(projects.core.designsystem)
+            implementation(projects.core.domain)
+            implementation(projects.core.model)
+            implementation(projects.core.navigation)
+            implementation(projects.core.network)
+            implementation(projects.core.ui)
+
+            implementation(projects.feature.aboutlck)
+            implementation(projects.feature.community)
+            implementation(projects.feature.home)
+            implementation(projects.feature.intro)
+            implementation(projects.feature.main)
+            implementation(projects.feature.mypage)
+
         }
+
         commonTest.dependencies {
-            implementation(libs.kotlin.test)
+
+        }
+
+        iosMain.dependencies {
+
         }
     }
 }
 
 android {
-    namespace = "evr.lol.com"
+    namespace = "every.lol.com"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "evr.lol.com"
+        applicationId = "every.lol.com"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
