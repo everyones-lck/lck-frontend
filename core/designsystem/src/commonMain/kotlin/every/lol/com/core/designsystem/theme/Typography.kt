@@ -6,7 +6,10 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import everylol.core.designsystem.generated.resources.*
+import everylol.core.designsystem.generated.resources.Res
+import everylol.core.designsystem.generated.resources.esamanru_bold
+import everylol.core.designsystem.generated.resources.esamanru_light
+import everylol.core.designsystem.generated.resources.esamanru_medium
 import org.jetbrains.compose.resources.Font
 
 val Esamanru: FontFamily
@@ -14,7 +17,7 @@ val Esamanru: FontFamily
     get() = FontFamily(
         Font(Res.font.esamanru_light, FontWeight.W300),
         Font(Res.font.esamanru_medium, FontWeight.W500),
-        Font(Res.font.esamanru_bold, FontWeight.W700)
+        Font(Res.font.esamanru_bold, FontWeight.W600)
     )
 
 @Immutable
