@@ -1,6 +1,7 @@
 package every.lol.com.feature.intro
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.forEach
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -9,11 +10,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key.Companion.R
 import androidx.compose.ui.unit.dp
 import every.lol.com.core.designsystem.component.EverylolButton
@@ -41,8 +46,9 @@ fun SignupScreen(
     nickName: String = "",
     onValueChange: (String) -> Unit = {},
     enabled: Boolean = false,
+    checkNickName: (String) -> Unit = {},
     onBackClick: () -> Unit = {},
-    onSignupClick: () -> Unit = { }
+    onSignupClick: () -> Unit = {}
 ) {
     val allTeams = Team.entries.filter { it != Team.NONE }
     var selectedTeams by remember { mutableStateOf(setOf<Team>()) }
@@ -54,23 +60,25 @@ fun SignupScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(56.dp),
+                .padding(vertical = 56.dp),
             contentAlignment = Alignment.Center
         ){
-            Profile()
+            Profile(requiredGallery = true)
         }
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 36.dp),
-            horizontalAlignment = Alignment.Start
+                .padding(horizontal = 12.dp)
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.Start,
+
         ){
             EverylolTextField(
                 value = nickName,
                 onValueChange = onValueChange,
                 hint = "닉네임을 입력해주세요",
                 onDone = {
-                    if (enabled) onSignupClick()
+                    checkNickName(nickName)
                 }
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -81,10 +89,10 @@ fun SignupScreen(
             NicknameValidation(message = "닉네임 사이에는 공백을 입력할 수 없습니다")
             Spacer(modifier = Modifier.height(56.dp))
             Text("응원 팀을 선택해주세요", style = EveryLoLTheme.typography.subtitle03, color = EveryLoLTheme.color.grayScale200)
-
+            Spacer(modifier = Modifier.height(24.dp))
             FlowRow(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 allTeams.forEach { team ->
@@ -102,10 +110,16 @@ fun SignupScreen(
                 }
             }
         }
-
+    }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Transparent),
+        contentAlignment = Alignment.BottomCenter
+    ){
         EverylolButton(
             modifier = Modifier
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = 24.dp, vertical = 24.dp)
                 .fillMaxWidth(),
             text = "다음",
             enabled = nickName.isNotEmpty(),

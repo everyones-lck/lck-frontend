@@ -1,6 +1,7 @@
 package every.lol.com.feature.intro
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.forEach
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -48,12 +49,12 @@ internal fun CompleteScreen(
 ) {
     Box(
         modifier = Modifier
-            .fillMaxSize()
             .everylolDefault(EveryLoLTheme.color.newBg)
     ) {
         Column(
             modifier = Modifier
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .padding(top= 160.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -75,23 +76,24 @@ internal fun CompleteScreen(
         ) {
             Image(
                 painter = painterResource(Res.drawable.img_complete_logo),
-                modifier = Modifier.padding(horizontal = 90.dp).fillMaxWidth(),
+                modifier = Modifier.padding(horizontal = 60.dp).fillMaxWidth(),
                 contentDescription = "complete logo"
             )
         }
-        Box(
+    }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Transparent),
+        contentAlignment = Alignment.BottomCenter
+    ){
+        EverylolButton(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = 56.dp)
-                .padding(horizontal = 24.dp),
-            contentAlignment = Alignment.BottomCenter
-        ) {
-            EverylolButton(
-                modifier = Modifier.fillMaxWidth(),
-                text = "홈으로",
-                enabled = true,
-                onClick = onGoHomeClick
-            )
-        }
+                .padding(horizontal = 24.dp, vertical = 24.dp)
+                .fillMaxWidth(),
+            text = "홈으로",
+            enabled = true,
+            onClick = onGoHomeClick
+        )
     }
 }

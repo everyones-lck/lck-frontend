@@ -1,5 +1,6 @@
 package every.lol.com
 
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -21,8 +22,9 @@ import every.lol.com.core.navigation.Route
 import every.lol.com.feature.aboutlck.AboutLCKScreen
 import every.lol.com.feature.community.CommunityScreen
 import every.lol.com.feature.home.HomeScreen
+import every.lol.com.feature.intro.IntroViewModel
+import every.lol.com.feature.intro.navigation.introNavGraph
 import every.lol.com.feature.matches.MatchesScreen
-import every.lol.com.feature.intro.IntroScreen
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
@@ -33,7 +35,7 @@ fun App() {
     MaterialTheme {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentDestination = navBackStackEntry?.destination
-
+        val introViewModel = remember { IntroViewModel() }
         Scaffold(
             bottomBar = {
                 val isIntro = currentDestination?.hasRoute<Route.Intro>() == true
@@ -73,15 +75,18 @@ fun App() {
             NavHost(
                 navController = navController,
                 startDestination = Route.Intro,
-                modifier = Modifier.padding(innerPadding)
+                modifier = Modifier.fillMaxSize()
             ) {
-                composable<Route.Intro> {
-                    IntroScreen(onIntroComplete = {
+                introNavGraph(
+                    onNavigateHome = {
                         navController.navigate(Route.Home) {
                             popUpTo<Route.Intro> { inclusive = true }
                         }
-                    })
-                }
+                    },
+                    onLoginClick = {
+                        introViewModel.onLoginSuccess("test_token")
+                    }
+                )
                 composable<Route.Home> { HomeScreen() }
                 composable<Route.Matches> {MatchesScreen()}
                 composable<Route.AboutLCK> { AboutLCKScreen() }

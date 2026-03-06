@@ -28,7 +28,6 @@ fun EverylolIconButton(
     ) {
         Icon(
             painter = painterResource(icon),
-            modifier = Modifier.size(size.dp),
             contentDescription = "back",
             tint = color
         )

@@ -10,7 +10,7 @@ internal fun Project.configureCoil() {
         sourceSets.apply {
             getByName("commonMain").dependencies {
                 implementation(libs.findLibrary("coil.compose").get())
-                implementation(libs.findLibrary("coil.network.okhttp").get())
+                implementation(libs.findLibrary("coil.network.ktor").get())
             }
         }
     }

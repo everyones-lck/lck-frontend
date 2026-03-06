@@ -25,6 +25,7 @@ import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun Profile(
+    requiredGallery: Boolean?=false,
     onOpenGallery:(()-> Unit)?=null,
     profile: Any?=null,
     modifier: Modifier = Modifier
@@ -33,55 +34,37 @@ fun Profile(
         modifier = modifier.size(112.dp),
         contentAlignment = Alignment.Center
     ) {
-        Box(
+        AsyncImage(
+            model = profile,
+            contentDescription = "User Profile",
             modifier = Modifier
                 .size(105.dp)
                 .clip(CircleShape)
-                .background(EveryLoLTheme.color.grayScale200)
-        ) {
-            if (profile == null) {
-                Image(
-                    painter = painterResource(Res.drawable.img_default_profile),
-                    contentDescription = "Default Profile",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
-            } else {
-                AsyncImage(
-                    model = profile,
-                    contentDescription = "User Profile",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
-            }
-        }
+                .background(EveryLoLTheme.color.grayScale900)
+                .clickable(enabled = onOpenGallery != null) { onOpenGallery?.invoke() },
+            contentScale = ContentScale.Crop,
+            placeholder = painterResource(Res.drawable.img_default_profile),
+            error = painterResource(Res.drawable.img_default_profile),
+            fallback = painterResource(Res.drawable.img_default_profile)
+        )
 
-        if (onOpenGallery != null) {
+        if (requiredGallery == true) {
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .clickable { onOpenGallery() }
+                    .size(32.dp) // 버튼 크기 고정
+                    .clip(CircleShape)
+                    .background(EveryLoLTheme.color.grayScale1000)
+                    .clickable { onOpenGallery?.invoke() },
+                contentAlignment = Alignment.Center
             ) {
-                OpenGalleryButton()
+                Icon(
+                    painter = painterResource(Res.drawable.ic_camera),
+                    tint = EveryLoLTheme.color.grayScale200,
+                    contentDescription = "Open Gallery",
+                    modifier = Modifier.size(16.dp)
+                )
             }
         }
-    }
-}
-
-@Composable
-fun OpenGalleryButton(){
-    Box(
-        modifier = Modifier
-            .clip(CircleShape)
-            .background(EveryLoLTheme.color.grayScale1000)
-            .padding(12.dp),
-        contentAlignment = Alignment.Center,
-    ){
-        Icon(
-            painter = painterResource(Res.drawable.ic_camera),
-            tint = EveryLoLTheme.color.grayScale200,
-            contentDescription = "Open Gallery",
-            modifier = Modifier.size(20.dp)
-        )
     }
 }

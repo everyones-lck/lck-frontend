@@ -1,5 +1,6 @@
 package every.lol.com.core.designsystem.component
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,15 +31,25 @@ fun EverylolTopAppBar(
             .padding(vertical = 16.dp)
     ) {
         onBackClick?.let {
-            Box(
+            Row(
                 modifier = Modifier.align(Alignment.CenterStart),
-                contentAlignment = Alignment.Center
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 EverylolIconButton(
                     icon = Res.drawable.ic_back,
                     onClick = onBackClick,
                     size = 36
                 )
+
+                title?.let {
+                    Text(
+                        text = title,
+                        style = EveryLoLTheme.typography.heading01,
+                        color = EveryLoLTheme.color.grayScale200
+                    )
+
+                }
             }
         }
 
@@ -48,19 +59,6 @@ fun EverylolTopAppBar(
                 contentAlignment = Alignment.Center
             ) {
                 //로고 아이콘 추가
-            }
-        }
-
-        title?.let {
-            Box(
-                modifier = Modifier.align(Alignment.Center),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = title,
-                    style = EveryLoLTheme.typography.heading01,
-                    color = EveryLoLTheme.color.grayScale200
-                )
             }
         }
 
