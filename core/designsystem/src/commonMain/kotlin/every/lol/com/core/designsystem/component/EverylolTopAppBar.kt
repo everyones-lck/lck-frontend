@@ -1,0 +1,76 @@
+package every.lol.com.core.designsystem.component
+
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import every.lol.com.core.designsystem.theme.EveryLoLTheme
+import everylol.core.designsystem.generated.resources.Res
+import everylol.core.designsystem.generated.resources.ic_back
+
+@Composable
+fun EverylolTopAppBar(
+    modifier: Modifier = Modifier,
+    title: String? = null,
+    isLogo: Boolean = false,
+    onBackClick: (() -> Unit)? = null,
+    onNavigateAlert: (() -> Unit)? = null,
+    onNavigateMypage: (() -> Unit)? = null
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(56.dp)
+            .padding(vertical = 16.dp)
+    ) {
+        onBackClick?.let {
+            Box(
+                modifier = Modifier.align(Alignment.CenterStart),
+                contentAlignment = Alignment.Center
+            ) {
+                EverylolIconButton(
+                    icon = Res.drawable.ic_back,
+                    onClick = onBackClick,
+                    size = 36
+                )
+            }
+        }
+
+        if (isLogo) {
+            Box(
+                modifier = Modifier.align(Alignment.CenterStart),
+                contentAlignment = Alignment.Center
+            ) {
+                //로고 아이콘 추가
+            }
+        }
+
+        title?.let {
+            Box(
+                modifier = Modifier.align(Alignment.Center),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = title,
+                    style = EveryLoLTheme.typography.heading01,
+                    color = EveryLoLTheme.color.grayScale200
+                )
+            }
+        }
+
+        if (onNavigateAlert != null && onNavigateMypage != null) {
+            Row(
+                modifier = Modifier.align(Alignment.CenterEnd),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                //마이페이지나 알람 추가
+            }
+        }
+    }
+}

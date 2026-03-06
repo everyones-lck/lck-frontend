@@ -1,4 +1,5 @@
 import com.android.build.api.dsl.LibraryExtension
+import every.lol.com.configureCoil
 import every.lol.com.libs
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
@@ -33,3 +34,5 @@ extensions.configure<KotlinMultiplatformExtension> {
         }
     }
 }
+
+configureCoil()

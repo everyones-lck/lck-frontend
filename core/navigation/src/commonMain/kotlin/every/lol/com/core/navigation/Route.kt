@@ -16,7 +16,5 @@ sealed interface Route {
     @Serializable
     data object Community : Route
 
-    @Serializable
-    data object Intro : Route
-
+    @Serializable data object Intro : Route
 }
