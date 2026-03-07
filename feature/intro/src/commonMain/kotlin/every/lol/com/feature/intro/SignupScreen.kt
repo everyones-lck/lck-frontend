@@ -1,25 +1,15 @@
 package every.lol.com.feature.intro
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.gestures.forEach
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -29,18 +19,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.Key.Companion.R
 import androidx.compose.ui.unit.dp
 import every.lol.com.core.designsystem.component.EverylolButton
-import every.lol.com.core.designsystem.component.EverylolTextField
 import every.lol.com.core.designsystem.component.EverylolTopAppBar
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.core.model.Team
-import every.lol.com.core.ui.component.NicknameValidation
-import every.lol.com.core.ui.component.TeamChip
+import every.lol.com.core.ui.component.NicknameSection
+import every.lol.com.core.ui.component.TeamGroup
+import every.lol.com.core.ui.ext.customInsets
 import every.lol.com.core.ui.ext.everylolDefault
 import every.lol.com.feature.intro.component.Profile
-import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun SignupScreen(
@@ -51,15 +39,11 @@ fun SignupScreen(
     onBackClick: () -> Unit = {},
     onSignupClick: () -> Unit = {}
 ) {
-    val allTeams = Team.entries.filter { it != Team.NONE }
     var selectedTeams by remember { mutableStateOf(setOf<Team>()) }
-
-    val row1 = allTeams.take(3)
-    val row2 = allTeams.drop(3).take(4)
-    val row3 = allTeams.drop(7).take(3)
+    var isNicknameValid by remember { mutableStateOf(false) }
 
     Column(
-        modifier = Modifier.everylolDefault(EveryLoLTheme.color.newBg),
+        modifier = Modifier.fillMaxSize().everylolDefault(EveryLoLTheme.color.newBg).customInsets(top = true),
     ) {
         EverylolTopAppBar(onBackClick = onBackClick, title = "회원가입")
         Box(
@@ -73,45 +57,22 @@ fun SignupScreen(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp)
+                .padding(horizontal = 36.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.Start,
-
         ){
-            EverylolTextField(
-                value = nickName,
+            NicknameSection(
+                nickName = nickName,
                 onValueChange = onValueChange,
-                hint = "닉네임을 입력해주세요",
-                onDone = { checkNickName(nickName) }
+                isDuplicateChecked = enabled,
+                onCheckNickName = { checkNickName(nickName) },
+                onValidationChanged = { isNicknameValid = it }
             )
-            Spacer(modifier = Modifier.height(16.dp))
-            NicknameValidation(message = "중복된 닉네임은 사용할 수 없습니다")
-            Spacer(modifier = Modifier.height(12.dp))
-            NicknameValidation(message = "닉네임은 최대 10글자까지 입력 가능합니다")
-            Spacer(modifier = Modifier.height(12.dp))
-            NicknameValidation(message = "닉네임 사이에는 공백을 입력할 수 없습니다")
+
             Spacer(modifier = Modifier.height(56.dp))
             Text("응원 팀을 선택해주세요", style = EveryLoLTheme.typography.subtitle03, color = EveryLoLTheme.color.grayScale200)
             Spacer(modifier = Modifier.height(24.dp))
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(16.dp), // 줄 간격
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                // 1행 (3개)
-                TeamRow(teams = row1, selectedTeams = selectedTeams) { team ->
-                    selectedTeams = if (selectedTeams.contains(team)) selectedTeams - team else selectedTeams + team
-                }
-                // 2행 (4개) - 여기가 핵심! 4개를 억지로 넣어야 함
-                TeamRow(teams = row2, selectedTeams = selectedTeams, horizontalSpacing = 8.dp) { team ->
-                    selectedTeams = if (selectedTeams.contains(team)) selectedTeams - team else selectedTeams + team
-                }
-                // 3행 (3개)
-                TeamRow(teams = row3, selectedTeams = selectedTeams) { team ->
-                    selectedTeams = if (selectedTeams.contains(team)) selectedTeams - team else selectedTeams + team
-                }
-            }
-            Spacer(modifier = Modifier.height(48.dp))
+            TeamGroup { selectedTeams = it }
         }
     }
     Box(
@@ -125,29 +86,8 @@ fun SignupScreen(
                 .padding(horizontal = 24.dp, vertical = 24.dp)
                 .fillMaxWidth(),
             text = "다음",
-            enabled = nickName.isNotEmpty(),
+            enabled = isNicknameValid,
             onClick = onSignupClick
         )
-    }
-}
-
-@Composable
-fun TeamRow(
-    teams: List<Team>,
-    selectedTeams: Set<Team>,
-    horizontalSpacing: androidx.compose.ui.unit.Dp = 12.dp,
-    onTeamClick: (Team) -> Unit
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(horizontalSpacing, Alignment.CenterHorizontally)
-    ) {
-        teams.forEach { team ->
-            TeamChip(
-                team = team,
-                isSelected = selectedTeams.contains(team),
-                onClick = { onTeamClick(team) }
-            )
-        }
     }
 }

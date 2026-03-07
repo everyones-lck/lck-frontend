@@ -31,7 +31,7 @@ fun Profile(
     modifier: Modifier = Modifier
 ) {
     Box(
-        modifier = modifier.size(112.dp),
+        modifier = modifier.size(115.dp),
         contentAlignment = Alignment.Center
     ) {
         AsyncImage(
@@ -52,7 +52,7 @@ fun Profile(
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .size(32.dp) // 버튼 크기 고정
+                    .size(44.dp)
                     .clip(CircleShape)
                     .background(EveryLoLTheme.color.grayScale1000)
                     .clickable { onOpenGallery?.invoke() },
@@ -62,7 +62,7 @@ fun Profile(
                     painter = painterResource(Res.drawable.ic_camera),
                     tint = EveryLoLTheme.color.grayScale200,
                     contentDescription = "Open Gallery",
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.size(20.dp)
                 )
             }
         }

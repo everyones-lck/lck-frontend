@@ -27,8 +27,8 @@ fun EverylolTopAppBar(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(56.dp)
-            .padding(vertical = 16.dp)
+            .height(44.dp)
+            .padding(16.dp, 4.dp)
     ) {
         onBackClick?.let {
             Row(
