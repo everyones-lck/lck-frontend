@@ -42,7 +42,7 @@ fun Modifier.everylolDefault(color: Color): Modifier {
         .background(color)
         .fillMaxSize()
         .then(this)
-        .customInsets(top = true, bottom = true)
-        .padding(horizontal = 24.dp)
+        .customInsets(bottom = true)
+        //.padding(horizontal = 24.dp)
         .padding(bottom = 24.dp)
 }
