@@ -55,13 +55,21 @@ internal fun IntroRoute(
                 enabled = uiState.isEnabled,
                 checkNickName = viewModel::checkNickname,
                 onBackClick = viewModel::deleteLoginInfo,
-                onSignupClick = viewModel::onSignupSuccess
+                onSignupClick = viewModel::onSignupSuccess,
+                onNavigateToTermDetail = viewModel::onNavigateToTermDetail
             )
         }
         uiState.successToSignup ->{
             CompleteScreen(
                 nickName = uiState.nickName,
                 onGoHomeClick = onNavigateHome
+            )
+        }
+        uiState.onNavigateToTermDetail -> {
+            val selectedTosId = uiState.termId ?: 0
+            TosScreen(
+                tosId = selectedTosId,
+                onBackClick = viewModel::backToSignupFromTerm
             )
         }
         else -> {

@@ -65,6 +65,23 @@ class IntroViewModel(
         }
     }
 
+    fun onNavigateToTermDetail(id: Int) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            delay(500)
+            _uiState.update { it.copy(isLoading = false, successToSignup = false, isHaveToSignup = false, onNavigateToTermDetail = true, termId = id) }
+        }
+    }
+
+    fun backToSignupFromTerm() {
+        _uiState.update {
+            it.copy(
+                onNavigateToTermDetail = false,
+                isHaveToSignup = true
+            )
+        }
+    }
+
     fun testLoginUser() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
