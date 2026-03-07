@@ -2,9 +2,12 @@ package every.lol.com.core.designsystem.theme
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import everylol.core.designsystem.generated.resources.Res
 import everylol.core.designsystem.generated.resources.esamanru_bold
@@ -13,6 +16,19 @@ import everylol.core.designsystem.generated.resources.esamanru_medium
 import everylol.core.designsystem.generated.resources.pretendard_extrabold
 import everylol.core.designsystem.generated.resources.pretendard_medium
 import org.jetbrains.compose.resources.Font
+
+
+@Composable
+fun Float.toFixedSp(): TextUnit {
+    val density = LocalDensity.current
+    return with(density) { this@toFixedSp / density.fontScale }.sp
+}
+
+@Composable
+fun Int.toFixedSp(): TextUnit {
+    val density = LocalDensity.current
+    return with(density) { this@toFixedSp / density.fontScale }.sp
+}
 
 val Esamanru: FontFamily
     @Composable
@@ -53,19 +69,19 @@ val everyLoLTypography: EveryLoLTypography
         val esamanru = Esamanru
         val pretendard = Pretendard
         return EveryLoLTypography(
-            playname01 = TextStyle(fontFamily = esamanru, fontSize = 42.sp, fontWeight = FontWeight.W600),
-            title01 = TextStyle(fontFamily = esamanru, fontSize = 20.sp, fontWeight = FontWeight.W500),
-            title02 = TextStyle(fontFamily = esamanru, fontSize = 24.sp, fontWeight = FontWeight.W300),
-            heading01 = TextStyle(fontFamily = esamanru, fontSize = 20.sp, fontWeight = FontWeight.W500),
-            heading02 = TextStyle(fontFamily = esamanru, fontSize = 20.sp, fontWeight = FontWeight.W300),
-            body01 = TextStyle(fontFamily = esamanru, fontSize = 18.sp, fontWeight = FontWeight.W300),
-            body02 = TextStyle(fontFamily = esamanru, fontSize = 16.sp, fontWeight = FontWeight.W500),
-            body03 = TextStyle(fontFamily = esamanru, fontSize = 16.sp, fontWeight = FontWeight.W300),
-            label01 = TextStyle(fontFamily = esamanru, fontSize = 14.sp, fontWeight = FontWeight.W500),
-            label02 = TextStyle(fontFamily = esamanru, fontSize = 14.sp, fontWeight = FontWeight.W300),
-            label03 = TextStyle(fontFamily = esamanru, fontSize = 12.sp, fontWeight = FontWeight.W300),
-            subtitle02 = TextStyle(fontFamily = pretendard, fontSize = 16.sp, fontWeight = FontWeight.W600),
-            subtitle03 = TextStyle(fontFamily = pretendard, fontSize = 14.sp, fontWeight = FontWeight.W600),
-            subtitle04 = TextStyle(fontFamily = pretendard, fontSize = 12.sp, fontWeight = FontWeight.W500)
+            playname01 = TextStyle(fontFamily = esamanru, fontSize = 42.toFixedSp(), fontWeight = FontWeight.W600),
+            title01 = TextStyle(fontFamily = esamanru, fontSize = 20.toFixedSp(), fontWeight = FontWeight.W500),
+            title02 = TextStyle(fontFamily = esamanru, fontSize = 24.toFixedSp(), fontWeight = FontWeight.W300),
+            heading01 = TextStyle(fontFamily = esamanru, fontSize = 20.toFixedSp(), fontWeight = FontWeight.W500),
+            heading02 = TextStyle(fontFamily = esamanru, fontSize = 20.toFixedSp(), fontWeight = FontWeight.W300),
+            body01 = TextStyle(fontFamily = esamanru, fontSize = 18.toFixedSp(), fontWeight = FontWeight.W300),
+            body02 = TextStyle(fontFamily = esamanru, fontSize = 16.toFixedSp(), fontWeight = FontWeight.W500),
+            body03 = TextStyle(fontFamily = esamanru, fontSize = 16.toFixedSp(), fontWeight = FontWeight.W300),
+            label01 = TextStyle(fontFamily = esamanru, fontSize = 14.toFixedSp(), fontWeight = FontWeight.W500),
+            label02 = TextStyle(fontFamily = esamanru, fontSize = 14.toFixedSp(), fontWeight = FontWeight.W300),
+            label03 = TextStyle(fontFamily = esamanru, fontSize = 12.toFixedSp(), fontWeight = FontWeight.W300),
+            subtitle02 = TextStyle(fontFamily = pretendard, fontSize = 16.toFixedSp(), fontWeight = FontWeight.W600),
+            subtitle03 = TextStyle(fontFamily = pretendard, fontSize = 14.toFixedSp(), fontWeight = FontWeight.W600),
+            subtitle04 = TextStyle(fontFamily = pretendard, fontSize = 12.toFixedSp(), fontWeight = FontWeight.W500)
         )
     }

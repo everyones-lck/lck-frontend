@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -53,6 +54,10 @@ fun SignupScreen(
     val allTeams = Team.entries.filter { it != Team.NONE }
     var selectedTeams by remember { mutableStateOf(setOf<Team>()) }
 
+    val row1 = allTeams.take(3)
+    val row2 = allTeams.drop(3).take(4)
+    val row3 = allTeams.drop(7).take(3)
+
     Column(
         modifier = Modifier.everylolDefault(EveryLoLTheme.color.newBg),
     ) {
@@ -77,9 +82,7 @@ fun SignupScreen(
                 value = nickName,
                 onValueChange = onValueChange,
                 hint = "닉네임을 입력해주세요",
-                onDone = {
-                    checkNickName(nickName)
-                }
+                onDone = { checkNickName(nickName) }
             )
             Spacer(modifier = Modifier.height(16.dp))
             NicknameValidation(message = "중복된 닉네임은 사용할 수 없습니다")
@@ -90,25 +93,25 @@ fun SignupScreen(
             Spacer(modifier = Modifier.height(56.dp))
             Text("응원 팀을 선택해주세요", style = EveryLoLTheme.typography.subtitle03, color = EveryLoLTheme.color.grayScale200)
             Spacer(modifier = Modifier.height(24.dp))
-            FlowRow(
+            Column(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp), // 줄 간격
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                allTeams.forEach { team ->
-                    TeamChip(
-                        team = team,
-                        isSelected = selectedTeams.contains(team),
-                        onClick = {
-                            selectedTeams = if (selectedTeams.contains(team)) {
-                                selectedTeams - team
-                            } else {
-                                selectedTeams + team
-                            }
-                        }
-                    )
+                // 1행 (3개)
+                TeamRow(teams = row1, selectedTeams = selectedTeams) { team ->
+                    selectedTeams = if (selectedTeams.contains(team)) selectedTeams - team else selectedTeams + team
+                }
+                // 2행 (4개) - 여기가 핵심! 4개를 억지로 넣어야 함
+                TeamRow(teams = row2, selectedTeams = selectedTeams, horizontalSpacing = 8.dp) { team ->
+                    selectedTeams = if (selectedTeams.contains(team)) selectedTeams - team else selectedTeams + team
+                }
+                // 3행 (3개)
+                TeamRow(teams = row3, selectedTeams = selectedTeams) { team ->
+                    selectedTeams = if (selectedTeams.contains(team)) selectedTeams - team else selectedTeams + team
                 }
             }
+            Spacer(modifier = Modifier.height(48.dp))
         }
     }
     Box(
@@ -125,5 +128,26 @@ fun SignupScreen(
             enabled = nickName.isNotEmpty(),
             onClick = onSignupClick
         )
+    }
+}
+
+@Composable
+fun TeamRow(
+    teams: List<Team>,
+    selectedTeams: Set<Team>,
+    horizontalSpacing: androidx.compose.ui.unit.Dp = 12.dp,
+    onTeamClick: (Team) -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(horizontalSpacing, Alignment.CenterHorizontally)
+    ) {
+        teams.forEach { team ->
+            TeamChip(
+                team = team,
+                isSelected = selectedTeams.contains(team),
+                onClick = { onTeamClick(team) }
+            )
+        }
     }
 }
