@@ -30,6 +30,10 @@ internal fun Project.configureComposeKmp() {
                 implementation(libs.findLibrary("compose-uiToolingPreview").get())
                 implementation(libs.findLibrary("compose-components-resources").get())
             }
+
+            getByName("androidMain").dependencies {
+                implementation(libs.findLibrary("compose-ui-tooling").get())
+            }
         }
     }
 

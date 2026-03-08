@@ -1,41 +1,40 @@
 package every.lol.com.core.designsystem.theme
 
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 
 @Composable
 fun EveryLoLTheme(
     //darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-    val colors: EveryLoLColor = EveryLoLDarkColor
-    val typography = everyLoLTypography
+    BoxWithConstraints {
+        val currentDensity = LocalDensity.current
 
-    //val view = LocalView.current
+        val standardWidth = 360f
 
-    /*
-        SideEffect {
-            val window = (view.context as Activity).window
-            val insetsController = WindowCompat.getInsetsController(window, view)
+        val fixedDensityValue = (maxWidth.value / standardWidth) * currentDensity.density
 
-            // 앱이 시스템 패딩을 직접 제어
-            WindowCompat.setDecorFitsSystemWindows(window, false)
+        val fixedDensity = Density(
+            density = fixedDensityValue,
+            fontScale = 1f
+        )
 
-            insetsController.isAppearanceLightStatusBars = !darkTheme
-            insetsController.isAppearanceLightNavigationBars = !darkTheme
+        val colors: EveryLoLColor = EveryLoLDarkColor
+        val typography = everyLoLTypography
 
-            window.setFlags(
-                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
-            )
+        CompositionLocalProvider(
+            LocalColor provides colors,
+            LocalDensity provides fixedDensity,
+            LocalTypography provides typography
+        ) {
+            content()
         }
-    */
-
-    CompositionLocalProvider(
-        LocalColor provides colors,
-        LocalTypography provides typography,
-        content = content
-    )
+    }
 }
 
 object EveryLoLTheme {
