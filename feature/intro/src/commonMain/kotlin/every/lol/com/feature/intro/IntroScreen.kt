@@ -18,12 +18,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import every.lol.com.core.common.EveryLolBackHandler
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import every.lol.com.core.common.EveryLolBackHandler
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.core.ui.ext.everylolDefault
+import every.lol.com.feature.intro.model.IntroStep
 import everylol.feature.intro.generated.resources.Res
 import everylol.feature.intro.generated.resources.ic_logo_text
 import everylol.feature.intro.generated.resources.img_login
@@ -46,46 +47,52 @@ internal fun IntroRoute(
             }
         }
     }
-    when {
-        uiState.isLoading -> {
-            LoadingScreen()
-        }
-
-        uiState.isHaveToSignup -> {
-            SignupScreen(
-                nickName = uiState.nickName,
-                onValueChange = viewModel::changeNickName,
-                enabled = uiState.isEnabled,
-                checkNickName = viewModel::checkNickname,
-                onBackClick = viewModel::deleteLoginInfo,
-                onSignupClick = viewModel::onSignupSuccess,
-                onNavigateToTermDetail = viewModel::onNavigateToTermDetail
-            )
-        }
-        uiState.successToSignup ->{
-            CompleteScreen(
-                nickName = uiState.nickName,
-                onGoHomeClick = onNavigateHome
-            )
-        }
-        uiState.onNavigateToTermDetail -> {
-            val selectedTosId = uiState.termId ?: 0
-            EveryLolBackHandler {
-                viewModel.backToSignupFromTerm()
+    if (uiState.isLoading) {
+        LoadingScreen()
+    } else {
+        when (val currentStep = uiState.step) {
+            is IntroStep.Loading -> {
+                LoadingScreen()
             }
-            TosScreen(
-                tosId = selectedTosId,
-                onBackClick = viewModel::backToSignupFromTerm
-            )
-        }
-        else -> {
-            LoginScreen(
-                onClick = {
-                    onLoginClick()
-                    viewModel.onLoginSuccess("test_token")
-                },
-                onLongClick = { viewModel.testLoginUser() }
-            )
+
+            is IntroStep.Login -> {
+                LoginScreen(
+                    onClick = {
+                        onLoginClick()
+                        viewModel.onLoginSuccess("test_token")
+                    },
+                    onLongClick = { viewModel.putUserInitial() }
+                )
+            }
+
+            is IntroStep.Signup -> {
+                SignupScreen(
+                    nickName = uiState.nickName,
+                    onValueChange = viewModel::changeNickName,
+                    enabled = uiState.isEnabled,
+                    checkNickName = { /* viewModel.checkNickname() */ },
+                    onBackClick = viewModel::deleteLoginInfo,
+                    onSignupClick = viewModel::onSignupSuccess,
+                    onNavigateToTermDetail = viewModel::onNavigateToTosDetail
+                )
+            }
+
+            is IntroStep.SignupComplete -> {
+                CompleteScreen(
+                    nickName = uiState.nickName,
+                    onGoHomeClick = viewModel::putUserInitial
+                )
+            }
+
+            is IntroStep.TosDetail -> {
+                EveryLolBackHandler {
+                    viewModel.backToSignupFromTos()
+                }
+                TosScreen(
+                    tosId = currentStep.id,
+                    onBackClick = viewModel::backToSignupFromTos
+                )
+            }
         }
     }
 }

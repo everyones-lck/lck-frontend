@@ -2,7 +2,8 @@ package every.lol.com.feature.intro
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import every.lol.com.feature.intro.model.IntroUiModel
+import every.lol.com.feature.intro.model.IntroStep
+import every.lol.com.feature.intro.model.IntroUiState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,7 +24,8 @@ class IntroViewModel(
     // private val putUserInitialUseCase: PutUserInitialUseCase,
     // private val testLoginUseCase: TestLoginUseCase
 ) : ViewModel() {
-    private val _uiState = MutableStateFlow(IntroUiModel())
+
+    private val _uiState = MutableStateFlow(IntroUiState())
     val uiState = _uiState.asStateFlow()
 
     private val _event = MutableSharedFlow<IntroEvent>()
@@ -39,7 +41,7 @@ class IntroViewModel(
     private fun checkInitialState() {
         viewModelScope.launch {
             delay(1500)
-            _uiState.update { it.copy(isLoading = false) }
+            _uiState.update { it.copy(step = IntroStep.Login) }
         }
     }
 
@@ -50,7 +52,7 @@ class IntroViewModel(
             _uiState.update {
                 it.copy(
                     isLoading = false,
-                    isHaveToSignup = true,
+                    step = IntroStep.Signup,
                     token = accessToken
                 )
             }
@@ -61,41 +63,32 @@ class IntroViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             delay(1000)
-            _uiState.update { it.copy(isLoading = false, successToSignup = true, isHaveToSignup = false) }
+            _uiState.update {
+                it.copy(
+                    isLoading = false,
+                    step = IntroStep.SignupComplete
+                )
+            }
         }
     }
 
-    fun onNavigateToTermDetail(id: Int) {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-            delay(500)
-            _uiState.update { it.copy(isLoading = false, successToSignup = false, isHaveToSignup = false, onNavigateToTermDetail = true, termId = id) }
-        }
-    }
-
-    fun backToSignupFromTerm() {
+    fun onNavigateToTosDetail(id: Int) {
         _uiState.update {
-            it.copy(
-                onNavigateToTermDetail = false,
-                isHaveToSignup = true
-            )
+            it.copy(step = IntroStep.TosDetail(id))
         }
     }
 
-    fun testLoginUser() {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-            delay(1000)
-            _uiState.update { it.copy(isLoading = false) }
-            _event.emit(IntroEvent.NavigateHome)
+    fun backToSignupFromTos() {
+        _uiState.update {
+            it.copy(step = IntroStep.Signup)
         }
     }
 
     fun putUserInitial() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            delay(1000)
-            _uiState.update { it.copy(isLoading = false, isHaveToSignup = false) }
+            delay(200)
+            _uiState.update { it.copy(isLoading = false) }
             _event.emit(IntroEvent.NavigateHome)
         }
     }
@@ -103,15 +96,12 @@ class IntroViewModel(
     fun deleteLoginInfo() {
         _uiState.update {
             it.copy(
-                isHaveToSignup = false,
+                step = IntroStep.Login,
                 nickName = "",
                 token = "",
                 isEnabled = false
             )
         }
-    }
-    fun checkNickname(nickName: String){
-
     }
 
     fun changeNickName(nickName: String) {
