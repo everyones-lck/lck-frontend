@@ -62,15 +62,15 @@ fun TeamChip(
 @Composable
 fun Team.getTeamBrush(): Brush {
     return when (this.id) {
-        1 -> SolidColor(EveryLoLTheme.color.teamHLE) // Hanwha
-        2 -> SolidColor(EveryLoLTheme.color.teamGen) // Gen.G
+        1 -> SolidColor(EveryLoLTheme.color.teamHLE) // HLE
+        2 -> SolidColor(EveryLoLTheme.color.teamGen) // GEN
         3 -> SolidColor(EveryLoLTheme.color.teamT1KT) // T1
-        4 -> SolidColor(EveryLoLTheme.color.teamDK) // DK
-        5 -> SolidColor(EveryLoLTheme.color.teamBFX) // BNK
-        6 -> EveryLoLTheme.color.teamNS // RED
+        4 -> SolidColor(EveryLoLTheme.color.teamDRXDNF) // DNS
+        5 -> SolidColor(EveryLoLTheme.color.teamBFX) // BFX
+        6 -> EveryLoLTheme.color.teamNS // NS
         7 -> SolidColor(EveryLoLTheme.color.teamDK) // DK
-        8 -> SolidColor(EveryLoLTheme.color.teamDNF) // DRX
-        9 -> SolidColor(EveryLoLTheme.color.teamBrion) // Brion
+        8 -> SolidColor(EveryLoLTheme.color.teamDRXDNF) // DRX
+        9 -> SolidColor(EveryLoLTheme.color.teamBrion) // BRO
         10 -> SolidColor(EveryLoLTheme.color.teamT1KT) // Kt
         else -> SolidColor(Color.Transparent)
     }

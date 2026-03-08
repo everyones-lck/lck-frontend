@@ -5,7 +5,7 @@ enum class Team(
     val teamName: String
 ) {
     HLE(1,"HLE"),
-    Gen(2, "Gen"),
+    Gen(2, "GEN"),
     T1(3, "T1"),
     DNS(4,"DNS"),
     BFX(5, "BFX"),
@@ -13,7 +13,7 @@ enum class Team(
     DK(7, "DK"),
     DRX(8, "DRX"),
     BRO(9, "BRO"),
-    KT(10,"Kt"),
+    KT(10,"KT"),
     NONE(0, "선택 안함");
 
     companion object {

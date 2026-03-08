@@ -84,6 +84,7 @@ fun App() {
                         }
                     },
                     onLoginClick = {
+                        // TODO: API 연동 시 실제 로그인 로직으로 교체
                         introViewModel.onLoginSuccess("test_token")
                     }
                 )

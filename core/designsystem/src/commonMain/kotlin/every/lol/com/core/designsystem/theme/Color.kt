@@ -21,7 +21,7 @@ interface EveryLoLColor{
     val teamGen: Color
     val teamT1KT: Color
     val teamBrion: Color
-    val teamDNF: Color
+    val teamDRXDNF: Color
     val teamNS: Brush
     val semanticWarning: Color
     val semanticCheck: Color
@@ -46,7 +46,7 @@ object EveryLoLDarkColor :EveryLoLColor{
     override val teamGen = Color(0xFFAA8B30)
     override val teamT1KT = Color(0xFFE91B3B)
     override val teamBrion = Color(0xFF02694C)
-    override val teamDNF = Color(0xFF0017E7)
+    override val teamDRXDNF = Color(0xFF0017E7)
     override val teamNS = Brush.linearGradient(colors = listOf(Color(0xFF2B2B2B), Color(0xFFE91C20)))
     override val semanticWarning = Color(0xFFF26E6E)
     override val semanticCheck = Color(0xFFC5E3BA)
