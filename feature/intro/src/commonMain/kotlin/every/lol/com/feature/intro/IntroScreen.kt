@@ -16,7 +16,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import every.lol.com.core.common.EveryLolBackHandler
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -27,6 +29,7 @@ import everylol.feature.intro.generated.resources.ic_logo_text
 import everylol.feature.intro.generated.resources.img_login
 import org.jetbrains.compose.resources.painterResource
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun IntroRoute(
     viewModel: IntroViewModel,
@@ -67,6 +70,9 @@ internal fun IntroRoute(
         }
         uiState.onNavigateToTermDetail -> {
             val selectedTosId = uiState.termId ?: 0
+            EveryLolBackHandler {
+                viewModel.backToSignupFromTerm()
+            }
             TosScreen(
                 tosId = selectedTosId,
                 onBackClick = viewModel::backToSignupFromTerm

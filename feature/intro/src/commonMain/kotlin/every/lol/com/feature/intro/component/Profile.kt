@@ -55,7 +55,10 @@ fun Profile(
                     .size(44.dp)
                     .clip(CircleShape)
                     .background(EveryLoLTheme.color.grayScale1000)
-                    .clickable { onOpenGallery?.invoke() },
+                    .clickable (
+                        enabled = onOpenGallery != null,
+                        onClick = { onOpenGallery?.invoke() }
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(

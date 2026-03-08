@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -43,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import every.lol.com.core.designsystem.component.EverylolButton
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.core.model.TosType
+import every.lol.com.core.ui.ext.everylolDefault
 import everylol.feature.intro.generated.resources.*
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
@@ -54,6 +56,7 @@ fun SignupBottomSheet(
     tosList: List<TosType>,
     onNavigateToTermDetail: (Int) -> Unit,
     onDismissRequest: () -> Unit,
+    onConfirmClick: () -> Unit,
     modifier: Modifier = Modifier,
     isFixed: Boolean = true
 ) {
@@ -79,69 +82,72 @@ fun SignupBottomSheet(
     )
 
     ModalBottomSheet(
+        modifier = modifier.fillMaxWidth(),
         onDismissRequest = { if (!isFixed) onDismissRequest() },
         sheetState = sheetState,
         containerColor = EveryLoLTheme.color.grayScale1000,
         scrimColor = EveryLoLTheme.color.grayScale900.copy(alpha = 0.8f),
         shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
         dragHandle = null,
-        properties = ModalBottomSheetProperties(shouldDismissOnBackPress = !isFixed),
-        modifier = modifier
+        properties = ModalBottomSheetProperties(shouldDismissOnBackPress = !isFixed)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 30.dp)
-                .padding(top = 48.dp, bottom = 36.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
-        ) {
-            Text(
-                modifier = Modifier.padding(bottom = 8.dp),
-                text = "Every.LOL을 하려면 동의가 필요해요",
-                style = EveryLoLTheme.typography.heading01,
-                color = EveryLoLTheme.color.grayScale200
-            )
+        EveryLoLTheme {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 30.dp)
+                        .padding(top = 48.dp, bottom = 36.dp),
+                    verticalArrangement = Arrangement.spacedBy(24.dp)
+                ) {
+                    Text(
+                        modifier = Modifier.padding(bottom = 8.dp),
+                        text = "Every.LOL을 하려면 동의가 필요해요",
+                        style = EveryLoLTheme.typography.heading01,
+                        color = EveryLoLTheme.color.grayScale200
+                    )
 
-            // 모두 동의 Row
-            AgreementRow(
-                text = "모두 동의",
-                isSelected = isEverythingSelected,
-                onCheckClick = {
-                    val target = !isEverythingSelected
-                    for (i in checkedStates.indices) {
-                        checkedStates[i] = target
+                    // 모두 동의 Row
+                    AgreementRow(
+                        text = "모두 동의",
+                        isSelected = isEverythingSelected,
+                        onCheckClick = {
+                            val target = !isEverythingSelected
+                            for (i in checkedStates.indices) {
+                                checkedStates[i] = target
+                            }
+                        }
+                    )
+
+                    // 개별 약관 리스트
+                    tosList.forEachIndexed { index, term ->
+                        AgreementRow(
+                            text = term.title,
+                            isSelected = checkedStates[index],
+                            captionTitle = "세부 정보 보기",
+                            onCheckClick = {
+                                checkedStates[index] = !checkedStates[index]
+                            },
+                            onCaptionClick = {
+                                onDismissRequest()
+                                onNavigateToTermDetail(term.id)
+                            }
+                        )
                     }
                 }
-            )
 
-            // 개별 약관 리스트
-            tosList.forEachIndexed { index, term ->
-                AgreementRow(
-                    text = term.title,
-                    isSelected = checkedStates[index],
-                    captionTitle = "세부 정보 보기",
-                    onCheckClick = {
-                        checkedStates[index] = !checkedStates[index]
-                    },
-                    onCaptionClick = {
-                        onDismissRequest()
-                        onNavigateToTermDetail(term.id)
+                EverylolButton(
+                    modifier = Modifier
+                        .padding(horizontal = 24.dp, vertical = 24.dp)
+                        .fillMaxWidth(),
+                    text = "확인",
+                    enabled = isEverythingSelected,
+                    onClick = {
+                        if (isEverythingSelected) onConfirmClick()
                     }
                 )
             }
         }
-
-        EverylolButton(
-            modifier = Modifier
-                .padding(horizontal = 24.dp, vertical = 24.dp)
-                .padding(bottom = 24.dp)
-                .fillMaxWidth(),
-            text = "확인",
-            enabled = isEverythingSelected,
-            onClick = {
-                if (isEverythingSelected) onDismissRequest()
-            }
-        )
     }
 }
 

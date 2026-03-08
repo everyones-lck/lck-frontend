@@ -30,6 +30,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import every.lol.com.core.common.PermissionType
+import every.lol.com.core.common.rememberImagePickerLauncher
+import every.lol.com.core.common.rememberPermissionManager
 import every.lol.com.core.designsystem.component.EverylolButton
 import every.lol.com.core.designsystem.component.EverylolTopAppBar
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
@@ -46,16 +49,31 @@ import kotlinx.coroutines.launch
 fun SignupScreen(
     nickName: String = "",
     onValueChange: (String) -> Unit = {},
+    profileImage: Any? = null,
+    onProfileImageChange: (Any?) -> Unit = {},
     enabled: Boolean = false,
     checkNickName: (String) -> Unit = {},
     onBackClick: () -> Unit = {},
     onSignupClick: () -> Unit = {},
     onNavigateToTermDetail: (Int) -> Unit = {}
 ) {
-    // 1. 상태 간소화: 약관 관련 복잡한 로직은 이제 BottomSheet 내부에서 처리합니다.
     var showTermsSheet by remember { mutableStateOf(false) }
     var isNicknameValid by remember { mutableStateOf(false) }
     var selectedTeams by remember { mutableStateOf(setOf<Team>()) }
+    var selectedImageState by remember(profileImage) { mutableStateOf(profileImage) }
+
+    val imagePickerLauncher = rememberImagePickerLauncher { uri ->
+        if (uri != null) {
+            selectedImageState = uri
+            onProfileImageChange(uri)
+        }
+    }
+
+    val permissionHandler = rememberPermissionManager { type, isGranted ->
+        if (!isGranted) {
+            // 권한 거부 시 스낵바 등을 띄울 수 있음
+        }
+    }
 
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -88,7 +106,11 @@ fun SignupScreen(
                         .padding(vertical = 56.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Profile(requiredGallery = true)
+                    Profile(
+                        requiredGallery = true,
+                        profile = selectedImageState,
+                        onOpenGallery = { imagePickerLauncher() }
+                    )
                 }
 
                 Column(
@@ -117,7 +139,6 @@ fun SignupScreen(
             }
         }
 
-        // 바텀시트가 닫힌 상태에서만 '다음' 버튼 표시
         if (!showTermsSheet) {
             EverylolButton(
                 modifier = Modifier
@@ -125,12 +146,11 @@ fun SignupScreen(
                     .padding(horizontal = 24.dp, vertical = 24.dp)
                     .fillMaxWidth(),
                 text = "다음",
-                enabled = isNicknameValid, // 닉네임 유효성만 체크
+                enabled = isNicknameValid,
                 onClick = onSignupClick
             )
         }
 
-        // 2. 통합된 SignupBottomSheet 호출
         if (showTermsSheet) {
             SignupBottomSheet(
                 tosList = TosType.entries,
@@ -139,7 +159,13 @@ fun SignupScreen(
                     showTermsSheet = false
                     onNavigateToTermDetail(id)
                 },
-                onDismissRequest = { showTermsSheet = false }
+                onDismissRequest = { showTermsSheet = false },
+                onConfirmClick = {
+                    showTermsSheet = false
+
+                    permissionHandler.askPermission(PermissionType.GALLERY)
+                    permissionHandler.askPermission(PermissionType.LOCATION)
+                }
             )
         }
     }
