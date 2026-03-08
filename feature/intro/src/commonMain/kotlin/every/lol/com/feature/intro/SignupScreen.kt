@@ -41,6 +41,7 @@ import every.lol.com.core.model.TosType
 import every.lol.com.core.ui.component.NicknameSection
 import every.lol.com.core.ui.component.TeamGroup
 import every.lol.com.core.ui.ext.everylolDefault
+import every.lol.com.feature.intro.component.ImageBottomSheet
 import every.lol.com.feature.intro.component.Profile
 import every.lol.com.feature.intro.component.SignupBottomSheet
 import kotlinx.coroutines.launch
@@ -58,6 +59,7 @@ fun SignupScreen(
     onNavigateToTermDetail: (Int) -> Unit = {}
 ) {
     var showTermsSheet by remember { mutableStateOf(false) }
+    var showImageSheet by remember { mutableStateOf(false) }
     var isNicknameValid by remember { mutableStateOf(false) }
     var selectedTeams by remember { mutableStateOf(setOf<Team>()) }
     var selectedImageState by remember(profileImage) { mutableStateOf(profileImage) }
@@ -109,7 +111,7 @@ fun SignupScreen(
                     Profile(
                         requiredGallery = true,
                         profile = selectedImageState,
-                        onOpenGallery = { imagePickerLauncher() }
+                        onOpenGallery = { showImageSheet = true }
                     )
                 }
 
@@ -165,6 +167,18 @@ fun SignupScreen(
 
                     permissionHandler.askPermission(PermissionType.GALLERY)
                     permissionHandler.askPermission(PermissionType.LOCATION)
+                }
+            )
+        }
+        if (showImageSheet) {
+            ImageBottomSheet(
+                onDismissRequest = { showImageSheet = false },
+                onGalleryClick = {
+                    imagePickerLauncher()
+                },
+                onDefaultClick = {
+                    selectedImageState = null
+                    onProfileImageChange(null)
                 }
             )
         }

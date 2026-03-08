@@ -36,7 +36,7 @@ fun Profile(
     ) {
         AsyncImage(
             model = profile,
-            contentDescription = "User Profile",
+            contentDescription = null,
             modifier = Modifier
                 .size(105.dp)
                 .clip(CircleShape)
