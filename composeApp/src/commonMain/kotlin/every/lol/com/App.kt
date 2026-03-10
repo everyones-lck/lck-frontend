@@ -86,9 +86,6 @@ fun App() {
                             navController.navigate(Route.Home) {
                                 popUpTo<Route.Intro> { inclusive = true }
                             }
-                        },
-                        onLoginClick = {
-                            // TODO: API 연동 시 실제 로그인 로직으로 교체
                         }
                     )
                     composable<Route.Home> { HomeScreen() }

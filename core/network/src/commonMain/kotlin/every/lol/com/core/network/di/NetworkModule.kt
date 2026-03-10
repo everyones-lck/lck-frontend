@@ -36,7 +36,7 @@ val networkModule = module {
             }
 
             install(Logging) {
-                level = LogLevel.BODY
+                level = if (BuildConfig.DEBUG) LogLevel.BODY else LogLevel.INFO
                 logger = object : Logger {
                     override fun log(message: String) {
                         println("Ktor Log: $message")
@@ -74,7 +74,7 @@ val networkModule = module {
                 validateResponse { response ->
                     val statusCode = response.status.value
 
-                    if (statusCode in 300..599) {
+                    if (statusCode in 400..599) {
                         val errorMessage = "HTTP Error $statusCode: ${response.status.description}"
 
                         throw mapErrorCodeToDomainException(
@@ -94,20 +94,11 @@ val networkModule = module {
 
 fun mapErrorCodeToDomainException(errorCode: Long, cause: Throwable? = null): DomainException {
     return when (errorCode) {
-        // 인증 관련
+        401L -> DomainException.InvalidJwtTokenException(cause = cause)
+        403L -> DomainException.NoPermissionException(cause = cause)
+        500L -> DomainException.ServerErrorException(cause = cause)
+
         1000L, 2001L -> DomainException.InvalidJwtTokenException(cause = cause)
-        1001L -> DomainException.UnsupportedSocialProviderException(cause = cause)
-
-        // 유저 관련
-        2000L -> DomainException.AlreadyRegisteredUserException(cause = cause)
-        3000L -> DomainException.UserNotFoundException(cause = cause)
-
-        // 권한 및 공통 에러
-        5002L -> DomainException.NoPermissionException(cause = cause)
-        9000L -> DomainException.ServerErrorException(cause = cause)
-        9001L -> DomainException.InvalidInputException(cause = cause)
-
-        // 기본 에러
         else -> DomainException.UnknownException(cause = cause)
     }
 }

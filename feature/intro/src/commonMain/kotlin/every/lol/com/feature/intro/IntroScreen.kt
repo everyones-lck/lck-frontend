@@ -39,8 +39,7 @@ import org.jetbrains.compose.resources.painterResource
 @Composable
 internal fun IntroRoute(
     viewModel: IntroViewModel = koinViewModel<IntroViewModel>(IntroViewModel::class),
-    onNavigateHome: () -> Unit = {},
-    onLoginClick: () -> Unit = {}
+    onNavigateHome: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -70,9 +69,8 @@ internal fun IntroRoute(
                 is IntroUiState.Login -> {
                     LoginScreen(
                         onClick = {
-                            onLoginClick()
-                            viewModel.onIntent(IntroIntent.ClickLogin("test_token"))
-                        },
+                            viewModel.onIntent(IntroIntent.ClickLogin("kakaoToken"))
+                                  },
                         onLongClick = { /* viewModel.putUserInitial() */ }
                     )
                 }

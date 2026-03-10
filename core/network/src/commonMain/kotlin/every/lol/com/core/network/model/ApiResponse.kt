@@ -12,7 +12,7 @@ sealed interface ApiResponse<out T> {
     @Serializable
     sealed interface Failure : ApiResponse<Nothing> {
         @Serializable
-        data class HttpError(val code: Int, val message: String, val body: String) : Failure
+        data class HttpError(val code: Int, val message: String) : Failure
         @Serializable
         data class NetworkError(val message: String, val throwable: String? = null) : Failure
         @Serializable

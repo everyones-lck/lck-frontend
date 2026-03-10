@@ -9,4 +9,7 @@ data class TokenResponse(
     val refreshToken: String,
     val accessTokenExpirationTime: String,
     val refreshTokenExpirationTime: String,
-)
+){
+    //token 유출 대비
+    override fun toString(): String = "TokenResponse(accessToken=***, refreshToken=***, accessTokenExpirationTime=$accessTokenExpirationTime, refreshTokenExpirationTime=$refreshTokenExpirationTime)"
+}

@@ -38,7 +38,6 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.koin.core)
             implementation(libs.ktor.client.core)
-            implementation(libs.androidx.datastore.preferences)
         }
 
         commonTest.dependencies {

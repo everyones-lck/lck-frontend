@@ -1,8 +1,10 @@
 package every.lol.com.feature.intro
 
-import androidx.lifecycle.viewModelScope
-import every.lol.com.core.domain.DomainException
-import every.lol.com.core.domain.DomainException.*
+import every.lol.com.core.domain.DomainException.InvalidInputException
+import every.lol.com.core.domain.DomainException.NetworkException
+import every.lol.com.core.domain.DomainException.NoPermissionException
+import every.lol.com.core.domain.DomainException.ServerErrorException
+import every.lol.com.core.domain.DomainException.UserNotFoundException
 import every.lol.com.core.domain.usecase.LoginUseCase
 import every.lol.com.feature.intro.model.IntroIntent
 import every.lol.com.feature.intro.model.IntroUiState
@@ -58,7 +60,6 @@ class IntroViewModel(
                 .onFailure { error ->
                     error.printStackTrace()
                     _uiState.update { IntroUiState.Login }
-                    _event.emit(IntroEvent.ShowErrorSnackbar(error))
                     val errorMessage = when (error) {
                         is UserNotFoundException -> {
                             _uiState.update { IntroUiState.Signup() }
@@ -97,7 +98,6 @@ class IntroViewModel(
         if (currentState is IntroUiState.Signup) {
             viewModelScope.launch {
                 _uiState.value = currentState.copy(isLoading = true)
-                delay(1000)
                 _uiState.value = IntroUiState.SignupComplete(nickName = currentState.nickName)
             }
         }

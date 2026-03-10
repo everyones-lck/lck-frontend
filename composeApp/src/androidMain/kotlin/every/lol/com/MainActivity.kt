@@ -25,7 +25,7 @@ class MainActivity : ComponentActivity() {
         if (GlobalContext.getOrNull() == null) {
             initKoin (
                 appDeclaration = {
-                    androidContext(this@MainActivity)
+                    androidContext(applicationContext)
                 },
                 platformModules = listOf(
                     androidNetworkModule,

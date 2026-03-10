@@ -8,7 +8,11 @@ inline fun <T, R> ApiResponse<T>.toResult(
 @Suppress("UNCHECKED_CAST") transform: (T) -> R = { it as R },
 ): Result<R> = when (this) {
     is ApiResponse.Success -> {
-        runCatching {transform(data) }
+        try {
+            Result.success(transform(data))
+        } catch (e: Exception) {
+            Result.failure(DomainException.UnknownException(e))
+        }
     }
     is ApiResponse.Failure.HttpError -> {
         Result.failure(mapErrorCodeToDomainException(code.toLong(), cause = Throwable(message)))
