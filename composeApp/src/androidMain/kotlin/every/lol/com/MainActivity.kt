@@ -8,11 +8,10 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.di.androidModule
+import every.lol.com.di.androidNetworkModule
 import every.lol.com.di.initKoin
 import org.koin.android.ext.koin.androidContext
-import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.GlobalContext
-import org.koin.core.logger.Level
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -24,11 +23,15 @@ class MainActivity : ComponentActivity() {
 
         super.onCreate(savedInstanceState)
         if (GlobalContext.getOrNull() == null) {
-            initKoin {
-                androidContext(applicationContext)
-                androidLogger(Level.DEBUG)
-                modules(androidModule)
-            }
+            initKoin (
+                appDeclaration = {
+                    androidContext(this@MainActivity)
+                },
+                platformModules = listOf(
+                    androidNetworkModule,
+                    androidModule
+                )
+            )
         }
         window.setBackgroundDrawable(ColorDrawable(bgColor))
 

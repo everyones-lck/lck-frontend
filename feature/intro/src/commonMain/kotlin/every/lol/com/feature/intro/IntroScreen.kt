@@ -11,6 +11,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -29,9 +32,8 @@ import every.lol.com.feature.intro.model.IntroUiState
 import everylol.feature.intro.generated.resources.Res
 import everylol.feature.intro.generated.resources.ic_logo_text
 import everylol.feature.intro.generated.resources.img_login
-import org.jetbrains.compose.resources.painterResource
 import moe.tlaster.precompose.koin.koinViewModel
-import moe.tlaster.precompose.viewmodel.ViewModel
+import org.jetbrains.compose.resources.painterResource
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -41,72 +43,84 @@ internal fun IntroRoute(
     onLoginClick: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
+    val snackbarHostState = remember { SnackbarHostState() }
     LaunchedEffect(viewModel.event) {
         viewModel.event.collect { event ->
             when (event) {
+                is IntroEvent.ShowErrorSnackbar -> {
+                    snackbarHostState.showSnackbar(
+                        message = event.throwable.message ?: "에러가 발생했습니다."
+                    )
+                }
+
                 IntroEvent.NavigateHome -> onNavigateHome()
-                else -> Unit
             }
         }
     }
-    when (val state = uiState) {
-        is IntroUiState.Loading -> {
-            LoadingScreen()
-        }
 
-        is IntroUiState.Login -> {
-            LoginScreen(
-                onClick = {
-                    onLoginClick()
-                    viewModel.onIntent(IntroIntent.ClickLogin("test_token"))
-                },
-                onLongClick = { /* viewModel.putUserInitial() */ }
-            )
-        }
-
-        is IntroUiState.Signup -> {
-            SignupScreen(
-                nickName = state.nickName,
-                enabled = state.isEnabled,
-                isLoading = state.isLoading,
-                onValueChange = { nickName ->
-                    viewModel.onIntent(IntroIntent.InputNickName(nickName))
-                },
-                onBackClick = {
-                    viewModel.onIntent(IntroIntent.ClickBackToSignup)
-                },
-                onSignupClick = {
-                    viewModel.onIntent(IntroIntent.ClickSignupSubmit)
-                },
-                onNavigateToTermDetail = { id ->
-                    viewModel.onIntent(IntroIntent.ClickTosDetail(id))
-                },
-                onProfileImageChange = { /* viewModel.onIntent(...) */ }
-            )
-        }
-
-        is IntroUiState.SignupComplete -> {
-            CompleteScreen(
-                nickName = state.nickName,
-                onGoHomeClick = {
-                    viewModel.onIntent(IntroIntent.ClickStartApp)
+    Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+    ) { paddingValues ->
+        Box(modifier = Modifier.padding(paddingValues)) {
+            when (val state = uiState) {
+                is IntroUiState.Loading -> {
+                    LoadingScreen()
                 }
-            )
-        }
 
-        is IntroUiState.TosDetail -> {
-            EveryLolBackHandler {
-                viewModel.onIntent(IntroIntent.ClickBackToSignup)
+                is IntroUiState.Login -> {
+                    LoginScreen(
+                        onClick = {
+                            onLoginClick()
+                            viewModel.onIntent(IntroIntent.ClickLogin("test_token"))
+                        },
+                        onLongClick = { /* viewModel.putUserInitial() */ }
+                    )
+                }
+
+                is IntroUiState.Signup -> {
+                    SignupScreen(
+                        nickName = state.nickName,
+                        enabled = state.isEnabled,
+                        isLoading = state.isLoading,
+                        onValueChange = { nickName ->
+                            viewModel.onIntent(IntroIntent.InputNickName(nickName))
+                        },
+                        onBackClick = {
+                            viewModel.onIntent(IntroIntent.ClickBackToSignup)
+                        },
+                        onSignupClick = {
+                            viewModel.onIntent(IntroIntent.ClickSignupSubmit)
+                        },
+                        onNavigateToTermDetail = { id ->
+                            viewModel.onIntent(IntroIntent.ClickTosDetail(id))
+                        },
+                        onProfileImageChange = { /* viewModel.onIntent(...) */ }
+                    )
+                }
+
+                is IntroUiState.SignupComplete -> {
+                    CompleteScreen(
+                        nickName = state.nickName,
+                        onGoHomeClick = {
+                            viewModel.onIntent(IntroIntent.ClickStartApp)
+                        }
+                    )
+                }
+
+                is IntroUiState.TosDetail -> {
+                    EveryLolBackHandler {
+                        viewModel.onIntent(IntroIntent.ClickBackToSignup)
+                    }
+                    TosScreen(
+                        tosId = state.id,
+                        onBackClick = {
+                            viewModel.onIntent(IntroIntent.ClickBackToSignup)
+                        }
+                    )
+                }
             }
-            TosScreen(
-                tosId = state.id,
-                onBackClick = {
-                    viewModel.onIntent(IntroIntent.ClickBackToSignup)
-                }
-            )
         }
-        }
+    }
 }
 
 @Composable
