@@ -17,6 +17,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.core.navigation.MainTab
 import every.lol.com.core.navigation.Route
 import every.lol.com.feature.aboutlck.AboutLCKScreen
@@ -32,7 +33,7 @@ import org.jetbrains.compose.resources.painterResource
 fun App() {
     val navController = rememberNavController()
 
-    MaterialTheme {
+    EveryLoLTheme {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentDestination = navBackStackEntry?.destination
         val introViewModel = remember { IntroViewModel() }
