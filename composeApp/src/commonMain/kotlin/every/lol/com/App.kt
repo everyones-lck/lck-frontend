@@ -25,73 +25,77 @@ import every.lol.com.feature.home.HomeScreen
 import every.lol.com.feature.intro.IntroViewModel
 import every.lol.com.feature.intro.navigation.introNavGraph
 import every.lol.com.feature.matches.MatchesScreen
+import moe.tlaster.precompose.PreComposeApp
 import org.jetbrains.compose.resources.painterResource
+import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.annotation.KoinExperimentalAPI
 
+@OptIn(KoinExperimentalAPI::class)
 @Composable
-@Preview
 fun App() {
-    val navController = rememberNavController()
+    PreComposeApp {
+        val navController = rememberNavController()
 
-    MaterialTheme {
-        val navBackStackEntry by navController.currentBackStackEntryAsState()
-        val currentDestination = navBackStackEntry?.destination
-        val introViewModel = remember { IntroViewModel() }
-        Scaffold(
-            bottomBar = {
-                val isIntro = currentDestination?.hasRoute<Route.Intro>() == true
+        MaterialTheme {
+            val navBackStackEntry by navController.currentBackStackEntryAsState()
+            val currentDestination = navBackStackEntry?.destination
+            Scaffold(
+                bottomBar = {
+                    val isIntro = currentDestination?.hasRoute<Route.Intro>() == true
 
-                if (!isIntro) {
-                    NavigationBar {
-                        MainTab.entries.forEach { tab ->
-                            val isSelected = currentDestination?.hasRoute(tab.route::class) == true
+                    if (!isIntro) {
+                        NavigationBar {
+                            MainTab.entries.forEach { tab ->
+                                val isSelected =
+                                    currentDestination?.hasRoute(tab.route::class) == true
 
-                            NavigationBarItem(
-                                selected = isSelected,
-                                label = { Text(tab.label) },
-                                icon = {
-                                    Icon(
-                                        painter = painterResource(
-                                            if (isSelected) tab.selectedIcon else tab.unselectedIcon
-                                        ),
-                                        contentDescription = tab.label
-                                    )
-                                },
-                                onClick = {
-                                    navController.navigate(tab.route) {
-                                        // 탭 전환 시 뒤로가기 스택 관리
-                                        popUpTo(navController.graph.findStartDestination().id) {
-                                            saveState = true
+                                NavigationBarItem(
+                                    selected = isSelected,
+                                    label = { Text(tab.label) },
+                                    icon = {
+                                        Icon(
+                                            painter = painterResource(
+                                                if (isSelected) tab.selectedIcon else tab.unselectedIcon
+                                            ),
+                                            contentDescription = tab.label
+                                        )
+                                    },
+                                    onClick = {
+                                        navController.navigate(tab.route) {
+                                            // 탭 전환 시 뒤로가기 스택 관리
+                                            popUpTo(navController.graph.findStartDestination().id) {
+                                                saveState = true
+                                            }
+                                            launchSingleTop = true
+                                            restoreState = true
                                         }
-                                        launchSingleTop = true
-                                        restoreState = true
                                     }
-                                }
-                            )
+                                )
+                            }
                         }
                     }
                 }
-            }
-        ) { innerPadding ->
-            NavHost(
-                navController = navController,
-                startDestination = Route.Intro,
-                modifier = Modifier.fillMaxSize()
-            ) {
-                introNavGraph(
-                    onNavigateHome = {
-                        navController.navigate(Route.Home) {
-                            popUpTo<Route.Intro> { inclusive = true }
+            ) { innerPadding ->
+                NavHost(
+                    navController = navController,
+                    startDestination = Route.Intro,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    introNavGraph(
+                        onNavigateHome = {
+                            navController.navigate(Route.Home) {
+                                popUpTo<Route.Intro> { inclusive = true }
+                            }
+                        },
+                        onLoginClick = {
+                            // TODO: API 연동 시 실제 로그인 로직으로 교체
                         }
-                    },
-                    onLoginClick = {
-                        // TODO: API 연동 시 실제 로그인 로직으로 교체
-                        introViewModel.onLoginSuccess("test_token")
-                    }
-                )
-                composable<Route.Home> { HomeScreen() }
-                composable<Route.Matches> {MatchesScreen()}
-                composable<Route.AboutLCK> { AboutLCKScreen() }
-                composable<Route.Community> { CommunityScreen() }
+                    )
+                    composable<Route.Home> { HomeScreen() }
+                    composable<Route.Matches> { MatchesScreen() }
+                    composable<Route.AboutLCK> { AboutLCKScreen() }
+                    composable<Route.Community> { CommunityScreen() }
+                }
             }
         }
     }

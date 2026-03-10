@@ -8,8 +8,16 @@ setNamespace("core.datastore")
 
 kotlin {
     sourceSets {
-        commonMain.dependencies {
+        androidMain.dependencies {
+            implementation(libs.androidx.datastore.preferences)
+        }
 
+        commonMain.dependencies {
+            api(libs.androidx.datastore.preferences)
+            api(libs.androidx.datastore.core)
+
+            implementation(libs.koin.core)
+            implementation(libs.coroutines.core)
         }
     }
 }

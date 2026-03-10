@@ -1,6 +1,7 @@
 package every.lol.com.feature.intro.navigation
 
 import androidx.compose.runtime.remember
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
@@ -19,9 +20,7 @@ fun NavGraphBuilder.introNavGraph(
     onLoginClick: () -> Unit
 ) {
     composable<Route.Intro> {
-        val viewModel = remember { IntroViewModel() }
         IntroRoute(
-            viewModel = viewModel,
             onNavigateHome = onNavigateHome,
             onLoginClick = onLoginClick
         )

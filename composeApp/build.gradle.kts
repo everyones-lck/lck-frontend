@@ -1,6 +1,3 @@
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
     alias(libs.plugins.everylol.application)
 }
@@ -9,7 +6,9 @@ kotlin {
 
     sourceSets {
         androidMain.dependencies {
-
+            implementation(libs.androidx.activity.compose)
+            implementation(libs.androidx.datastore.preferences)
+            implementation(libs.koin.android)
         }
 
         commonMain.dependencies {
@@ -32,6 +31,13 @@ kotlin {
             implementation(projects.feature.matches)
             implementation(projects.feature.mypage)
 
+            implementation(libs.precompose)
+            implementation(libs.precompose.viewmodel)
+
+            implementation(libs.koin.compose)
+            implementation(libs.koin.core)
+            implementation(libs.ktor.client.core)
+            implementation(libs.androidx.datastore.preferences)
         }
 
         commonTest.dependencies {

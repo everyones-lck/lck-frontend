@@ -24,16 +24,19 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import every.lol.com.core.common.EveryLolBackHandler
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.core.ui.ext.everylolDefault
-import every.lol.com.feature.intro.model.IntroStep
+import every.lol.com.feature.intro.model.IntroIntent
+import every.lol.com.feature.intro.model.IntroUiState
 import everylol.feature.intro.generated.resources.Res
 import everylol.feature.intro.generated.resources.ic_logo_text
 import everylol.feature.intro.generated.resources.img_login
 import org.jetbrains.compose.resources.painterResource
+import moe.tlaster.precompose.koin.koinViewModel
+import moe.tlaster.precompose.viewmodel.ViewModel
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun IntroRoute(
-    viewModel: IntroViewModel,
+    viewModel: IntroViewModel = koinViewModel<IntroViewModel>(IntroViewModel::class),
     onNavigateHome: () -> Unit = {},
     onLoginClick: () -> Unit = {}
 ) {
@@ -47,54 +50,63 @@ internal fun IntroRoute(
             }
         }
     }
-    if (uiState.isLoading) {
-        LoadingScreen()
-    } else {
-        when (val currentStep = uiState.step) {
-            is IntroStep.Loading -> {
-                LoadingScreen()
-            }
-
-            is IntroStep.Login -> {
-                LoginScreen(
-                    onClick = {
-                        onLoginClick()
-                        viewModel.onLoginSuccess("test_token")
-                    },
-                    onLongClick = { viewModel.putUserInitial() }
-                )
-            }
-
-            is IntroStep.Signup -> {
-                SignupScreen(
-                    nickName = uiState.nickName,
-                    onValueChange = viewModel::changeNickName,
-                    enabled = uiState.isEnabled,
-                    checkNickName = { /* viewModel.checkNickname() */ },
-                    onBackClick = viewModel::deleteLoginInfo,
-                    onSignupClick = viewModel::onSignupSuccess,
-                    onNavigateToTermDetail = viewModel::onNavigateToTosDetail
-                )
-            }
-
-            is IntroStep.SignupComplete -> {
-                CompleteScreen(
-                    nickName = uiState.nickName,
-                    onGoHomeClick = viewModel::putUserInitial
-                )
-            }
-
-            is IntroStep.TosDetail -> {
-                EveryLolBackHandler {
-                    viewModel.backToSignupFromTos()
-                }
-                TosScreen(
-                    tosId = currentStep.id,
-                    onBackClick = viewModel::backToSignupFromTos
-                )
-            }
+    when (val state = uiState) {
+        is IntroUiState.Loading -> {
+            LoadingScreen()
         }
-    }
+
+        is IntroUiState.Login -> {
+            LoginScreen(
+                onClick = {
+                    onLoginClick()
+                    viewModel.onIntent(IntroIntent.ClickLogin("test_token"))
+                },
+                onLongClick = { /* viewModel.putUserInitial() */ }
+            )
+        }
+
+        is IntroUiState.Signup -> {
+            SignupScreen(
+                nickName = state.nickName,
+                enabled = state.isEnabled,
+                isLoading = state.isLoading,
+                onValueChange = { nickName ->
+                    viewModel.onIntent(IntroIntent.InputNickName(nickName))
+                },
+                onBackClick = {
+                    viewModel.onIntent(IntroIntent.ClickBackToSignup)
+                },
+                onSignupClick = {
+                    viewModel.onIntent(IntroIntent.ClickSignupSubmit)
+                },
+                onNavigateToTermDetail = { id ->
+                    viewModel.onIntent(IntroIntent.ClickTosDetail(id))
+                },
+                onProfileImageChange = { /* viewModel.onIntent(...) */ }
+            )
+        }
+
+        is IntroUiState.SignupComplete -> {
+            CompleteScreen(
+                nickName = state.nickName,
+                onGoHomeClick = {
+                    viewModel.onIntent(IntroIntent.ClickStartApp)
+                }
+            )
+        }
+
+        is IntroUiState.TosDetail -> {
+            EveryLolBackHandler {
+                viewModel.onIntent(IntroIntent.ClickBackToSignup)
+            }
+            TosScreen(
+                tosId = state.id,
+                onBackClick = {
+                    viewModel.onIntent(IntroIntent.ClickBackToSignup)
+                }
+            )
+        }
+        }
 }
 
 @Composable

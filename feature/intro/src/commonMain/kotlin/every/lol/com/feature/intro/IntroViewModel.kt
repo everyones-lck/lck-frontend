@@ -1,7 +1,7 @@
 package every.lol.com.feature.intro
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import every.lol.com.core.domain.usecase.LoginUseCase
 import every.lol.com.feature.intro.model.IntroIntent
 import every.lol.com.feature.intro.model.IntroUiState
 import kotlinx.coroutines.delay
@@ -9,7 +9,10 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import moe.tlaster.precompose.viewmodel.ViewModel
+import moe.tlaster.precompose.viewmodel.viewModelScope
 
 
 sealed class IntroEvent {
@@ -17,7 +20,9 @@ sealed class IntroEvent {
     data class ShowErrorSnackbar(val throwable: Throwable) : IntroEvent()
 }
 
-class IntroViewModel : ViewModel() {
+class IntroViewModel(
+    private val loginUseCase: LoginUseCase
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow<IntroUiState>(IntroUiState.Loading)
     val uiState = _uiState.asStateFlow()
@@ -32,12 +37,39 @@ class IntroViewModel : ViewModel() {
     fun onIntent(intent: IntroIntent) {
         when (intent) {
             IntroIntent.LoadInitial -> checkInitialState()
-            is IntroIntent.ClickLogin -> handleLogin(intent.token)
+            is IntroIntent.ClickLogin -> handleUserLogin(intent.token)
             is IntroIntent.InputNickName -> handleInputNickName(intent.nickName)
             IntroIntent.ClickSignupSubmit -> handleSignupSubmit()
-            is IntroIntent.ClickTosDetail -> _uiState.value = IntroUiState.TosDetail(intent.id)
+            is IntroIntent.ClickTosDetail -> handleTosDetailClick(intent.id)
             IntroIntent.ClickBackToSignup -> handleBackToSignup()
             IntroIntent.ClickStartApp -> handleStartApp()
+        }
+    }
+
+    private fun handleInitialLoad() {
+        viewModelScope.launch {
+            //Todo 저장된 토큰 유무 확인 구현
+            delay(1500)
+            _uiState.value = IntroUiState.Login
+        }
+    }
+
+    private fun handleUserLogin(token: String) {
+        viewModelScope.launch {
+            _uiState.update { IntroUiState.Loading }
+            loginUseCase(token)
+                .onSuccess {
+                    if(true/*회원가입 필요*/){
+                        //회원가입으로 넘어감
+                    }else{
+                        //홈으로 넘어감
+                    }
+                }
+                .onFailure { error ->
+                    error.printStackTrace()
+                    //_uiState.update { it.copy(isLoading = false) }
+                    _event.emit(IntroEvent.ShowErrorSnackbar(error))
+                }
         }
     }
 
@@ -45,13 +77,6 @@ class IntroViewModel : ViewModel() {
         viewModelScope.launch {
             delay(1500)
             _uiState.value = IntroUiState.Login
-        }
-    }
-
-    private fun handleLogin(token: String) {
-        viewModelScope.launch {
-            delay(1000)
-            _uiState.value = IntroUiState.Signup(isLoading = false)
         }
     }
 
@@ -80,6 +105,9 @@ class IntroViewModel : ViewModel() {
         _uiState.value = IntroUiState.Signup()
     }
 
+    private fun handleTosDetailClick(id: Int) {
+        _uiState.update { IntroUiState.TosDetail(id) }
+    }
     private fun handleStartApp() {
         viewModelScope.launch {
             _event.emit(IntroEvent.NavigateHome)
