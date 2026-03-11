@@ -81,9 +81,14 @@ class IntroViewModel(
     private fun handleSignupSubmit() {
         val currentState = _uiState.value
         if (currentState is IntroUiState.Signup) {
+            val normalizedName = currentState.nickName.trim()
+            if (normalizedName.isEmpty() || normalizedName.length > 5) return
             viewModelScope.launch {
-                _uiState.value = currentState.copy(isLoading = true)
-                _uiState.value = IntroUiState.SignupComplete(nickName = currentState.nickName)
+                _uiState.value = currentState.copy(
+                    nickName = normalizedName,
+                    isLoading = true
+                            )
+                _uiState.value = IntroUiState.SignupComplete(nickName = normalizedName)
             }
         }
     }
