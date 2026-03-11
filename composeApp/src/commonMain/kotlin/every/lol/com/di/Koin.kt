@@ -8,6 +8,7 @@ import every.lol.com.core.datastore.AuthLocalDataSource
 import every.lol.com.core.datastore.AuthPreferences
 import every.lol.com.core.domain.repository.AuthRepository
 import every.lol.com.core.domain.usecase.LoginUseCase
+import every.lol.com.core.domain.usecase.SocialLoginUseCase
 import every.lol.com.core.network.datasource.AuthDataSource
 import every.lol.com.core.network.di.dataSourceModule
 import every.lol.com.core.network.di.networkModule
@@ -18,6 +19,7 @@ import org.koin.core.context.GlobalContext
 import org.koin.core.context.startKoin
 import org.koin.core.logger.Level
 import org.koin.core.module.Module
+import org.koin.core.module.dsl.factoryOf
 import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.module
 
@@ -29,9 +31,9 @@ val appDependenciesModule = module {
     single<AuthDataSource> { AuthDataSourceImpl(get<HttpClient>()) }
     single<AuthRepository> { AuthRepositoryImpl(get(), get()) }
 
+    factory { SocialLoginUseCase(get(), get()) }
     factory { LoginUseCase(get()) }
-    factory { IntroViewModel(get()) }
-}
+    factoryOf(::IntroViewModel) }
 
 fun initKoin(
     appDeclaration: KoinAppDeclaration = {},

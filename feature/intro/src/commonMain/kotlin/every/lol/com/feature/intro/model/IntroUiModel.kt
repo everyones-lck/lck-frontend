@@ -7,7 +7,12 @@ sealed interface IntroUiState {
     data object Loading : IntroUiState
     data object Login : IntroUiState
     data class Signup(
+        val profileImage: String = "",
+        val kakaoUserId: String = "",
         val nickName: String = "",
+        val role: String = "",
+        val tier: String = "",
+        val teamId: Int = 0,
         val isEnabled: Boolean = false,
         val isLoading: Boolean = false
     ) : IntroUiState

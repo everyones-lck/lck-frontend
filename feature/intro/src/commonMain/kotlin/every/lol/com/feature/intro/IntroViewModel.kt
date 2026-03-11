@@ -1,6 +1,8 @@
 package every.lol.com.feature.intro
 
 import every.lol.com.core.domain.usecase.LoginUseCase
+import every.lol.com.core.domain.usecase.SocialLoginUseCase
+import every.lol.com.core.model.DomainException
 import every.lol.com.feature.intro.model.IntroIntent
 import every.lol.com.feature.intro.model.IntroUiState
 import kotlinx.coroutines.delay
@@ -20,6 +22,7 @@ sealed class IntroEvent {
 }
 
 class IntroViewModel(
+    private val socialLoginUseCase: SocialLoginUseCase,
     private val loginUseCase: LoginUseCase
 ) : ViewModel() {
 
@@ -36,7 +39,7 @@ class IntroViewModel(
     fun onIntent(intent: IntroIntent) {
         when (intent) {
             IntroIntent.LoadInitial -> checkInitialState()
-            is IntroIntent.ClickLogin -> handleUserLogin(intent.token)
+            is IntroIntent.ClickLogin -> startKakaoLogin()
             is IntroIntent.InputNickName -> handleInputNickName(intent.nickName)
             IntroIntent.ClickSignupSubmit -> handleSignupSubmit()
             is IntroIntent.ClickTosDetail -> handleTosDetailClick(intent.id)
@@ -45,18 +48,27 @@ class IntroViewModel(
         }
     }
 
-    private fun handleUserLogin(token: String) {
+    private fun startKakaoLogin() {
         viewModelScope.launch {
             _uiState.update { IntroUiState.Loading }
-            loginUseCase(token)
+
+            socialLoginUseCase()
                 .onSuccess {
                     _event.emit(IntroEvent.NavigateHome)
                 }
                 .onFailure { error ->
-                    error.printStackTrace()
-                    _uiState.update { IntroUiState.Login }
-                    val errorMessage = error.message ?: "알 수 없는 오류"
-                    _event.emit(IntroEvent.ShowErrorSnackbar(Throwable(errorMessage)))
+                    if (error is DomainException.UserNotRegisteredException) {
+                        _uiState.update {
+                            IntroUiState.Signup(
+                                kakaoUserId = error.kakaoUserId,
+                                nickName = "",
+                                isLoading = false
+                            )
+                        }
+                    } else {
+                        _uiState.update { IntroUiState.Login }
+                        _event.emit(IntroEvent.ShowErrorSnackbar(error))
+                    }
                 }
         }
     }
