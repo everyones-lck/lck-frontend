@@ -31,6 +31,8 @@ extensions.configure<KotlinMultiplatformExtension> {
             implementation(project(":core:ui"))
 
             implementation(libs.findLibrary("androidx-navigation-compose").get())
+            implementation(libs.findLibrary("precompose-viewmodel").get())
+            implementation(libs.findLibrary("precompose-koin").get())
         }
     }
 }

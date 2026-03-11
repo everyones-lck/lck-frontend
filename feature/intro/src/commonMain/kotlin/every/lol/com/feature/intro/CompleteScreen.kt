@@ -55,7 +55,7 @@ internal fun CompleteScreen(
         ) {
             Image(
                 painter = painterResource(Res.drawable.img_complete_logo),
-                modifier = Modifier.padding(horizontal = 60.dp).fillMaxWidth(),
+                modifier = Modifier.padding(horizontal = 90.dp).fillMaxWidth(),
                 contentDescription = "complete logo"
             )
         }
@@ -67,11 +67,7 @@ internal fun CompleteScreen(
         contentAlignment = Alignment.BottomCenter
     ){
         EverylolButton(
-            modifier = Modifier
-                .padding(horizontal = 24.dp, vertical = 24.dp)
-                .fillMaxWidth(),
             text = "홈으로",
-            enabled = true,
             onClick = onGoHomeClick
         )
     }
