@@ -1,6 +1,7 @@
 import every.lol.com.configureKotlin
 import every.lol.com.configureCoroutineKmp
 import every.lol.com.configureKotlinMultiplatform
+import every.lol.com.configureKtor
 
 plugins {
     id("com.android.library")
@@ -9,4 +10,5 @@ plugins {
 
 configureKotlinMultiplatform()
 configureKotlin()
+configureKtor()
 configureCoroutineKmp()

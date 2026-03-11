@@ -6,9 +6,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
+import every.lol.com.di.androidModule
+import every.lol.com.di.androidNetworkModule
+import every.lol.com.di.initKoin
+import org.koin.android.ext.koin.androidContext
+import org.koin.core.context.GlobalContext
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -19,7 +22,17 @@ class MainActivity : ComponentActivity() {
         )
 
         super.onCreate(savedInstanceState)
-
+        if (GlobalContext.getOrNull() == null) {
+            initKoin (
+                appDeclaration = {
+                    androidContext(applicationContext)
+                },
+                platformModules = listOf(
+                    androidNetworkModule,
+                    androidModule
+                )
+            )
+        }
         window.setBackgroundDrawable(ColorDrawable(bgColor))
 
         setContent {
@@ -28,10 +41,4 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-}
-
-@Preview
-@Composable
-fun AppAndroidPreview() {
-    App()
 }

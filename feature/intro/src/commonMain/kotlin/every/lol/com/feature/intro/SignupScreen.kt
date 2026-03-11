@@ -53,6 +53,7 @@ fun SignupScreen(
     profileImage: Any? = null,
     onProfileImageChange: (Any?) -> Unit = {},
     enabled: Boolean = false,
+    isLoading: Boolean = false,
     checkNickName: (String) -> Unit = {},
     onBackClick: () -> Unit = {},
     onSignupClick: () -> Unit = {},
@@ -148,7 +149,7 @@ fun SignupScreen(
                     .padding(horizontal = 24.dp, vertical = 24.dp)
                     .fillMaxWidth(),
                 text = "다음",
-                enabled = isNicknameValid,
+                enabled = isNicknameValid && !isLoading,
                 onClick = onSignupClick
             )
         }
