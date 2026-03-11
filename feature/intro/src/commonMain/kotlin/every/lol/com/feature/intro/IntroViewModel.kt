@@ -1,10 +1,5 @@
 package every.lol.com.feature.intro
 
-import every.lol.com.core.domain.DomainException.InvalidInputException
-import every.lol.com.core.domain.DomainException.NetworkException
-import every.lol.com.core.domain.DomainException.NoPermissionException
-import every.lol.com.core.domain.DomainException.ServerErrorException
-import every.lol.com.core.domain.DomainException.UserNotFoundException
 import every.lol.com.core.domain.usecase.LoginUseCase
 import every.lol.com.feature.intro.model.IntroIntent
 import every.lol.com.feature.intro.model.IntroUiState
@@ -60,17 +55,7 @@ class IntroViewModel(
                 .onFailure { error ->
                     error.printStackTrace()
                     _uiState.update { IntroUiState.Login }
-                    val errorMessage = when (error) {
-                        is UserNotFoundException -> {
-                            _uiState.update { IntroUiState.Signup() }
-                            return@onFailure
-                        }
-                        is ServerErrorException -> "서버 오류: 서비스에 문제가 발생했습니다. 잠시 후 다시 시도해주세요."
-                        is NetworkException -> "네트워크 연결에 문제가 발생했습니다. 인터넷 연결을 확인해주세요."
-                        is InvalidInputException -> "입력값이 올바르지 않습니다. 다시 확인해주세요."
-                        is NoPermissionException -> "권한이 없습니다. 관리자에게 문의해주세요."
-                        else -> "알 수 없는 오류가 발생했습니다: ${error.message ?: "Unknown error"}"
-                    }
+                    val errorMessage = error.message ?: "알 수 없는 오류"
                     _event.emit(IntroEvent.ShowErrorSnackbar(Throwable(errorMessage)))
                 }
         }

@@ -30,5 +30,8 @@ kotlin {
             implementation(libs.koin.core)
             implementation(projects.core.domain)
         }
+        iosMain.dependencies {
+            implementation(libs.ktor.client.engine)
+        }
     }
 }

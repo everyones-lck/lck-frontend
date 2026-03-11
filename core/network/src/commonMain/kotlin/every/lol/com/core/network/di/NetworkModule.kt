@@ -1,10 +1,8 @@
 package every.lol.com.core.network.di
 
-import every.lol.com.core.domain.DomainException
 import every.lol.com.core.network.BuildConfig
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.HttpClientEngineFactory
-import io.ktor.client.plugins.HttpCallValidator
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.LogLevel
@@ -18,6 +16,7 @@ import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import org.koin.dsl.module
+
 
 val networkModule = module {
 
@@ -45,60 +44,20 @@ val networkModule = module {
             }
 
 
+            expectSuccess = false
+
             defaultRequest {
                 contentType(ContentType.Application.Json)
                 url {
                     val baseUrl = BuildConfig.BASE_URL
-                    val extractedProtocol: URLProtocol
-                    val extractedHost: String
+                    val extractedProtocol = if (baseUrl.startsWith("https://")) URLProtocol.HTTPS else URLProtocol.HTTP
+                    val extractedHost = baseUrl.removePrefix("https://").removePrefix("http://").removeSuffix("/")
 
-                    if (baseUrl.startsWith("https://")) {
-                        extractedProtocol = URLProtocol.HTTPS
-                        extractedHost = baseUrl.removePrefix("https://").removeSuffix("/")
-                    } else if (baseUrl.startsWith("http://")) {
-                        extractedProtocol = URLProtocol.HTTP
-                        extractedHost = baseUrl.removePrefix("http://").removeSuffix("/")
-                    } else {
-                        extractedProtocol = URLProtocol.HTTPS
-                        extractedHost = baseUrl.removeSuffix("/")
-                    }
                     protocol = extractedProtocol
                     host = extractedHost
                 }
                 header(HttpHeaders.ContentType, "application/json")
             }
-
-            expectSuccess = false
-
-            install(HttpCallValidator) {
-                validateResponse { response ->
-                    val statusCode = response.status.value
-
-                    if (statusCode in 400..599) {
-                        val errorMessage = "HTTP Error $statusCode: ${response.status.description}"
-
-                        throw mapErrorCodeToDomainException(
-                            errorCode = statusCode.toLong(),
-                            cause = Throwable(errorMessage)
-                        )
-                    }
-                }
-
-                handleResponseExceptionWithRequest { cause, _ ->
-                    throw cause
-                }
-            }
         }
-    }
-}
-
-fun mapErrorCodeToDomainException(errorCode: Long, cause: Throwable? = null): DomainException {
-    return when (errorCode) {
-        401L -> DomainException.InvalidJwtTokenException(cause = cause)
-        403L -> DomainException.NoPermissionException(cause = cause)
-        500L -> DomainException.ServerErrorException(cause = cause)
-
-        1000L, 2001L -> DomainException.InvalidJwtTokenException(cause = cause)
-        else -> DomainException.UnknownException(cause = cause)
     }
 }
