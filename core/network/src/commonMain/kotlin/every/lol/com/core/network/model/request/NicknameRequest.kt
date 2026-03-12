@@ -4,6 +4,6 @@ import kotlinx.serialization.Serializable
 
 
 @Serializable
-data class LoginRequest(
-    val kakaoUserId: String
+data class NicknameRequest(
+    val nickname: String
 )

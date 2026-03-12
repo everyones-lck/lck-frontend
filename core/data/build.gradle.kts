@@ -13,6 +13,7 @@ kotlin {
             implementation(project(":core:network"))
             implementation(project(":core:model"))
             implementation(project(":core:datastore"))
+            implementation(project(":core:common"))
             api(project(":core:domain"))
 
             implementation(libs.koin.core)

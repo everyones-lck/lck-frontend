@@ -7,7 +7,9 @@ import every.lol.com.core.data.repository.AuthRepositoryImpl
 import every.lol.com.core.datastore.AuthLocalDataSource
 import every.lol.com.core.datastore.AuthPreferences
 import every.lol.com.core.domain.repository.AuthRepository
-import every.lol.com.core.domain.usecase.LoginUseCase
+import every.lol.com.core.domain.usecase.NicknameUseCase
+import every.lol.com.core.domain.usecase.RefreshUseCase
+import every.lol.com.core.domain.usecase.SignupUseCase
 import every.lol.com.core.domain.usecase.SocialLoginUseCase
 import every.lol.com.core.network.datasource.AuthDataSource
 import every.lol.com.core.network.di.dataSourceModule
@@ -32,7 +34,9 @@ val appDependenciesModule = module {
     single<AuthRepository> { AuthRepositoryImpl(get(), get()) }
 
     factory { SocialLoginUseCase(get(), get()) }
-    factory { LoginUseCase(get()) }
+    factory { SignupUseCase(get()) }
+    factory { RefreshUseCase(get()) }
+    factory{ NicknameUseCase(get()) }
     factoryOf(::IntroViewModel) }
 
 fun initKoin(

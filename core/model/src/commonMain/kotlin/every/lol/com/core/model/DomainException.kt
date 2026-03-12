@@ -27,6 +27,7 @@ enum class DomainErrorCode(
     INVALID_OAUTH_TOKEN(1000L, "토큰이 만료되었습니다."),
     UNSUPPORTED_SOCIAL_PROVIDER(1001L, "회원가입을 다시 시도해주세요."),
     KAKAO_FAILED(1002L, "카카오 로그인에 실패했습니다."),
+    DUPLICATE_NICKNAME(1003L, "중복된 닉네임입니다."),
 
     ALREADY_REGISTERED_USER(2000L, "이미 가입된 회원입니다."),
     INVALID_JWT_TOKEN(2001L, "토큰이 만료되었습니다."),
@@ -54,7 +55,7 @@ sealed class DomainException(
     data class InvalidOAuthTokenException(override val cause: Throwable? = null) : DomainException(cause, DomainErrorCode.INVALID_OAUTH_TOKEN)
     data class UnsupportedSocialProviderException(override val cause: Throwable? = null) : DomainException(cause, DomainErrorCode.UNSUPPORTED_SOCIAL_PROVIDER)
     data class KakaoFailedException(override val cause: Throwable? = null) : DomainException(cause, DomainErrorCode.KAKAO_FAILED)
-
+    data class DuplicateNicknameException(override val cause: Throwable? = null) : DomainException(cause, DomainErrorCode.DUPLICATE_NICKNAME)
     data class AlreadyRegisteredUserException(override val cause: Throwable? = null) : DomainException(cause, DomainErrorCode.ALREADY_REGISTERED_USER)
     data class InvalidJwtTokenException(override val cause: Throwable? = null) : DomainException(cause, DomainErrorCode.INVALID_JWT_TOKEN)
 
