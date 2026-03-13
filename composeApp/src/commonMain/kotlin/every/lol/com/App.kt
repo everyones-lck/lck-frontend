@@ -17,6 +17,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.core.navigation.MainTab
 import every.lol.com.core.navigation.Route
 import every.lol.com.feature.aboutlck.AboutLCKScreen
@@ -36,12 +37,13 @@ fun App() {
     PreComposeApp {
         val navController = rememberNavController()
 
-        MaterialTheme {
-            val navBackStackEntry by navController.currentBackStackEntryAsState()
-            val currentDestination = navBackStackEntry?.destination
-            Scaffold(
-                bottomBar = {
-                    val isIntro = currentDestination?.hasRoute<Route.Intro>() == true
+    EveryLoLTheme {
+        val navBackStackEntry by navController.currentBackStackEntryAsState()
+        val currentDestination = navBackStackEntry?.destination
+        val introViewModel = remember { IntroViewModel() }
+        Scaffold(
+            bottomBar = {
+                val isIntro = currentDestination?.hasRoute<Route.Intro>() == true
 
                     if (!isIntro) {
                         NavigationBar {

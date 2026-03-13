@@ -22,7 +22,15 @@ val kakaoAppKey = (
     ?: error("KAKAO_APP_KEY를 local.properties, Gradle property, 또는 환경변수로 설정해주세요.")
 
 kotlin {
-
+    listOf(
+        iosArm64(),
+        iosSimulatorArm64()
+    ).forEach { iosTarget ->
+        iosTarget.binaries.framework {
+            baseName = "ComposeApp"
+            isStatic = true
+        }
+    }
     sourceSets {
         androidMain.dependencies {
             implementation(libs.androidx.activity.compose)

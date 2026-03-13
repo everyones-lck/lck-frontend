@@ -35,7 +35,7 @@ coil = "3.4.0"
 activityKtx = "1.12.4"
 
 #Moko 권한 허용 라이브러리
-moko-permissions = "0.18.0"
+moko-permissions = "0.20.1"
 
 #ktor
 ktor = "3.0.0"
