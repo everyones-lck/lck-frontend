@@ -22,6 +22,8 @@ buildConfig {
     buildConfigField("boolean", "DEBUG", isDebug.toString())
 
     buildConfigField("String", "BASE_URL", "\"${getProperty("BASE_URL")}\"")
+
+    buildConfigField("String", "KAKAO_APP_KEY", "\"${getProperty("KAKAO_APP_KEY")}\"")
 }
 
 kotlin {
@@ -31,7 +33,11 @@ kotlin {
             implementation(projects.core.domain)
         }
         iosMain.dependencies {
-            implementation(libs.ktor.client.engine)
+            //Todo: iOS 카카오 로그인 구현하기
+        }
+
+        androidMain.dependencies {
+            implementation(libs.kakao.sdk.user)
         }
     }
 }

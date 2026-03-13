@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import com.kakao.sdk.common.KakaoSdk
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.di.androidModule
 import every.lol.com.di.androidNetworkModule
@@ -22,6 +23,9 @@ class MainActivity : ComponentActivity() {
         )
 
         super.onCreate(savedInstanceState)
+
+        KakaoSdk.init(this, BuildConfig.KAKAO_APP_KEY)
+
         if (GlobalContext.getOrNull() == null) {
             initKoin (
                 appDeclaration = {

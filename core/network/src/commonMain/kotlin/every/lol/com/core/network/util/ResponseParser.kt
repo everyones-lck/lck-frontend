@@ -3,6 +3,7 @@ package every.lol.com.core.network.util
 import every.lol.com.core.network.model.ApiResponse
 import every.lol.com.core.network.model.BaseResponse
 import io.ktor.client.call.body
+import io.ktor.client.network.sockets.ConnectTimeoutException
 import io.ktor.client.statement.HttpResponse
 
 internal suspend inline fun <reified T> Result<HttpResponse>.asApiResponse(): ApiResponse<T> {
@@ -10,10 +11,18 @@ internal suspend inline fun <reified T> Result<HttpResponse>.asApiResponse(): Ap
     val exception = this.exceptionOrNull()
 
     if (exception != null) {
-        return ApiResponse.Failure.NetworkError(
-            message = exception.message ?: "Network Connection Failed",
-            throwable = exception.stackTraceToString()
-        )
+        return when (exception) {
+            is ConnectTimeoutException ->
+                ApiResponse.Failure.NetworkError(
+                    message = "서버 연결 시간이 초과되었습니다.",
+                    throwable = "TIMEOUT"
+                )
+            else ->
+                ApiResponse.Failure.NetworkError(
+                    message = exception.message ?: "네트워크 연결 실패",
+                    throwable = exception.toString()
+                )
+        }
     }
 
     return try {

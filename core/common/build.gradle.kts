@@ -13,9 +13,11 @@ kotlin {
             implementation(libs.moko.permissions.compose)
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor)
+            implementation(libs.koin.core)
         }
         androidMain.dependencies {
             implementation(libs.androidx.activity.compose)
+            implementation(libs.koin.android)
         }
         iosMain.dependencies {
 
