@@ -16,6 +16,7 @@ actual fun rememberPermissionManager(
             override fun askPermission(type: PermissionType) {
                 when (type) {
                     PermissionType.GALLERY -> currentCallback(type, true)
+                    // TODO: 기반 실제 권한 요청 구현 필요
                     PermissionType.LOCATION -> currentCallback(type, false)
                 }
             }
