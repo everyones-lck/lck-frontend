@@ -1,7 +1,6 @@
 package every.lol.com.feature.intro
 
 import every.lol.com.core.domain.usecase.NicknameUseCase
-import every.lol.com.core.domain.usecase.RefreshUseCase
 import every.lol.com.core.domain.usecase.SignupUseCase
 import every.lol.com.core.domain.usecase.SocialLoginUseCase
 import every.lol.com.core.model.DomainException
@@ -28,8 +27,7 @@ sealed class IntroEvent {
 class IntroViewModel(
     private val socialLoginUseCase: SocialLoginUseCase,
     private val signupUseCase: SignupUseCase,
-    private val nicknameUseCase: NicknameUseCase,
-    private val refreshUseCase: RefreshUseCase
+    private val nicknameUseCase: NicknameUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<IntroUiState>(IntroUiState.Loading)

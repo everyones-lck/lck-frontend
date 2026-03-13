@@ -3,7 +3,6 @@ package every.lol.com.core.network.remote
 import every.lol.com.core.network.datasource.AuthDataSource
 import every.lol.com.core.network.model.ApiResponse
 import every.lol.com.core.network.model.request.KakaoRequest
-import every.lol.com.core.network.model.request.NicknameRequest
 import every.lol.com.core.network.model.request.SignupRequest
 import every.lol.com.core.network.model.response.SignupResponse
 import every.lol.com.core.network.model.response.TokenResponse
@@ -11,6 +10,7 @@ import every.lol.com.core.network.util.asApiResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
+import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.Headers
@@ -42,11 +42,10 @@ class AuthDataSourceImpl(
                             }
                         )
 
-                        val imageContent = request.profileImage ?: byteArrayOf()
-
-                        append("profileImage", imageContent, Headers.build {
+                        val imageBytes = request.profileImage ?: byteArrayOf()
+                        append("profileImage", imageBytes, Headers.build {
                             append(HttpHeaders.ContentType, "image/jpeg")
-                            append(HttpHeaders.ContentDisposition, "form-data; name=\"profileImage\"; filename=\"profile.jpg\"")
+                            append(HttpHeaders.ContentDisposition, "filename=\"profile.jpg\"")
                         })
                     }
                 )
@@ -60,10 +59,11 @@ class AuthDataSourceImpl(
         }
     }.asApiResponse()
 
-    override suspend fun nickname(request: NicknameRequest): ApiResponse<Boolean?> = runCatching {
-        httpClient.post("/auth/nickname") {
-            setBody(request)
+    override suspend fun nickname(nickname: String): ApiResponse<Boolean?> = runCatching {
+        httpClient.get("/auth/nickname") {
+            url {
+                parameters.append("nickName", nickname)
+            }
         }
     }.asApiResponse()
-
 }

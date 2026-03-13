@@ -8,5 +8,6 @@ interface AuthRepository {
     suspend fun signup(request: Signup): Result<Unit>
     suspend fun refresh(kakaoUserId: String): Result<Unit>
     suspend fun nickname(nickname: String): Result<Boolean?>
+    suspend fun getValidAccessToken(): String?
 
 }

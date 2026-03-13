@@ -6,10 +6,11 @@ import every.lol.com.core.datastore.AuthLocalDataSource
 import every.lol.com.core.domain.repository.AuthRepository
 import every.lol.com.core.model.Signup
 import every.lol.com.core.network.datasource.AuthDataSource
+import every.lol.com.core.network.model.ApiResponse
 import every.lol.com.core.network.model.request.KakaoRequest
-import every.lol.com.core.network.model.request.NicknameRequest
 import every.lol.com.core.network.model.request.SignupRequest
 import every.lol.com.core.network.model.request.SignupUserData
+import kotlin.time.Clock
 
 class AuthRepositoryImpl(
     private val remote: AuthDataSource,
@@ -20,6 +21,7 @@ class AuthRepositoryImpl(
         remote.login(KakaoRequest(kakaoUserId))
             .toResult()
             .mapCatching { dto ->
+                local.saveUserId(kakaoUserId)
                 local.saveToken(
                     dto.accessToken,
                     dto.refreshToken,
@@ -56,7 +58,32 @@ class AuthRepositoryImpl(
             }
 
     override suspend fun nickname(nickname: String): Result<Boolean?> =
-        remote.nickname(NicknameRequest(nickname))
-            .toResult()
+        remote.nickname(nickname).toResult()
+
+    override suspend fun getValidAccessToken(): String? {
+        val authData = local.getAuthData() ?: return null
+        val kakaoUserId = authData.kakaoUserId ?: return null
+
+        val now = Clock.System.now().toEpochMilliseconds()
+        val expiry = authData.accessTokenExpirationTime.toLongOrNull() ?: 0L
+
+        return if (now >= expiry) {
+            val refreshResult = remote.refresh(KakaoRequest(kakaoUserId))
+            if (refreshResult is ApiResponse.Success) {
+                val newData = refreshResult.data
+                local.saveToken(
+                    newData.accessToken,
+                    newData.refreshToken,
+                    newData.accessTokenExpirationTime,
+                    newData.refreshTokenExpirationTime
+                )
+                newData.accessToken
+            } else {
+                null
+            }
+        } else {
+            authData.accessToken
+        }
+    }
 
 }
