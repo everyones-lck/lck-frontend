@@ -1,6 +1,5 @@
 package every.lol.com.feature.intro
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -13,22 +12,18 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import every.lol.com.core.common.PermissionType
 import every.lol.com.core.common.rememberImagePickerLauncher
@@ -44,15 +39,16 @@ import every.lol.com.core.ui.ext.everylolDefault
 import every.lol.com.feature.intro.component.ImageBottomSheet
 import every.lol.com.feature.intro.component.Profile
 import every.lol.com.feature.intro.component.SignupBottomSheet
-import kotlinx.coroutines.launch
+import every.lol.com.feature.intro.model.IntroUiState
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignupScreen(
-    nickName: String = "",
+    state: IntroUiState.Signup,
     onValueChange: (String) -> Unit = {},
-    profileImage: Any? = null,
     onProfileImageChange: (Any?) -> Unit = {},
-    enabled: Boolean = false,
+    onTeamsChange: (Set<Team>) -> Unit = {},
+    isLoading: Boolean = false,
     checkNickName: (String) -> Unit = {},
     onBackClick: () -> Unit = {},
     onSignupClick: () -> Unit = {},
@@ -61,15 +57,14 @@ fun SignupScreen(
     var showTermsSheet by remember { mutableStateOf(false) }
     var showImageSheet by remember { mutableStateOf(false) }
     var isNicknameValid by remember { mutableStateOf(false) }
-    var selectedTeams by remember { mutableStateOf(setOf<Team>()) }
-    var selectedImageState by remember(profileImage) { mutableStateOf(profileImage) }
+    var selectedTeams by remember { mutableStateOf(state.teamId) }
 
     val imagePickerLauncher = rememberImagePickerLauncher { uri ->
         if (uri != null) {
-            selectedImageState = uri
             onProfileImageChange(uri)
         }
     }
+
 
     val permissionHandler = rememberPermissionManager { type, isGranted ->
         if (!isGranted) {
@@ -110,7 +105,7 @@ fun SignupScreen(
                 ) {
                     Profile(
                         requiredGallery = true,
-                        profile = selectedImageState,
+                        profile = state.profileImage,
                         onOpenGallery = { showImageSheet = true }
                     )
                 }
@@ -122,10 +117,10 @@ fun SignupScreen(
                     horizontalAlignment = Alignment.Start,
                 ) {
                     NicknameSection(
-                        nickName = nickName,
+                        nickName = state.nickName,
                         onValueChange = onValueChange,
-                        isDuplicateChecked = enabled,
-                        onCheckNickName = { checkNickName(nickName) },
+                        isDuplicateChecked = state.isDuplicateChecked,
+                        onCheckNickName = { checkNickName(state.nickName) },
                         onValidationChanged = { isNicknameValid = it }
                     )
 
@@ -136,7 +131,10 @@ fun SignupScreen(
                         color = EveryLoLTheme.color.grayScale200
                     )
                     Spacer(modifier = Modifier.height(24.dp))
-                    TeamGroup { selectedTeams = it }
+                    TeamGroup { teams ->
+                        selectedTeams = teams
+                        onTeamsChange(teams)
+                    }
                 }
             }
         }
@@ -148,7 +146,7 @@ fun SignupScreen(
                     .padding(horizontal = 24.dp, vertical = 24.dp)
                     .fillMaxWidth(),
                 text = "다음",
-                enabled = isNicknameValid,
+                enabled = isNicknameValid && state.isDuplicateChecked && !state.isLoading,
                 onClick = onSignupClick
             )
         }
@@ -177,27 +175,9 @@ fun SignupScreen(
                     imagePickerLauncher()
                 },
                 onDefaultClick = {
-                    selectedImageState = null
                     onProfileImageChange(null)
                 }
             )
         }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview
-@Composable
-fun SignupScreenPreview() {
-    EveryLoLTheme {
-        SignupScreen(
-            nickName = "에브리롤",
-            onValueChange = {},
-            enabled = true,
-            checkNickName = {},
-            onBackClick = {},
-            onSignupClick = {},
-            onNavigateToTermDetail = {}
-        )
     }
 }

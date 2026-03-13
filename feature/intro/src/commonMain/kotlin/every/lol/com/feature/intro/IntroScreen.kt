@@ -11,6 +11,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -18,74 +21,109 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import every.lol.com.core.common.EveryLolBackHandler
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import every.lol.com.core.common.EveryLolBackHandler
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.core.ui.ext.everylolDefault
+import every.lol.com.feature.intro.model.IntroIntent
+import every.lol.com.feature.intro.model.IntroUiState
 import everylol.feature.intro.generated.resources.Res
 import everylol.feature.intro.generated.resources.ic_logo_text
 import everylol.feature.intro.generated.resources.img_login
+import moe.tlaster.precompose.koin.koinViewModel
 import org.jetbrains.compose.resources.painterResource
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun IntroRoute(
-    viewModel: IntroViewModel,
-    onNavigateHome: () -> Unit = {},
-    onLoginClick: () -> Unit = {}
+    viewModel: IntroViewModel = koinViewModel<IntroViewModel>(IntroViewModel::class),
+    onNavigateHome: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
+    val snackbarHostState = remember { SnackbarHostState() }
     LaunchedEffect(viewModel.event) {
         viewModel.event.collect { event ->
             when (event) {
+                is IntroEvent.ShowErrorSnackbar -> {
+                    snackbarHostState.showSnackbar(
+                        message = event.throwable.message ?: "에러가 발생했습니다."
+                    )
+                }
+
                 IntroEvent.NavigateHome -> onNavigateHome()
-                else -> Unit
             }
         }
     }
-    when {
-        uiState.isLoading -> {
-            LoadingScreen()
-        }
 
-        uiState.isHaveToSignup -> {
-            SignupScreen(
-                nickName = uiState.nickName,
-                onValueChange = viewModel::changeNickName,
-                enabled = uiState.isEnabled,
-                checkNickName = viewModel::checkNickname,
-                onBackClick = viewModel::deleteLoginInfo,
-                onSignupClick = viewModel::onSignupSuccess,
-                onNavigateToTermDetail = viewModel::onNavigateToTermDetail
-            )
-        }
-        uiState.successToSignup ->{
-            CompleteScreen(
-                nickName = uiState.nickName,
-                onGoHomeClick = onNavigateHome
-            )
-        }
-        uiState.onNavigateToTermDetail -> {
-            val selectedTosId = uiState.termId ?: 0
-            EveryLolBackHandler {
-                viewModel.backToSignupFromTerm()
+    Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+    ) { paddingValues ->
+        Box(modifier = Modifier.padding(paddingValues)) {
+            when (val state = uiState) {
+                is IntroUiState.Loading -> {
+                    LoadingScreen()
+                }
+
+                is IntroUiState.Login -> {
+                    LoginScreen(
+                        onClick = {
+                            viewModel.onIntent(IntroIntent.ClickLogin("kakaoToken"))
+                                  },
+                        onLongClick = { /* viewModel.putUserInitial() */ }
+                    )
+                }
+
+                is IntroUiState.Signup -> {
+                    SignupScreen(
+                            state = state,
+                            onValueChange = { nickName ->
+                                viewModel.onIntent(IntroIntent.InputNickName(nickName))
+                            },
+                            onProfileImageChange = { image ->
+                                // TODO: 필요 시 IntroIntent.ChangeProfileImage 추가
+                                // viewModel.onIntent(IntroIntent.ChangeProfileImage(image))
+                            },
+                            onTeamsChange = { teams ->
+                                viewModel.onIntent(IntroIntent.ChangeSelectedTeams(teams))
+                            },
+                            checkNickName = { nickName ->
+                                viewModel.onIntent(IntroIntent.ClickCheckDuplicateNickname(nickName))
+                            },
+                            onBackClick = {
+                                viewModel.onIntent(IntroIntent.ClickBackToSignup)
+                            },
+                            onSignupClick = {
+                                viewModel.onIntent(IntroIntent.ClickSignupSubmit)
+                            },
+                            onNavigateToTermDetail = { id ->
+                                viewModel.onIntent(IntroIntent.ClickTosDetail(id))
+                            }
+                        )
+                }
+
+                is IntroUiState.SignupComplete -> {
+                    CompleteScreen(
+                        nickName = state.nickName,
+                        onGoHomeClick = {
+                            viewModel.onIntent(IntroIntent.ClickStartApp)
+                        }
+                    )
+                }
+
+                is IntroUiState.TosDetail -> {
+                    EveryLolBackHandler {
+                        viewModel.onIntent(IntroIntent.ClickBackToSignup)
+                    }
+                    TosScreen(
+                        tosId = state.id,
+                        onBackClick = {
+                            viewModel.onIntent(IntroIntent.ClickBackToSignup)
+                        }
+                    )
+                }
             }
-            TosScreen(
-                tosId = selectedTosId,
-                onBackClick = viewModel::backToSignupFromTerm
-            )
-        }
-        else -> {
-            LoginScreen(
-                onClick = {
-                    onLoginClick()
-                    viewModel.onLoginSuccess("test_token")
-                },
-                onLongClick = { viewModel.testLoginUser() }
-            )
         }
     }
 }

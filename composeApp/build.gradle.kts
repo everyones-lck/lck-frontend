@@ -1,9 +1,25 @@
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.everylol.application)
 }
+
+val localProperties = Properties()
+val localPropertiesFile = rootProject.projectDir.resolve("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.inputStream().use(localProperties::load)
+}
+
+val kakaoAppKey = (
+            localProperties.getProperty("KAKAO_APP_KEY")
+                        ?: providers.gradleProperty("KAKAO_APP_KEY").orNull
+                        ?: System.getenv("KAKAO_APP_KEY")
+                ).orEmpty()
+    .trim()
+    .takeIf { it.isNotEmpty() }
+    ?: error("KAKAO_APP_KEY를 local.properties, Gradle property, 또는 환경변수로 설정해주세요.")
 
 kotlin {
     listOf(
@@ -17,7 +33,11 @@ kotlin {
     }
     sourceSets {
         androidMain.dependencies {
-
+            implementation(libs.androidx.activity.compose)
+            implementation(libs.androidx.datastore.preferences)
+            implementation(libs.koin.android)
+            implementation(libs.ktor.client.okhttp)
+            implementation(libs.kakao.sdk.user)
         }
 
         commonMain.dependencies {
@@ -40,6 +60,12 @@ kotlin {
             implementation(projects.feature.matches)
             implementation(projects.feature.mypage)
 
+            implementation(libs.precompose)
+            implementation(libs.precompose.viewmodel)
+
+            implementation(libs.koin.compose)
+            implementation(libs.koin.core)
+            implementation(libs.ktor.client.core)
         }
 
         commonTest.dependencies {
@@ -55,13 +81,17 @@ kotlin {
 android {
     namespace = "every.lol.com"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
-
     defaultConfig {
         applicationId = "every.lol.com"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
         versionName = "1.0"
+
+        manifestPlaceholders["KAKAO_APP_KEY"] = kakaoAppKey
+
+        buildConfigField("String", "KAKAO_APP_KEY", "\"$kakaoAppKey\"")
+
     }
     packaging {
         resources {
@@ -74,8 +104,17 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+    buildFeatures {
+        buildConfig = true
+    }
+}
+
+tasks.withType<KotlinCompile>().configureEach {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_17)
     }
 }
 

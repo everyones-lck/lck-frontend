@@ -1,6 +1,7 @@
 import every.lol.com.setNamespace
 
 plugins {
+    kotlin("multiplatform")
     alias(libs.plugins.everylol.library)
 }
 
@@ -9,7 +10,13 @@ setNamespace("core.data")
 kotlin {
     sourceSets {
         commonMain.dependencies {
+            implementation(project(":core:network"))
+            implementation(project(":core:model"))
+            implementation(project(":core:datastore"))
+            implementation(project(":core:common"))
+            api(project(":core:domain"))
 
+            implementation(libs.koin.core)
         }
     }
 }
