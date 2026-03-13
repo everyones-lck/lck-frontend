@@ -1,6 +1,5 @@
 package every.lol.com.core.data.repository
 
-import every.lol.com.core.common.toImageByteArray
 import every.lol.com.core.data.mapper.toResult
 import every.lol.com.core.datastore.AuthLocalDataSource
 import every.lol.com.core.domain.repository.AuthRepository
@@ -32,7 +31,7 @@ class AuthRepositoryImpl(
 
     override suspend fun signup(request: Signup): Result<Unit> {
         val signupRequest = SignupRequest(
-            profileImage =  request.profileImage.toImageByteArray(),
+            profileImage = request.profileImage,
             signupUserData = SignupUserData(
                 kakaoUserId = request.kakaoUserId,
                 nickName = request.nickname,

@@ -1,5 +1,6 @@
 package every.lol.com.feature.intro
 
+import every.lol.com.core.common.toImageByteArray
 import every.lol.com.core.domain.usecase.NicknameUseCase
 import every.lol.com.core.domain.usecase.SignupUseCase
 import every.lol.com.core.domain.usecase.SocialLoginUseCase
@@ -149,7 +150,11 @@ class IntroViewModel(
     fun onProfileImageChanged(image: Any?) {
         val state = _uiState.value
         if (state is IntroUiState.Signup) {
-            _uiState.value = state.copy(profileImage = image)
+            _uiState.update { state ->
+                if (state is IntroUiState.Signup) {
+                    state.copy(profileImage = image.toImageByteArray())
+                } else state
+            }
         }
     }
 

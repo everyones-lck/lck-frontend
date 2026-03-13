@@ -12,9 +12,14 @@ if (localPropertiesFile.exists()) {
     localPropertiesFile.inputStream().use(localProperties::load)
 }
 
-val kakaoAppKey = localProperties.getProperty("KAKAO_APP_KEY")?.trim()
-    ?.takeIf { it.isNotEmpty() }
-    ?: error("local.properties 에 KAKAO_APP_KEY를 설정해주세요.")
+val kakaoAppKey = (
+            localProperties.getProperty("KAKAO_APP_KEY")
+                        ?: providers.gradleProperty("KAKAO_APP_KEY").orNull
+                        ?: System.getenv("KAKAO_APP_KEY")
+                ).orEmpty()
+    .trim()
+    .takeIf { it.isNotEmpty() }
+    ?: error("KAKAO_APP_KEY를 local.properties, Gradle property, 또는 환경변수로 설정해주세요.")
 
 kotlin {
 
