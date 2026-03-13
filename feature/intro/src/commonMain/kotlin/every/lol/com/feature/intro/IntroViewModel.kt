@@ -1,6 +1,12 @@
 package every.lol.com.feature.intro
 
-import every.lol.com.core.domain.usecase.LoginUseCase
+import every.lol.com.core.common.toImageByteArray
+import every.lol.com.core.domain.usecase.NicknameUseCase
+import every.lol.com.core.domain.usecase.SignupUseCase
+import every.lol.com.core.domain.usecase.SocialLoginUseCase
+import every.lol.com.core.model.DomainException
+import every.lol.com.core.model.Signup
+import every.lol.com.core.model.Team
 import every.lol.com.feature.intro.model.IntroIntent
 import every.lol.com.feature.intro.model.IntroUiState
 import kotlinx.coroutines.delay
@@ -20,7 +26,9 @@ sealed class IntroEvent {
 }
 
 class IntroViewModel(
-    private val loginUseCase: LoginUseCase
+    private val socialLoginUseCase: SocialLoginUseCase,
+    private val signupUseCase: SignupUseCase,
+    private val nicknameUseCase: NicknameUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<IntroUiState>(IntroUiState.Loading)
@@ -36,30 +44,18 @@ class IntroViewModel(
     fun onIntent(intent: IntroIntent) {
         when (intent) {
             IntroIntent.LoadInitial -> checkInitialState()
-            is IntroIntent.ClickLogin -> handleUserLogin(intent.token)
+            is IntroIntent.ClickLogin -> startKakaoLogin()
             is IntroIntent.InputNickName -> handleInputNickName(intent.nickName)
+            is IntroIntent.ClickCheckDuplicateNickname -> checkNicknameDuplicate(intent.nickName)
             IntroIntent.ClickSignupSubmit -> handleSignupSubmit()
             is IntroIntent.ClickTosDetail -> handleTosDetailClick(intent.id)
             IntroIntent.ClickBackToSignup -> handleBackToSignup()
             IntroIntent.ClickStartApp -> handleStartApp()
+            is IntroIntent.ChangeSelectedTeams -> onTeamsChanged(intent.teams)
+            is IntroIntent.ChangeProfileImage -> onProfileImageChanged(intent.image)
         }
     }
 
-    private fun handleUserLogin(token: String) {
-        viewModelScope.launch {
-            _uiState.update { IntroUiState.Loading }
-            loginUseCase(token)
-                .onSuccess {
-                    _event.emit(IntroEvent.NavigateHome)
-                }
-                .onFailure { error ->
-                    error.printStackTrace()
-                    _uiState.update { IntroUiState.Login }
-                    val errorMessage = error.message ?: "알 수 없는 오류"
-                    _event.emit(IntroEvent.ShowErrorSnackbar(Throwable(errorMessage)))
-                }
-        }
-    }
 
     private fun checkInitialState() {
         viewModelScope.launch {
@@ -68,27 +64,96 @@ class IntroViewModel(
         }
     }
 
+    private fun startKakaoLogin() {
+        viewModelScope.launch {
+            _uiState.update { IntroUiState.Loading }
+
+            socialLoginUseCase()
+                .onSuccess {
+                    _event.emit(IntroEvent.NavigateHome)
+                }
+                .onFailure { error ->
+                    if (error is DomainException.UserNotRegisteredException) {
+                        _uiState.update {
+                            IntroUiState.Signup(
+                                kakaoUserId = error.kakaoUserId,
+                                nickName = "",
+                                isLoading = false
+                            )
+                        }
+                    } else {
+                        _uiState.update { IntroUiState.Login }
+                        _event.emit(IntroEvent.ShowErrorSnackbar(error))
+                    }
+                }
+        }
+    }
+
     private fun handleInputNickName(name: String) {
         val currentState = _uiState.value
         if (currentState is IntroUiState.Signup) {
             _uiState.value = currentState.copy(
                 nickName = name,
-                isEnabled = name.trim().isNotEmpty() && name.trim().length <= 5
+                isDuplicateChecked = false,
             )
         }
     }
 
+
+    private fun checkNicknameDuplicate(name: String) {
+        if (name.isBlank()) return
+        viewModelScope.launch {
+            nicknameUseCase(name)
+                .onSuccess {
+                    _uiState.update { state ->
+                        if (state is IntroUiState.Signup) {
+                            state.copy(isDuplicateChecked = true)
+                        } else state
+                    }
+                }.onFailure { error ->
+                    _event.emit(IntroEvent.ShowErrorSnackbar(error))
+                }
+        }
+    }
+
     private fun handleSignupSubmit() {
-        val currentState = _uiState.value
-        if (currentState is IntroUiState.Signup) {
-            val normalizedName = currentState.nickName.trim()
-            if (normalizedName.isEmpty() || normalizedName.length > 5) return
-            viewModelScope.launch {
-                _uiState.value = currentState.copy(
-                    nickName = normalizedName,
-                    isLoading = true
-                            )
-                _uiState.value = IntroUiState.SignupComplete(nickName = normalizedName)
+        val state = _uiState.value as? IntroUiState.Signup ?: return
+        viewModelScope.launch {
+            _uiState.value = state.copy(isLoading = true)
+
+            val param = Signup(
+                kakaoUserId = state.kakaoUserId,
+                nickname = state.nickName,
+                profileImage = state.profileImage,
+                teamId = state.teamId.map { it.id }
+            )
+
+            signupUseCase(param).fold(
+                onSuccess = {
+                    _uiState.value = IntroUiState.SignupComplete(nickName = state.nickName)
+                },
+                onFailure = { error ->
+                    _uiState.value = state.copy(isLoading = false)
+                    _event.emit(IntroEvent.ShowErrorSnackbar(error))
+                }
+            )
+        }
+    }
+
+    fun onTeamsChanged(teams: Set<Team>) {
+        val state = _uiState.value
+        if (state is IntroUiState.Signup) {
+            _uiState.value = state.copy(teamId = teams)
+        }
+    }
+
+    fun onProfileImageChanged(image: Any?) {
+        val state = _uiState.value
+        if (state is IntroUiState.Signup) {
+            _uiState.update { state ->
+                if (state is IntroUiState.Signup) {
+                    state.copy(profileImage = image.toImageByteArray())
+                } else state
             }
         }
     }

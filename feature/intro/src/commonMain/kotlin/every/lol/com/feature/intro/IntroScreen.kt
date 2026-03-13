@@ -77,23 +77,30 @@ internal fun IntroRoute(
 
                 is IntroUiState.Signup -> {
                     SignupScreen(
-                        nickName = state.nickName,
-                        enabled = state.isEnabled,
-                        isLoading = state.isLoading,
-                        onValueChange = { nickName ->
-                            viewModel.onIntent(IntroIntent.InputNickName(nickName))
-                        },
-                        onBackClick = {
-                            viewModel.onIntent(IntroIntent.ClickBackToSignup)
-                        },
-                        onSignupClick = {
-                            viewModel.onIntent(IntroIntent.ClickSignupSubmit)
-                        },
-                        onNavigateToTermDetail = { id ->
-                            viewModel.onIntent(IntroIntent.ClickTosDetail(id))
-                        },
-                        onProfileImageChange = { /* viewModel.onIntent(...) */ }
-                    )
+                            state = state,
+                            onValueChange = { nickName ->
+                                viewModel.onIntent(IntroIntent.InputNickName(nickName))
+                            },
+                            onProfileImageChange = { image ->
+                                // TODO: 필요 시 IntroIntent.ChangeProfileImage 추가
+                                // viewModel.onIntent(IntroIntent.ChangeProfileImage(image))
+                            },
+                            onTeamsChange = { teams ->
+                                viewModel.onIntent(IntroIntent.ChangeSelectedTeams(teams))
+                            },
+                            checkNickName = { nickName ->
+                                viewModel.onIntent(IntroIntent.ClickCheckDuplicateNickname(nickName))
+                            },
+                            onBackClick = {
+                                viewModel.onIntent(IntroIntent.ClickBackToSignup)
+                            },
+                            onSignupClick = {
+                                viewModel.onIntent(IntroIntent.ClickSignupSubmit)
+                            },
+                            onNavigateToTermDetail = { id ->
+                                viewModel.onIntent(IntroIntent.ClickTosDetail(id))
+                            }
+                        )
                 }
 
                 is IntroUiState.SignupComplete -> {

@@ -8,6 +8,7 @@ internal fun Project.configureKtor() {
     extensions.configure<KotlinMultiplatformExtension> {
         sourceSets.apply {
             getByName("commonMain").dependencies {
+                implementation(libs.findLibrary("ktor-client-auth").get())
                 implementation(libs.findLibrary("ktor-client-core").get())
                 implementation(libs.findLibrary("ktor-client-content-negotiation").get())
                 implementation(libs.findLibrary("ktor-client-logging").get())
