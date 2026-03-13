@@ -35,12 +35,22 @@ class AuthPreferences(
             it[KAKAO_USER_ID] = kakaoUserId
         }
     }
+    suspend fun clearUserId(){
+        dataStore.edit {
+            it.remove(KAKAO_USER_ID)
+        }
+    }
     suspend fun saveToken(accessToken: String, refreshToken: String, accessTokenExpirationTime: String, refreshTokenExpirationTime: String) {
         dataStore.edit {
             it[ACCESS_TOKEN_KEY] = accessToken
             it[REFRESH_TOKEN_KEY] = refreshToken
             it[ACCESS_TOKEN_EXPIRATION_TIME_KEY] = accessTokenExpirationTime
             it[REFRESH_TOKEN_EXPIRATION_TIME_KEY] = refreshTokenExpirationTime
+        }
+    }
+    suspend fun clearAuthData() {
+        dataStore.edit {
+            it.clear()
         }
     }
 }

@@ -9,11 +9,12 @@ plugins {
 val localProperties = Properties()
 val localPropertiesFile = rootProject.projectDir.resolve("local.properties")
 if (localPropertiesFile.exists()) {
-    localProperties.load(localPropertiesFile.inputStream())
+    localPropertiesFile.inputStream().use(localProperties::load)
 }
 
-val kakaoAppKey = localProperties.getProperty("KAKAO_APP_KEY") ?: ""
-
+val kakaoAppKey = localProperties.getProperty("KAKAO_APP_KEY")?.trim()
+    ?.takeIf { it.isNotEmpty() }
+    ?: error("local.properties 에 KAKAO_APP_KEY를 설정해주세요.")
 
 kotlin {
 

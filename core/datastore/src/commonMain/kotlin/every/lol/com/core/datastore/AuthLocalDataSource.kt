@@ -14,5 +14,9 @@ class AuthLocalDataSource(
         authPreferences.saveUserId(kakaoUserId)
     }
 
+    suspend fun clearAuthData() {
+        authPreferences.clearAuthData()
+    }
+
     suspend fun getAuthData() = authPreferences.authData.firstOrNull()
 }

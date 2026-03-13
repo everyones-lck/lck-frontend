@@ -42,11 +42,12 @@ class AuthDataSourceImpl(
                             }
                         )
 
-                        val imageBytes = request.profileImage ?: byteArrayOf()
-                        append("profileImage", imageBytes, Headers.build {
-                            append(HttpHeaders.ContentType, "image/jpeg")
-                            append(HttpHeaders.ContentDisposition, "filename=\"profile.jpg\"")
-                        })
+                        request.profileImage?.let { imageBytes ->
+                            append("profileImage", imageBytes, Headers.build {
+                                append(HttpHeaders.ContentType, "image/jpeg")
+                                append(HttpHeaders.ContentDisposition, "filename=\"profile.jpg\"")
+                            })
+                        }
                     }
                 )
             )

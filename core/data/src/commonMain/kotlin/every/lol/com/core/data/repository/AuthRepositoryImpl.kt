@@ -31,7 +31,7 @@ class AuthRepositoryImpl(
             }
 
     override suspend fun signup(request: Signup): Result<Unit> {
-        val request = SignupRequest(
+        val signupRequest = SignupRequest(
             profileImage =  request.profileImage.toImageByteArray(),
             signupUserData = SignupUserData(
                 kakaoUserId = request.kakaoUserId,
@@ -43,7 +43,7 @@ class AuthRepositoryImpl(
             )
         )
 
-        return remote.signup(request = request)
+        return remote.signup(request = signupRequest)
             .toResult()
             .mapCatching { dto ->
                 local.saveToken(dto.accessToken, dto.refreshToken, dto.accessTokenExpirationTime, dto.refreshTokenExpirationTime)
@@ -66,8 +66,13 @@ class AuthRepositoryImpl(
 
         val now = Clock.System.now().toEpochMilliseconds()
         val expiry = authData.accessTokenExpirationTime.toLongOrNull() ?: 0L
+        val refreshExpiry = authData.refreshTokenExpirationTime.toLongOrNull() ?: 0L
 
         return if (now >= expiry) {
+            if (now >= refreshExpiry) {
+                local.clearAuthData()
+                return null
+            }
             val refreshResult = remote.refresh(KakaoRequest(kakaoUserId))
             if (refreshResult is ApiResponse.Success) {
                 val newData = refreshResult.data

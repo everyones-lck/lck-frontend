@@ -12,9 +12,12 @@ import io.ktor.client.request.forms.formData
 import io.ktor.client.request.forms.submitFormWithBinaryData
 import io.ktor.client.request.get
 import io.ktor.client.request.patch
+import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod.Companion.Patch
+import io.ktor.http.contentType
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -47,6 +50,9 @@ class MyPagesDataSourceImpl(
     }.asApiResponse()
 
     override suspend fun patchMyTeam(request: PatchMyTeamRequest): ApiResponse<Unit?> = runCatching {
-        httpClient.patch("/my-pages/my-team")
+        httpClient.patch("/my-pages/my-team") {
+            contentType(ContentType.Application.Json)
+            setBody(request)
+        }
     }.asApiResponse()
 }

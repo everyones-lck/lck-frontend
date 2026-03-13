@@ -100,15 +100,16 @@ class IntroViewModel(
 
 
     private fun checkNicknameDuplicate(name: String) {
-        val currentState = _uiState.value as? IntroUiState.Signup ?: return
         if (name.isBlank()) return
-
         viewModelScope.launch {
             nicknameUseCase(name)
                 .onSuccess {
-                    _uiState.value = currentState.copy(isDuplicateChecked = true)
-                }
-                .onFailure { error ->
+                    _uiState.update { state ->
+                        if (state is IntroUiState.Signup) {
+                            state.copy(isDuplicateChecked = true)
+                        } else state
+                    }
+                }.onFailure { error ->
                     _event.emit(IntroEvent.ShowErrorSnackbar(error))
                 }
         }

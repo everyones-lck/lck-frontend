@@ -8,7 +8,7 @@ sealed interface IntroUiState {
     data object Loading : IntroUiState
     data object Login : IntroUiState
     data class Signup(
-        val profileImage: Any? = null,
+        val profileImage: ByteArray? = null,
         val kakaoUserId: String = "",
         val nickName: String = "",
         val teamId: Set<Team> = emptySet(),

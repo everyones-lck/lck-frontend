@@ -8,10 +8,10 @@ class NicknameUseCase(
 ) {
     suspend operator fun invoke(nickname: String): Result<Unit> =
         authRepository.nickname(nickname).mapCatching { isAvailable ->
-            if (isAvailable == true) {
-                Unit
-            } else {
-                throw DomainException.DuplicateNicknameException()
+            when (isAvailable) {
+                true -> Unit
+                false -> throw DomainException.DuplicateNicknameException()
+                null -> throw IllegalStateException("서버 응답 데이터가 비어있습니다.")
             }
         }
 
