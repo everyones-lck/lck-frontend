@@ -31,13 +31,16 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.koin.core)
             implementation(projects.core.domain)
+            implementation(project(":core:datastore"))
         }
         iosMain.dependencies {
             //Todo: iOS 카카오 로그인 구현하기
+            implementation(libs.ktor.client.darwin)
         }
 
         androidMain.dependencies {
             implementation(libs.kakao.sdk.user)
+            implementation(libs.ktor.client.okhttp)
         }
     }
 }

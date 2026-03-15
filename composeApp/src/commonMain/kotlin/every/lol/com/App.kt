@@ -40,7 +40,6 @@ fun App() {
     EveryLoLTheme {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentDestination = navBackStackEntry?.destination
-        val introViewModel = remember { IntroViewModel() }
         Scaffold(
             bottomBar = {
                 val isIntro = currentDestination?.hasRoute<Route.Intro>() == true

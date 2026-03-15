@@ -19,7 +19,6 @@ import every.lol.com.core.network.di.networkModule
 import every.lol.com.core.network.remote.AuthDataSourceImpl
 import every.lol.com.core.network.remote.MyPagesDataSourceImpl
 import every.lol.com.feature.intro.IntroViewModel
-import org.koin.core.context.GlobalContext
 import org.koin.core.context.startKoin
 import org.koin.core.logger.Level
 import org.koin.core.module.Module
@@ -47,18 +46,22 @@ val appDependenciesModule = module {
 fun initKoin(
     appDeclaration: KoinAppDeclaration = {},
     platformModules: List<Module> = emptyList()
-    ) {
-    if (GlobalContext.getOrNull() == null) {
-        startKoin {
-            appDeclaration()
-            printLogger(Level.DEBUG)
-            modules(
-                networkModule,
-                dataSourceModule,
-                repositoryModule,
-                appDependenciesModule,
-                *platformModules.toTypedArray()
-            )
-        }
+) {
+    startKoin {
+        appDeclaration()
+        printLogger(Level.DEBUG)
+        modules(
+            networkModule,
+            dataSourceModule,
+            repositoryModule,
+            appDependenciesModule,
+            *platformModules.toTypedArray()
+        )
+    }
+}
+
+object KoinBridge {
+    fun start() {
+        initKoin()
     }
 }
