@@ -14,11 +14,13 @@ import every.lol.com.core.domain.repository.MyPagesRepository
 import every.lol.com.core.domain.usecase.NicknameUseCase
 import every.lol.com.core.domain.usecase.SignupUseCase
 import every.lol.com.core.domain.usecase.SocialLoginUseCase
+import every.lol.com.core.network.datasource.AboutLCKDataSource
 import every.lol.com.core.network.datasource.AuthDataSource
 import every.lol.com.core.network.datasource.CommunityDataSource
 import every.lol.com.core.network.datasource.MyPagesDataSource
 import every.lol.com.core.network.di.dataSourceModule
 import every.lol.com.core.network.di.networkModule
+import every.lol.com.core.network.remote.AboutLCKDataSourceImpl
 import every.lol.com.core.network.remote.AuthDataSourceImpl
 import every.lol.com.core.network.remote.CommunityDataSourceImpl
 import every.lol.com.core.network.remote.MyPagesDataSourceImpl
@@ -40,10 +42,14 @@ val appDependenciesModule = module {
     single<AuthDataSource> { AuthDataSourceImpl(get(named("noAuth"))) }
     single<MyPagesDataSource> { MyPagesDataSourceImpl(get(named("auth"))) }
     single<CommunityDataSource> { CommunityDataSourceImpl(get(named("auth"))) }
+    single<AboutLCKDataSource> { AboutLCKDataSourceImpl(get(named("auth"))) }
+
 
     single<AuthRepository> { AuthRepositoryImpl(get(), get()) }
     single<MyPagesRepository> { MyPageRepositoryImpl(get(), get()) }
     single<CommunityRepository> { CommunityRepositoryImpl(get(), get()) }
+    single<AboutLCKRepository> { AboutLCKRepositoryImpl(get(), get()) }
+
 
     factory { SocialLoginUseCase(get(), get()) }
     factory { SignupUseCase(get()) }
