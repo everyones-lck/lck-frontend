@@ -14,6 +14,18 @@ sealed interface MypageUiState {
         val isLoading: Boolean = false
     ) : MypageUiState
 
+    data class MVP(
+        val mvpList: List<MVPItem> = emptyList(),
+        val isLoading: Boolean = false
+    ):MypageUiState
+
+    data class MVPItem(
+        val id: Int,
+        val matchDate: String,
+        val playerName: String,
+        val playerTeam: Int
+    )
+
     data class PredictionItem(
         val id: Int,
         val matchDate: String,
