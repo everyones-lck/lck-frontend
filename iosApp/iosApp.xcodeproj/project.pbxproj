@@ -6,6 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		105BEC472F681C0400CC0A6D /* KakaoSDKAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 105BEC462F681C0400CC0A6D /* KakaoSDKAuth */; };
+		105BEC492F681C1500CC0A6D /* KakaoSDKCommon in Frameworks */ = {isa = PBXBuildFile; productRef = 105BEC482F681C1500CC0A6D /* KakaoSDKCommon */; };
+		105BEC4B2F681C1E00CC0A6D /* KakaoSDKUser in Frameworks */ = {isa = PBXBuildFile; productRef = 105BEC4A2F681C1E00CC0A6D /* KakaoSDKUser */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		36AB4A79F79F392802FBF928 /* everylol.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = everylol.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -41,12 +47,22 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				105BEC492F681C1500CC0A6D /* KakaoSDKCommon in Frameworks */,
+				105BEC472F681C0400CC0A6D /* KakaoSDKAuth in Frameworks */,
+				105BEC4B2F681C1E00CC0A6D /* KakaoSDKUser in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		105BEC432F681BFC00CC0A6D /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		219A17B412D34CFEA5114602 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -60,6 +76,7 @@
 			children = (
 				80057FE678C1EF81E888632A /* Configuration */,
 				67DF23E8627288E99FD03345 /* iosApp */,
+				105BEC432F681BFC00CC0A6D /* Frameworks */,
 				219A17B412D34CFEA5114602 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -85,6 +102,9 @@
 			);
 			name = iosApp;
 			packageProductDependencies = (
+				105BEC462F681C0400CC0A6D /* KakaoSDKAuth */,
+				105BEC482F681C1500CC0A6D /* KakaoSDKCommon */,
+				105BEC4A2F681C1E00CC0A6D /* KakaoSDKUser */,
 			);
 			productName = iosApp;
 			productReference = 36AB4A79F79F392802FBF928 /* everylol.app */;
@@ -114,6 +134,9 @@
 			);
 			mainGroup = 874920A203ABE972427ED8E1;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				105BEC282F6735EE00CC0A6D /* XCRemoteSwiftPackageReference "kakao-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 219A17B412D34CFEA5114602 /* Products */;
 			projectDirPath = "";
@@ -178,11 +201,14 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = iosApp/Info.plist;
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "위치 서비스 기능 제공을 위해 사용자의 위치 정보가 필요합니다.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "프로필 이미지를 선택하기 위해 사진 보관함 접근이 필요합니다.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				KakaoAppKey = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -271,11 +297,14 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = iosApp/Info.plist;
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "위치 서비스 기능 제공을 위해 사용자의 위치 정보가 필요합니다.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "프로필 이미지를 선택하기 위해 사진 보관함 접근이 필요합니다.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				KakaoAppKey = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -368,6 +397,35 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		105BEC282F6735EE00CC0A6D /* XCRemoteSwiftPackageReference "kakao-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/kakao/kakao-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.27.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		105BEC462F681C0400CC0A6D /* KakaoSDKAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 105BEC282F6735EE00CC0A6D /* XCRemoteSwiftPackageReference "kakao-ios-sdk" */;
+			productName = KakaoSDKAuth;
+		};
+		105BEC482F681C1500CC0A6D /* KakaoSDKCommon */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 105BEC282F6735EE00CC0A6D /* XCRemoteSwiftPackageReference "kakao-ios-sdk" */;
+			productName = KakaoSDKCommon;
+		};
+		105BEC4A2F681C1E00CC0A6D /* KakaoSDKUser */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 105BEC282F6735EE00CC0A6D /* XCRemoteSwiftPackageReference "kakao-ios-sdk" */;
+			productName = KakaoSDKUser;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 759E5FF8ABEEE10F7743451D /* Project object */;
 }
