@@ -33,6 +33,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import every.lol.com.core.designsystem.component.EverylolTopAppBar
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
+import every.lol.com.core.ui.component.DefaultScreen
 import every.lol.com.core.ui.ext.everylolDefault
 import every.lol.com.feature.mypage.component.CommunityItem
 import every.lol.com.feature.mypage.model.MypageIntent
@@ -134,22 +135,36 @@ private fun MypageCommunityScreen(
                 ) {
                     communityState?.let { data ->
                         if (selectedTab == MypageUiState.CommunityTab.POST) {
-                            data.posts.forEach { post ->
-                                CommunityItem(
-                                    type = MypageUiState.CommunityTab.POST,
-                                    title = post.title,
-                                    content = null, //Todo: API 수정 후 반영
-                                    postType = post.postType
+                            if (data.posts.isEmpty()) {
+                                DefaultScreen(
+                                    title = "게시글이 아직 없습니다",
+                                    description = "첫 게시글을 작성해보세요"
                                 )
+                            } else {
+                                data.posts.forEach { post ->
+                                    CommunityItem(
+                                        type = MypageUiState.CommunityTab.POST,
+                                        title = post.title,
+                                        content = null, //Todo: API 수정 후 반영
+                                        postType = post.postType
+                                    )
+                                }
                             }
                         } else {
-                            data.comments.forEach { comment ->
-                                CommunityItem(
-                                    type = MypageUiState.CommunityTab.COMMENT,
-                                    title = null, // TODO: API 수정 후 반영
-                                    content = comment.content,
-                                    postType = comment.postType
+                            if (data.posts.isEmpty()) {
+                                DefaultScreen(
+                                    title = "댓글이 아직 없습니다",
+                                    description = "첫 댓글을 작성해보세요"
                                 )
+                            } else {
+                                data.comments.forEach { comment ->
+                                    CommunityItem(
+                                        type = MypageUiState.CommunityTab.COMMENT,
+                                        title = null, // TODO: API 수정 후 반영
+                                        content = comment.content,
+                                        postType = comment.postType
+                                    )
+                                }
                             }
                         }
                     }
