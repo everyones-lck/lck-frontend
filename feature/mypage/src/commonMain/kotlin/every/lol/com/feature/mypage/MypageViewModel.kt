@@ -45,6 +45,8 @@ class MypageViewModel(
             MypageIntent.LoadInitial -> checkInitialState()
             MypageIntent.ClickBackToHome -> handleBackToHome()
             is MypageIntent.ClickMenu -> handleMenuClick(intent.type)
+            MypageIntent.FetchMyPosts -> {}
+            MypageIntent.FetchMyComments -> {}
         }
     }
 

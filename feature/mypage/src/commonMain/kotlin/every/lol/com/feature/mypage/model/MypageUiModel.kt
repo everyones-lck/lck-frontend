@@ -1,10 +1,22 @@
 package every.lol.com.feature.mypage.model
 
 import androidx.compose.runtime.Immutable
+import every.lol.com.core.model.CommentsDetail
+import every.lol.com.core.model.PostsDetail
 import every.lol.com.core.model.Team
 
 @Immutable
 sealed interface MypageUiState {
+    data class Community(
+        val posts: List<PostsDetail> = emptyList(),
+        val comments: List<CommentsDetail> = emptyList(),
+        val selectedTab: CommunityTab = CommunityTab.POST,
+        val isLoading: Boolean = false
+    ): MypageUiState
+
+    enum class CommunityTab {
+        POST, COMMENT
+    }
     data object Loading: MypageUiState
     data object Withdrawal: MypageUiState
     data class Mypage(
@@ -39,4 +51,6 @@ sealed interface MypageIntent{
     data object LoadInitial : MypageIntent
     data object ClickBackToHome : MypageIntent
     data class ClickMenu(val type: MypageUiState.MypageMenuType) : MypageIntent
+    data object FetchMyPosts : MypageIntent
+    data object FetchMyComments : MypageIntent
 }

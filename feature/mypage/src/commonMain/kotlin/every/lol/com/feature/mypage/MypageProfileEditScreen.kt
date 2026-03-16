@@ -37,6 +37,7 @@ import every.lol.com.core.ui.component.TeamGroup
 import every.lol.com.core.ui.ext.everylolDefault
 import every.lol.com.feature.mypage.model.MypageUiState
 
+//TOdo: 추후에 Profile정의 후 SignUpScreen과 Component 전체 공유로 수정
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MypageProfileEditScreen(

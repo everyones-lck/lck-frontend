@@ -135,5 +135,4 @@ private fun MypageScreen(
             )
         }
     }
-
 }
