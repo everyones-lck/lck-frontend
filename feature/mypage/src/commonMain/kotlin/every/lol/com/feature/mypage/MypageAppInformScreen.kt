@@ -16,6 +16,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,13 +35,12 @@ import org.jetbrains.compose.resources.painterResource
 @Composable
 fun MypageAppInformScreen(
     state: MypageUiState.AppInform,
-    snackbarHostState: SnackbarHostState,
     onIntent: (MypageIntent) -> Unit,
     onBackClick: () -> Unit = {}
 ) {
     val myPageState = (state as? MypageUiState.AppInform) ?: return
     val menuList = myPageState.menuList
-
+    val snackbarHostState = remember { SnackbarHostState() }
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             modifier = Modifier

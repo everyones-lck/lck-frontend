@@ -1,4 +1,4 @@
-package every.lol.com.feature.intro
+package every.lol.com.core.ui.component
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,7 +25,7 @@ import org.jetbrains.compose.resources.stringResource
 
 
 @Composable
-internal fun TosScreen(
+fun TosScreen(
     tosId:Int?=0,
     onBackClick: () -> Unit = {},
 ) {

@@ -35,6 +35,7 @@ import every.lol.com.core.ui.component.NicknameSection
 import every.lol.com.core.ui.component.ProfileImage
 import every.lol.com.core.ui.component.TeamGroup
 import every.lol.com.core.ui.ext.everylolDefault
+import every.lol.com.feature.mypage.model.MypageIntent
 import every.lol.com.feature.mypage.model.MypageUiState
 
 //TOdo: 추후에 Profile정의 후 SignUpScreen과 Component 전체 공유로 수정
@@ -48,7 +49,7 @@ fun MypageProfileEditScreen(
     checkNickName: (String) -> Unit = {},
     onBackClick: () -> Unit = {},
     onSignupClick: () -> Unit = {},
-    onNavigateToTermDetail: (Int) -> Unit = {}
+    onIntent: (MypageIntent) -> Unit,
 ) {
     var showImageSheet by remember { mutableStateOf(false) }
     var isNicknameValid by remember { mutableStateOf(false) }

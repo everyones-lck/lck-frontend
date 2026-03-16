@@ -1,6 +1,5 @@
 package every.lol.com.feature.mypage
 
-import every.lol.com.core.common.toImageByteArray
 import every.lol.com.core.domain.usecase.NicknameUseCase
 import every.lol.com.core.model.Team
 import every.lol.com.feature.mypage.model.MypageIntent
@@ -22,7 +21,6 @@ sealed class MypageEvent {
     data object NavigateToPogVote : MypageEvent()
     data object NavigateToPrediction : MypageEvent()
     data object NavigateWithdrawal: MypageEvent()
-    data object NavigateToAppInfo : MypageEvent()
     data object NavigateTos1: MypageEvent()
     data object NavigateTos2: MypageEvent()
     //data object NavigateOpenSourceLicense: MypageEvent()
@@ -39,18 +37,19 @@ class MypageViewModel(
     private val _event = MutableSharedFlow<MypageEvent>()
     val event = _event.asSharedFlow()
 
+    private var cachedMyInform: MypageUiState.MyInform? = null
+
     init {
         onIntent(MypageIntent.LoadInitial)
     }
-
     fun onIntent(intent: MypageIntent) {
         when (intent) {
-            MypageIntent.LoadMypage -> checkMypageInitialState()
-            MypageIntent.LoadAppInform -> checkAppInformInitialState()
-            MypageIntent.ClickBackToHome -> handleBackToHome()
+            MypageIntent.LoadMypage -> loadMypageData()
+            MypageIntent.LoadAppInform -> loadAppInformData()
             is MypageIntent.ClickMenu -> handleMenuClick(intent.type)
-            MypageIntent.FetchMyPosts -> {}
-            MypageIntent.FetchMyComments -> {}
+            MypageIntent.ClickBackToHome -> handleBackToHome()
+            MypageIntent.FetchMyPosts -> loadCommunityData(MypageUiState.CommunityTab.POST)
+            MypageIntent.FetchMyComments -> loadCommunityData(MypageUiState.CommunityTab.COMMENT)
             else -> {}
         }
     }
@@ -58,60 +57,29 @@ class MypageViewModel(
     private fun handleMenuClick(type: MypageUiState.MypageMenuType) {
         viewModelScope.launch {
             when (type) {
-                MypageUiState.MypageMenuType.PROFILE_EDIT -> {
-                    _event.emit(MypageEvent.NavigateProfileEdit)
-                }
-                MypageUiState.MypageMenuType.POST_COMMENT -> {
-                    _event.emit(MypageEvent.NavigateToMyPosts)
-                }
-                MypageUiState.MypageMenuType.POG_VOTE -> {
-                    _event.emit(MypageEvent.NavigateToPogVote)
-                }
-                MypageUiState.MypageMenuType.PREDICTION -> {
-                    _event.emit(MypageEvent.NavigateToPrediction)
-                }
-                MypageUiState.MypageMenuType.LOGOUT -> {
-                    handleLogout()
-                }
-                MypageUiState.MypageMenuType.WITHDRAWAL -> {
+                MypageUiState.MypageMenuType.APP_INFO -> loadAppInformData()
+                MypageUiState.MypageMenuType.PROFILE_EDIT -> loadProfileEditData()
+                MypageUiState.MypageMenuType.POST_COMMENT -> loadCommunityData()
+                MypageUiState.MypageMenuType.POG_VOTE -> loadMVPData()
+                MypageUiState.MypageMenuType.PREDICTION -> loadPredictionData()
+                MypageUiState.MypageMenuType.TOS_1 -> handleTosDetailClick(1)
+                MypageUiState.MypageMenuType.TOS_2 -> handleTosDetailClick(2)
+                MypageUiState.MypageMenuType.WITHDRAWAL -> _uiState.value = MypageUiState.Withdrawal
 
-                }
-                MypageUiState.MypageMenuType.APP_INFO -> {
-                    _event.emit(MypageEvent.NavigateToAppInfo)
-                }
-                MypageUiState.MypageMenuType.TOS_1 -> {
-                    _event.emit(MypageEvent.NavigateTos1)
-                }
-                MypageUiState.MypageMenuType.TOS_2 -> {
-                    _event.emit(MypageEvent.NavigateTos2)
-                }
-                MypageUiState.MypageMenuType.OPEN_SOURCE_LICENCE -> {
-                    //Todo: 오픈 소스 라이선스 화면
-                }
-                MypageUiState.MypageMenuType.APP_VERSION -> {
-                    //아무런 작동 안함
-                }
+                MypageUiState.MypageMenuType.LOGOUT -> handleLogout()
+
+                MypageUiState.MypageMenuType.APP_VERSION -> { /* 토스트 */ }
+                MypageUiState.MypageMenuType.OPEN_SOURCE_LICENCE -> { /* 로직 */ }
             }
         }
     }
-
-    private fun handleLogout() {
+    private fun loadMypageData() {
         viewModelScope.launch {
-            try {
-                //todo: 로그아웃 연결, 캐시삭제 필수!!
-                _event.emit(MypageEvent.NavigateHome)
-            } catch (e: Exception) {
-                _event.emit(MypageEvent.ShowErrorSnackbar(e))
-            }
-        }
-    }
-
-    private fun checkMypageInitialState() {
-        viewModelScope.launch {
-            val myInform = MypageUiState.MyInform(
-            nickName = "김승혁",
-            teamId = setOf(Team.T1)
+            val myInform = cachedMyInform ?: MypageUiState.MyInform(
+                nickName = "김승혁",
+                teamId = setOf(Team.T1)
             )
+            cachedMyInform = myInform
 
             val menuList = listOf(
                 MypageUiState.MypageMenu(MypageUiState.MypageMenuType.PROFILE_EDIT, "프로필 수정"),
@@ -123,14 +91,11 @@ class MypageViewModel(
                 MypageUiState.MypageMenu(MypageUiState.MypageMenuType.APP_INFO, "앱 정보", showDivider = false)
             )
 
-            _uiState.value = MypageUiState.Mypage(
-                myInform = myInform,
-                menuList = menuList
-            )
+            _uiState.value = MypageUiState.Mypage(myInform = myInform, menuList = menuList)
         }
     }
 
-    private fun checkAppInformInitialState() {
+    private fun loadAppInformData() {
         val appInfoMenus = listOf(
             MypageUiState.MypageMenu(MypageUiState.MypageMenuType.TOS_1, "서비스 이용약관"),
             MypageUiState.MypageMenu(MypageUiState.MypageMenuType.TOS_2, "개인정보 처리방침"),
@@ -139,51 +104,43 @@ class MypageViewModel(
         )
         _uiState.value = MypageUiState.AppInform(menuList = appInfoMenus)
     }
-    private fun handleInputNickName(name: String) {
-        val currentState = _uiState.value
-        if (currentState is MypageUiState.ProfileEdit) {
-            _uiState.value = currentState.copy(
-                nickName = name,
-                isDuplicateChecked = false,
-            )
-        }
+
+    private fun loadProfileEditData() {
+        val currentMypage = _uiState.value as? MypageUiState.Mypage
+        _uiState.value = MypageUiState.ProfileEdit(
+            nickName = currentMypage?.myInform?.nickName ?: "",
+            teamId = currentMypage?.myInform?.teamId ?: emptySet(),
+            profileImage = currentMypage?.myInform?.profileImage
+        )
     }
 
-
-    private fun checkNicknameDuplicate(name: String) {
-        if (name.isBlank()) return
+    private fun loadCommunityData(tab: MypageUiState.CommunityTab = MypageUiState.CommunityTab.POST) {
+        _uiState.value = MypageUiState.Community(isLoading = true, selectedTab = tab)
         viewModelScope.launch {
-            nicknameUseCase(name)
-                .onSuccess {
-                    _uiState.update { state ->
-                        if (state is MypageUiState.ProfileEdit) {
-                            state.copy(isDuplicateChecked = true)
-                        } else state
-                    }
-                }.onFailure { error ->
-                    _event.emit(MypageEvent.ShowErrorSnackbar(error))
-                }
+            // API 호출 후 데이터 업데이트 로직
         }
     }
 
-    fun onTeamsChanged(teams: Set<Team>) {
-        val state = _uiState.value
-        if (state is MypageUiState.ProfileEdit) {
-            _uiState.value = state.copy(teamId = teams)
-        }
+    private fun loadMVPData() {
+        _uiState.value = MypageUiState.MVP(isLoading = true)
+        viewModelScope.launch { /* 데이터 로드 */ }
     }
 
-    fun onProfileImageChanged(image: Any?) {
-        val state = _uiState.value
-        if (state is MypageUiState.ProfileEdit) {
-            _uiState.update { state ->
-                if (state is MypageUiState.ProfileEdit) {
-                    state.copy(profileImage = image.toImageByteArray())
-                } else state
+    private fun loadPredictionData() {
+        _uiState.value = MypageUiState.Prediction(isLoading = true)
+        viewModelScope.launch { /* 데이터 로드 */ }
+    }
+
+    private fun handleLogout() {
+        viewModelScope.launch {
+            try {
+                // TODO: 로그아웃 로직 (캐시 삭제 등)
+                _event.emit(MypageEvent.NavigateHome)
+            } catch (e: Exception) {
+                _event.emit(MypageEvent.ShowErrorSnackbar(e))
             }
         }
     }
-
     private fun handleBackToHome() {
         viewModelScope.launch {
             _event.emit(MypageEvent.NavigateHome)

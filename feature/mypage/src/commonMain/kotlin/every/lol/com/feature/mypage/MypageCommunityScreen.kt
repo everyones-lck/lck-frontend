@@ -44,15 +44,15 @@ import everylol.feature.mypage.generated.resources.ic_arrow_up
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
-private fun MypageCommunityScreen(
+fun MypageCommunityScreen(
     state: MypageUiState,
-    snackbarHostState: SnackbarHostState,
-    onBackClick: () -> Unit,
+    onBackClick: () -> Unit={},
     onIntent: (MypageIntent) -> Unit
 ){
     val communityState = state as? MypageUiState.Community
     var expanded by remember { mutableStateOf(false) }
     var selectedTab by remember { mutableStateOf(MypageUiState.CommunityTab.POST) }
+    val snackbarHostState = remember { SnackbarHostState() }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(

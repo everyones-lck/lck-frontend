@@ -24,7 +24,7 @@ import every.lol.com.feature.community.CommunityScreen
 import every.lol.com.feature.home.HomeScreen
 import every.lol.com.feature.intro.navigation.introNavGraph
 import every.lol.com.feature.matches.MatchesScreen
-import every.lol.com.feature.mypage.MypageRoute
+import every.lol.com.feature.mypage.navigation.mypageNavGraph
 import moe.tlaster.precompose.PreComposeApp
 import org.jetbrains.compose.resources.painterResource
 import org.koin.core.annotation.KoinExperimentalAPI
@@ -97,14 +97,13 @@ fun App() {
                     composable<Route.AboutLCK> { AboutLCKScreen() }
                     composable<Route.Community> { CommunityScreen() }
 
-                    composable<Route.Mypage> {
-                        MypageRoute(
-                            onBackClick = { navController.popBackStack() },
-                            onNavigate = { type ->
-
+                    mypageNavGraph(
+                        onNavigateHome = {
+                            navController.navigate(Route.Home) {
+                                popUpTo<Route.Mypage> { inclusive = true }
                             }
-                        )
-                    }
+                        }
+                    )
                 }
             }
         }
