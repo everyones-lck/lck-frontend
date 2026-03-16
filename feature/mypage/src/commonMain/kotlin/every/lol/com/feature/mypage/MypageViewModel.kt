@@ -23,6 +23,9 @@ sealed class MypageEvent {
     data object NavigateToPrediction : MypageEvent()
     data object NavigateWithdrawal: MypageEvent()
     data object NavigateToAppInfo : MypageEvent()
+    data object NavigateTos1: MypageEvent()
+    data object NavigateTos2: MypageEvent()
+    //data object NavigateOpenSourceLicense: MypageEvent()
     data class ShowErrorSnackbar(val throwable: Throwable) : MypageEvent()
 }
 
@@ -42,11 +45,13 @@ class MypageViewModel(
 
     fun onIntent(intent: MypageIntent) {
         when (intent) {
-            MypageIntent.LoadInitial -> checkInitialState()
+            MypageIntent.LoadMypage -> checkMypageInitialState()
+            MypageIntent.LoadAppInform -> checkAppInformInitialState()
             MypageIntent.ClickBackToHome -> handleBackToHome()
             is MypageIntent.ClickMenu -> handleMenuClick(intent.type)
             MypageIntent.FetchMyPosts -> {}
             MypageIntent.FetchMyComments -> {}
+            else -> {}
         }
     }
 
@@ -74,6 +79,18 @@ class MypageViewModel(
                 MypageUiState.MypageMenuType.APP_INFO -> {
                     _event.emit(MypageEvent.NavigateToAppInfo)
                 }
+                MypageUiState.MypageMenuType.TOS_1 -> {
+                    _event.emit(MypageEvent.NavigateTos1)
+                }
+                MypageUiState.MypageMenuType.TOS_2 -> {
+                    _event.emit(MypageEvent.NavigateTos2)
+                }
+                MypageUiState.MypageMenuType.OPEN_SOURCE_LICENCE -> {
+                    //Todo: 오픈 소스 라이선스 화면
+                }
+                MypageUiState.MypageMenuType.APP_VERSION -> {
+                    //아무런 작동 안함
+                }
             }
         }
     }
@@ -89,7 +106,7 @@ class MypageViewModel(
         }
     }
 
-    private fun checkInitialState() {
+    private fun checkMypageInitialState() {
         viewModelScope.launch {
             val myInform = MypageUiState.MyInform(
             nickName = "김승혁",
@@ -113,6 +130,15 @@ class MypageViewModel(
         }
     }
 
+    private fun checkAppInformInitialState() {
+        val appInfoMenus = listOf(
+            MypageUiState.MypageMenu(MypageUiState.MypageMenuType.TOS_1, "서비스 이용약관"),
+            MypageUiState.MypageMenu(MypageUiState.MypageMenuType.TOS_2, "개인정보 처리방침"),
+            MypageUiState.MypageMenu(MypageUiState.MypageMenuType.OPEN_SOURCE_LICENCE, "오픈소스 라이선스"),
+            MypageUiState.MypageMenu(MypageUiState.MypageMenuType.APP_VERSION, "버전 정보", showDivider = false)
+        )
+        _uiState.value = MypageUiState.AppInform(menuList = appInfoMenus)
+    }
     private fun handleInputNickName(name: String) {
         val currentState = _uiState.value
         if (currentState is MypageUiState.ProfileEdit) {

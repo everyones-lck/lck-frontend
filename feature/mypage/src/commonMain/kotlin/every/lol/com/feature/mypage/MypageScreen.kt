@@ -54,6 +54,8 @@ fun MypageRoute(
                 MypageEvent.NavigateToPrediction -> onNavigate(MypageUiState.MypageMenuType.PREDICTION)
                 MypageEvent.NavigateWithdrawal -> onNavigate(MypageUiState.MypageMenuType.WITHDRAWAL)
                 MypageEvent.NavigateToAppInfo -> onNavigate(MypageUiState.MypageMenuType.APP_INFO)
+                MypageEvent.NavigateTos1 -> onNavigate(MypageUiState.MypageMenuType.TOS_1)
+                MypageEvent.NavigateTos2 -> onNavigate(MypageUiState.MypageMenuType.TOS_2)
                 is MypageEvent.ShowErrorSnackbar -> {
                     snackbarHostState.showSnackbar(event.throwable.message ?: "에러 발생")
                 }

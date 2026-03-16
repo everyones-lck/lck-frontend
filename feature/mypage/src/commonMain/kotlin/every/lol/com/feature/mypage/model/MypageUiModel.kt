@@ -8,6 +8,9 @@ import every.lol.com.core.model.Team
 @Immutable
 sealed interface MypageUiState {
 
+    data class AppInform(
+        val menuList: List<MypageMenu> = emptyList()
+    ): MypageUiState
     data class Prediction(
         val rank: Int = 0,
         val predictions: List<PredictionItem> = emptyList(),
@@ -68,15 +71,17 @@ sealed interface MypageUiState {
         val id: MypageMenuType,
         val title: String,
         val showDivider: Boolean = true
-    ):MypageUiState
+    )
     data class TosDetail(val id: Int): MypageUiState
     enum class MypageMenuType {
-        PROFILE_EDIT, POST_COMMENT, POG_VOTE, PREDICTION, LOGOUT, WITHDRAWAL, APP_INFO
+        PROFILE_EDIT, POST_COMMENT, POG_VOTE, PREDICTION, LOGOUT, WITHDRAWAL, APP_INFO,TOS_1,TOS_2,OPEN_SOURCE_LICENCE,APP_VERSION
     }
 }
 
 sealed interface MypageIntent{
     data object LoadInitial : MypageIntent
+    data object LoadMypage : MypageIntent
+    data object LoadAppInform: MypageIntent
     data object ClickBackToHome : MypageIntent
     data class ClickMenu(val type: MypageUiState.MypageMenuType) : MypageIntent
     data object FetchMyPosts : MypageIntent
