@@ -1,4 +1,4 @@
-package every.lol.com.feature.intro
+package every.lol.com.feature.mypage
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,7 +16,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -25,26 +24,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import every.lol.com.core.common.PermissionType
 import every.lol.com.core.common.rememberImagePickerLauncher
-import every.lol.com.core.common.rememberPermissionManager
 import every.lol.com.core.designsystem.component.EverylolButton
+import every.lol.com.core.designsystem.component.EverylolModal
 import every.lol.com.core.designsystem.component.EverylolTopAppBar
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.core.model.Team
-import every.lol.com.core.model.TosType
 import every.lol.com.core.ui.component.ImageBottomSheet
 import every.lol.com.core.ui.component.NicknameSection
 import every.lol.com.core.ui.component.ProfileImage
 import every.lol.com.core.ui.component.TeamGroup
 import every.lol.com.core.ui.ext.everylolDefault
-import every.lol.com.feature.intro.component.SignupBottomSheet
-import every.lol.com.feature.intro.model.IntroUiState
+import every.lol.com.feature.mypage.model.MypageUiState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SignupScreen(
-    state: IntroUiState.Signup,
+fun MypageProfileEditScreen(
+    state: MypageUiState.ProfileEdit,
     onValueChange: (String) -> Unit = {},
     onProfileImageChange: (Any?) -> Unit = {},
     onTeamsChange: (Set<Team>) -> Unit = {},
@@ -53,9 +49,9 @@ fun SignupScreen(
     onSignupClick: () -> Unit = {},
     onNavigateToTermDetail: (Int) -> Unit = {}
 ) {
-    var showTermsSheet by remember { mutableStateOf(false) }
     var showImageSheet by remember { mutableStateOf(false) }
     var isNicknameValid by remember { mutableStateOf(false) }
+    var showProfileEditModal by remember { mutableStateOf(false) }
     var selectedTeams by remember { mutableStateOf(state.teamId) }
 
     val imagePickerLauncher = rememberImagePickerLauncher { uri ->
@@ -64,18 +60,7 @@ fun SignupScreen(
         }
     }
 
-
-    val permissionHandler = rememberPermissionManager { type, isGranted ->
-        if (!isGranted) {
-            // 권한 거부 시 스낵바 등을 띄울 수 있음
-        }
-    }
-
     val snackbarHostState = remember { SnackbarHostState() }
-
-    LaunchedEffect(Unit) {
-        showTermsSheet = true
-    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
@@ -86,7 +71,7 @@ fun SignupScreen(
             contentWindowInsets = WindowInsets(0, 0, 0, 0),
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
             topBar = {
-                EverylolTopAppBar(onBackClick = onBackClick, title = "회원가입")
+                EverylolTopAppBar(onBackClick = onBackClick, title = "프로필 수정")
             }
         ) { innerPadding ->
             Column(
@@ -137,36 +122,16 @@ fun SignupScreen(
                 }
             }
         }
+        EverylolButton(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(horizontal = 24.dp, vertical = 24.dp)
+                .fillMaxWidth(),
+            text = "저장",
+            enabled = isNicknameValid && state.isDuplicateChecked && !state.isLoading,
+            onClick = onSignupClick
+        )
 
-        if (!showTermsSheet) {
-            EverylolButton(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(horizontal = 24.dp, vertical = 24.dp)
-                    .fillMaxWidth(),
-                text = "다음",
-                enabled = isNicknameValid && state.isDuplicateChecked && !state.isLoading,
-                onClick = onSignupClick
-            )
-        }
-
-        if (showTermsSheet) {
-            SignupBottomSheet(
-                tosList = TosType.entries,
-                isFixed = true,
-                onNavigateToTermDetail = { id ->
-                    showTermsSheet = false
-                    onNavigateToTermDetail(id)
-                },
-                onDismissRequest = { showTermsSheet = false },
-                onConfirmClick = {
-                    showTermsSheet = false
-
-                    permissionHandler.askPermission(PermissionType.GALLERY)
-                    permissionHandler.askPermission(PermissionType.LOCATION)
-                }
-            )
-        }
         if (showImageSheet) {
             ImageBottomSheet(
                 onDismissRequest = { showImageSheet = false },
@@ -176,6 +141,16 @@ fun SignupScreen(
                 onDefaultClick = {
                     onProfileImageChange(null)
                 }
+            )
+        }
+
+        if(showProfileEditModal) {
+            EverylolModal(
+                title = "앗, 프로필이  저장되지 않았어요",
+                context = "변경된 프로필을 저장하지 않고 나가시겠습니까?",
+                confirmText = "나가기",
+                onConfirm = onBackClick,
+                onDismiss = {}
             )
         }
     }

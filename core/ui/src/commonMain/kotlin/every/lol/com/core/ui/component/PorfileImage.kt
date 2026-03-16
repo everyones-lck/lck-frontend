@@ -1,11 +1,8 @@
-package every.lol.com.feature.intro.component
+package every.lol.com.core.ui.component
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
@@ -13,21 +10,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import everylol.feature.intro.generated.resources.Res
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
-import everylol.feature.intro.generated.resources.ic_camera
-import everylol.feature.intro.generated.resources.img_default_profile
+import everylol.core.ui.generated.resources.Res
+import everylol.core.ui.generated.resources.ic_camera
+import everylol.core.ui.generated.resources.img_default_profile
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
-fun Profile(
+fun ProfileImage(
     requiredGallery: Boolean?=false,
     onOpenGallery:(()-> Unit)?=null,
-    profile: Any?=null,
+    profile: ByteArray?=null,
     modifier: Modifier = Modifier
 ) {
     Box(

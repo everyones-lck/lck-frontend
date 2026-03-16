@@ -1,0 +1,42 @@
+package every.lol.com.feature.mypage.model
+
+import androidx.compose.runtime.Immutable
+import every.lol.com.core.model.Team
+
+@Immutable
+sealed interface MypageUiState {
+    data object Loading: MypageUiState
+    data object Withdrawal: MypageUiState
+    data class Mypage(
+        val myInform: MyInform = MyInform(),
+        val menuList: List<MypageMenu> = emptyList()
+    ) : MypageUiState
+    data class MyInform(
+        val profileImage: ByteArray? = null,
+        val nickName: String = "",
+        val teamId: Set<Team> = emptySet()
+    )
+    data class ProfileEdit(
+        val profileImage: ByteArray? = null,
+        val nickName: String = "",
+        val teamId: Set<Team> = emptySet(),
+        val isDuplicateChecked: Boolean = false,
+        val isEnabled: Boolean = false,
+        val isLoading: Boolean = false
+    ): MypageUiState
+    data class MypageMenu(
+        val id: MypageMenuType,
+        val title: String,
+        val showDivider: Boolean = true
+    ):MypageUiState
+    data class TosDetail(val id: Int): MypageUiState
+    enum class MypageMenuType {
+        PROFILE_EDIT, POST_COMMENT, POG_VOTE, PREDICTION, LOGOUT, WITHDRAWAL, APP_INFO
+    }
+}
+
+sealed interface MypageIntent{
+    data object LoadInitial : MypageIntent
+    data object ClickBackToHome : MypageIntent
+    data class ClickMenu(val type: MypageUiState.MypageMenuType) : MypageIntent
+}

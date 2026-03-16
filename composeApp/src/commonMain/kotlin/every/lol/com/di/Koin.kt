@@ -3,11 +3,13 @@ package every.lol.com.di
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import every.lol.com.core.data.di.repositoryModule
+import every.lol.com.core.data.repository.AboutLCKRepositoryImpl
 import every.lol.com.core.data.repository.AuthRepositoryImpl
 import every.lol.com.core.data.repository.CommunityRepositoryImpl
 import every.lol.com.core.data.repository.MyPageRepositoryImpl
 import every.lol.com.core.datastore.AuthLocalDataSource
 import every.lol.com.core.datastore.AuthPreferences
+import every.lol.com.core.domain.repository.AboutLCKRepository
 import every.lol.com.core.domain.repository.AuthRepository
 import every.lol.com.core.domain.repository.CommunityRepository
 import every.lol.com.core.domain.repository.MyPagesRepository
@@ -25,7 +27,7 @@ import every.lol.com.core.network.remote.AuthDataSourceImpl
 import every.lol.com.core.network.remote.CommunityDataSourceImpl
 import every.lol.com.core.network.remote.MyPagesDataSourceImpl
 import every.lol.com.feature.intro.IntroViewModel
-import org.koin.core.context.GlobalContext
+import every.lol.com.feature.mypage.MypageViewModel
 import org.koin.core.context.startKoin
 import org.koin.core.logger.Level
 import org.koin.core.module.Module
@@ -33,6 +35,7 @@ import org.koin.core.module.dsl.factoryOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.module
+import org.koin.mp.KoinPlatformTools
 
 val appDependenciesModule = module {
 
@@ -54,14 +57,16 @@ val appDependenciesModule = module {
     factory { SocialLoginUseCase(get(), get()) }
     factory { SignupUseCase(get()) }
     factory { NicknameUseCase(get()) }
+
     factoryOf(::IntroViewModel)
+    factoryOf(::MypageViewModel)
 }
 
 fun initKoin(
     appDeclaration: KoinAppDeclaration = {},
     platformModules: List<Module> = emptyList()
     ) {
-    if (GlobalContext.getOrNull() == null) {
+    if (KoinPlatformTools.defaultContext().getOrNull() == null) {
         startKoin {
             appDeclaration()
             printLogger(Level.DEBUG)
