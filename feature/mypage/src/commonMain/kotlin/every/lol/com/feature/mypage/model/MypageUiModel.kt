@@ -7,6 +7,22 @@ import every.lol.com.core.model.Team
 
 @Immutable
 sealed interface MypageUiState {
+
+    data class Prediction(
+        val rank: Int = 0,
+        val predictions: List<PredictionItem> = emptyList(),
+        val isLoading: Boolean = false
+    ) : MypageUiState
+
+    data class PredictionItem(
+        val id: Int,
+        val matchDate: String,
+        val homeTeamId: Int,
+        val awayTeamId: Int,
+        val winnerTeamId: Int?,
+        val myVoteTeamId: Int,
+    )
+
     data class Community(
         val posts: List<PostsDetail> = emptyList(),
         val comments: List<CommentsDetail> = emptyList(),
