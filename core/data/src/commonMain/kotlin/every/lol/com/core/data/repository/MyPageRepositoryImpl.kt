@@ -18,6 +18,10 @@ class MyPageRepositoryImpl(
     private val local: AuthLocalDataSource
 ): MyPagesRepository {
 
+    companion object {
+        private const val PAGING_SIZE = 10
+    }
+
     override suspend fun getProfile(): Result<UserInform> =
         remote.getProfile().toResult().mapCatching { response ->
             UserInform(
@@ -48,8 +52,8 @@ class MyPageRepositoryImpl(
         }
     }
 
-    override suspend fun getPosts(page: Int, size: Int): Result<Posts> =
-        remote.getPosts(page, size).toResult().map { response ->
+    override suspend fun getPosts(page: Int): Result<Posts> =
+        remote.getPosts(page, PAGING_SIZE).toResult().map { response ->
             Posts(
                 posts = response.posts.map { detail ->
                     PostsDetail(
@@ -62,8 +66,9 @@ class MyPageRepositoryImpl(
             )
         }
 
-    override suspend fun getComments(page: Int, size: Int): Result<Comments> =
-        remote.getComments(page, size).toResult().map { response ->
+
+    override suspend fun getComments(page: Int): Result<Comments> =
+        remote.getComments(page, PAGING_SIZE).toResult().map { response ->
             Comments(
                 comments = response.comments.map { detail ->
                     CommentsDetail(

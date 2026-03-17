@@ -1,11 +1,11 @@
 package every.lol.com.feature.mypage
 
+import every.lol.com.core.domain.usecase.GetMyCommentsUseCase
+import every.lol.com.core.domain.usecase.GetMyPostsUseCase
 import every.lol.com.core.domain.usecase.GetProfileUseCase
 import every.lol.com.core.domain.usecase.NicknameUseCase
 import every.lol.com.core.domain.usecase.PatchMyTeamUseCase
 import every.lol.com.core.domain.usecase.PatchProfileUseCase
-import every.lol.com.core.model.CommentsDetail
-import every.lol.com.core.model.PostsDetail
 import every.lol.com.core.model.Team
 import every.lol.com.feature.mypage.model.MypageIntent
 import every.lol.com.feature.mypage.model.MypageUiState
@@ -36,7 +36,9 @@ class MypageViewModel(
     private val nicknameUseCase: NicknameUseCase,
     private val getProfileUseCase: GetProfileUseCase,
     private val patchProfileUseCase: PatchProfileUseCase,
-    private val patchMyTeamUseCase: PatchMyTeamUseCase
+    private val patchMyTeamUseCase: PatchMyTeamUseCase,
+    private val getMyPostsUseCase: GetMyPostsUseCase,
+    private val getMyCommentsUseCase: GetMyCommentsUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<MypageUiState>(MypageUiState.Loading)
@@ -255,35 +257,40 @@ class MypageViewModel(
     }
     private fun loadCommunityData(tab: MypageUiState.CommunityTab = MypageUiState.CommunityTab.POST) {
         _uiState.value = MypageUiState.Community(isLoading = true, selectedTab = tab)
-        viewModelScope.launch {
-            val dummyPosts = listOf(
-                PostsDetail(id = 1, title = "오늘 T1 경기 보신 분? 역대급이네", postType = "자유게시판"),
-                PostsDetail(id = 2, title = "솔랭 꿀챔 추천해줌 (현직 다이아)", postType = "공략게시판"),
-                PostsDetail(id = 3, title = "이거 버그 아님? 판정 왜이래", postType = "질문게시판")
-            )
 
-            val dummyComments = listOf(
-                CommentsDetail(
-                    commentId = 1,
-                    postId = 1,
-                    content = "ㄹㅇㅋㅋ 페이커 무빙 미쳤음",
-                    postType = "자유게시판"
-                ),
-                CommentsDetail(
-                    commentId = 2,
-                    postId = 2,
-                    content = "이거 보고 연패 끊었습니다 감사합니다",
-                    postType = "공략게시판"
-                )
-            )
-            _uiState.update { state ->
-                if (state is MypageUiState.Community) {
-                    state.copy(
-                        isLoading = false,
-                        posts = if (tab == MypageUiState.CommunityTab.POST) dummyPosts else emptyList(),
-                        comments = if (tab == MypageUiState.CommunityTab.COMMENT) dummyComments else emptyList()
-                    )
-                } else state
+        viewModelScope.launch {
+            val page = 0
+            when (tab) {
+                MypageUiState.CommunityTab.POST -> {
+                    getMyPostsUseCase(page).onSuccess { posts ->
+                        _uiState.update { state ->
+                            if (state is MypageUiState.Community) {
+                                state.copy(
+                                    isLoading = false,
+                                    posts = posts.posts,
+                                    comments = emptyList()
+                                )
+                            } else state
+                        }
+                    }.onFailure { throwable ->
+                        handleCommunityError(throwable)
+                    }
+                }
+                MypageUiState.CommunityTab.COMMENT -> {
+                    getMyCommentsUseCase(page).onSuccess { comments ->
+                        _uiState.update { state ->
+                            if (state is MypageUiState.Community) {
+                                state.copy(
+                                    isLoading = false,
+                                    posts = emptyList(),
+                                    comments = comments.comments
+                                )
+                            } else state
+                        }
+                    }.onFailure { throwable ->
+                        handleCommunityError(throwable)
+                    }
+                }
             }
         }
     }
@@ -369,5 +376,13 @@ class MypageViewModel(
 
     private fun setAppVersion(){
         _appVersion.value = "1.0.0"
+    }
+    private suspend fun handleCommunityError(throwable: Throwable) {
+        _uiState.update { state ->
+            if (state is MypageUiState.Community) {
+                state.copy(isLoading = false)
+            } else state
+        }
+        _event.emit(MypageEvent.ShowErrorSnackbar(throwable))
     }
 }

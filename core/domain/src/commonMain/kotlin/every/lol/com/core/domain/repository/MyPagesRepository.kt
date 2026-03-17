@@ -8,8 +8,8 @@ interface MyPagesRepository {
     suspend fun getProfile(): Result<UserInform>
     suspend fun patchProfile(nickname: String, profileImage: ByteArray?): Result<Unit>
     suspend fun patchMyTeam(teamId: List<Int>): Result<Unit>
-    suspend fun getPosts(page: Int, size: Int): Result<Posts>
-    suspend fun getComments(page: Int, size: Int): Result<Comments>
+    suspend fun getPosts(page: Int): Result<Posts>
+    suspend fun getComments(page: Int): Result<Comments>
     suspend fun withdrawal(): Result<Unit?>
     suspend fun logout(): Result<Unit?>
 }
