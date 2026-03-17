@@ -98,10 +98,8 @@ fun App() {
                     composable<Route.Community> { CommunityScreen() }
 
                     mypageNavGraph(
-                        onNavigateHome = {
-                            navController.navigate(Route.Home) {
-                                popUpTo<Route.Mypage> { inclusive = true }
-                            }
+                        onBackClick = {
+                            navController.popBackStack()
                         }
                     )
                 }

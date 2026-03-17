@@ -66,7 +66,7 @@ fun CommunityItem(
 
             Text(
                 text = content?: if(type == MypageUiState.CommunityTab.COMMENT) { "댓글 내용 (데이터 추가 필요)" } else { "내용 없음 "},
-                style = EveryLoLTheme.typography.body02,
+                style = EveryLoLTheme.typography.pretendardBody02,
                 color = EveryLoLTheme.color.community600,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis

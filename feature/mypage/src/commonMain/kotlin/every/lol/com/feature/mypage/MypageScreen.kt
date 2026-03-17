@@ -88,16 +88,26 @@ fun MypageRoute(
             )
         }
         is MypageUiState.Prediction -> {
-
+            MypagePredictionScreen(
+                state = uiState as MypageUiState.Prediction,
+                onBackClick = { viewModel.onIntent(MypageIntent.LoadMypage) }
+            )
         }
         is MypageUiState.MVP -> {
-
+            MypageMVPScreen(
+                state = uiState as MypageUiState.MVP,
+                onBackClick = { viewModel.onIntent(MypageIntent.LoadMypage) },
+                onIntent = viewModel::onIntent
+            )
         }
         is MypageUiState.Loading -> {
 
         }
         is MypageUiState.Withdrawal -> {
-
+            MypageWithdrawalScreen(
+                state = uiState as MypageUiState.Withdrawal,
+                onBackClick = { viewModel.onIntent(MypageIntent.LoadMypage)}
+            )
         }
         is MypageUiState.TosDetail -> {
             TosScreen(

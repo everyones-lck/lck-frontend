@@ -34,7 +34,8 @@ fun MVPItem(
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),

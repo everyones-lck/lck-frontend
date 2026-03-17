@@ -44,9 +44,11 @@ fun Predictions(
                 verticalAlignment = Alignment.CenterVertically
             ){
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ){
                     TeamText(
+                        modifier = Modifier.padding(bottom=4.dp),
                         teamId = prediction.awayTeamId,
                         isWinner = prediction.homeTeamId == prediction.winnerTeamId,
                         isMyVote = prediction.homeTeamId == prediction.myVoteTeamId
@@ -67,11 +69,12 @@ fun Predictions(
                 Text(
                     modifier = Modifier
                         .clip(RoundedCornerShape(4.dp))
-                        .background(EveryLoLTheme.color.grayScale1000)
                         .border(
                             width = 1.dp,
                             color = if(prediction.myVoteTeamId == prediction.winnerTeamId) EveryLoLTheme.color.semanticCheck else EveryLoLTheme.color.grayScale800,
+                            shape = RoundedCornerShape(4.dp)
                         )
+                        .background(EveryLoLTheme.color.grayScale1000)
                         .padding(4.dp),
                     text = if(prediction.myVoteTeamId == prediction.winnerTeamId) "예측 성공" else "예측 실패",
                     style = EveryLoLTheme.typography.label03,
@@ -89,13 +92,14 @@ fun Predictions(
 
 @Composable
 private fun TeamText(
+    modifier : Modifier = Modifier,
     teamId: Int,
     isWinner: Boolean = false,
     isMyVote: Boolean = false
 ){
     val team = Team.fromId(teamId)
     Text(
-        modifier = Modifier
+        modifier = modifier
             .clip(RoundedCornerShape(4.dp))
             .background(if (isMyVote) EveryLoLTheme.color.grayScale900 else Color.Transparent)
             .padding(4.dp, 3.dp),

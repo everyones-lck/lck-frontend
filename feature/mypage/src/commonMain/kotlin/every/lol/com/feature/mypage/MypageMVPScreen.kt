@@ -11,6 +11,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,12 +25,12 @@ import every.lol.com.feature.mypage.model.MypageIntent
 import every.lol.com.feature.mypage.model.MypageUiState
 
 @Composable
-private fun MypageMVPScreen(
+fun MypageMVPScreen(
     state: MypageUiState,
-    snackbarHostState: SnackbarHostState,
     onBackClick: () -> Unit,
     onIntent: (MypageIntent) -> Unit
 ){
+    val snackbarHostState = remember { SnackbarHostState() }
     val mvpState = state as? MypageUiState.MVP
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(

@@ -13,11 +13,11 @@ fun NavController.navigateMypage(navOptions: NavOptions) {
 }
 
 fun NavGraphBuilder.mypageNavGraph(
-    onNavigateHome: () -> Unit
+    onBackClick: () -> Unit
 ) {
     composable<Route.Mypage> {
         MypageRoute(
-            onBackClick = onNavigateHome
+            onBackClick = onBackClick
         )
     }
 }

@@ -15,7 +15,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -28,8 +27,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import every.lol.com.core.designsystem.component.EverylolTopAppBar
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
@@ -79,67 +78,81 @@ fun MypageCommunityScreen(
                         .padding(16.dp, 12.dp),
                     contentAlignment = Alignment.CenterEnd
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .clickable { expanded = !expanded },
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            modifier = Modifier.size(14.dp),
-                            painter = painterResource(if (expanded) Res.drawable.ic_arrow_up else Res.drawable.ic_arrow_bottom),
-                            contentDescription = null,
-                            tint = EveryLoLTheme.color.grayScale200
-                        )
-                        Text(
-                            text = if (selectedTab == MypageUiState.CommunityTab.POST) "My Post" else "My Comment",
-                            style = EveryLoLTheme.typography.subtitle03,
-                            color = EveryLoLTheme.color.grayScale200
-                        )
-                    }
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false },
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(0.dp, 0.dp, 4.dp, 4.dp))
-                            .background(EveryLoLTheme.color.grayScale900)
-                            .padding(14.dp, 5.dp)
-                    ) {
-                        MypageUiState.CommunityTab.entries.filter { it != selectedTab }
-                            .forEach { tab ->
-                                DropdownMenuItem(
-                                    text = {
-                                        Text(
-                                            text = if (tab == MypageUiState.CommunityTab.POST) "My Post" else "My Comment",
-                                            style = EveryLoLTheme.typography.body03,
-                                            color = EveryLoLTheme.color.grayScale200
-                                        )
-                                    },
-                                    onClick = {
-                                        selectedTab = tab
-                                        expanded = false
-                                        if (tab == MypageUiState.CommunityTab.POST) {
-                                            onIntent(MypageIntent.FetchMyPosts)
-                                        } else {
-                                            onIntent(MypageIntent.FetchMyComments)
+                    Box(contentAlignment = Alignment.TopEnd) {
+                        Row(
+                            modifier = Modifier
+                                .clickable { expanded = !expanded },
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                modifier = Modifier.size(14.dp),
+                                painter = painterResource(if (expanded) Res.drawable.ic_arrow_up else Res.drawable.ic_arrow_bottom),
+                                contentDescription = null,
+                                tint = EveryLoLTheme.color.grayScale200
+                            )
+                            Text(
+                                text = if (selectedTab == MypageUiState.CommunityTab.POST) "My Post" else "My Comment",
+                                style = EveryLoLTheme.typography.subtitle03,
+                                color = EveryLoLTheme.color.grayScale200
+                            )
+                        }
+                        Box(contentAlignment = Alignment.BottomEnd) {
+                            DropdownMenu(
+                                expanded = expanded,
+                                onDismissRequest = { expanded = false },
+                                modifier = Modifier
+                                    .background(EveryLoLTheme.color.grayScale900),
+                                shape = RoundedCornerShape(0.dp, 0.dp, 4.dp, 4.dp),
+                                containerColor = EveryLoLTheme.color.grayScale900,
+                                tonalElevation = 0.dp,
+                                shadowElevation = 0.dp,
+                                scrollState = rememberScrollState(),
+                                offset = DpOffset(x = 0.dp, y = 25.dp),
+                            ) {
+                                MypageUiState.CommunityTab.entries.filter { it != selectedTab }
+                                    .forEach { tab ->
+                                        Box(
+                                            modifier = Modifier
+                                                .background(EveryLoLTheme.color.grayScale900)
+                                                .clickable {
+                                                    selectedTab = tab
+                                                    expanded = false
+                                                    if (tab == MypageUiState.CommunityTab.POST) {
+                                                        onIntent(MypageIntent.FetchMyPosts)
+                                                    } else {
+                                                        onIntent(MypageIntent.FetchMyComments)
+                                                    }
+                                                }
+                                                .padding(horizontal = 14.dp, vertical = 5.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = if (tab == MypageUiState.CommunityTab.POST) "My Post" else "My Comment",
+                                                style = EveryLoLTheme.typography.body03,
+                                                color = EveryLoLTheme.color.grayScale200
+                                            )
                                         }
                                     }
-                                )
                             }
+                        }
                     }
                 }
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .weight(1f)
                         .padding(horizontal = 20.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     communityState?.let { data ->
                         if (selectedTab == MypageUiState.CommunityTab.POST) {
                             if (data.posts.isEmpty()) {
-                                DefaultScreen(
-                                    title = "게시글이 아직 없습니다",
-                                    description = "첫 게시글을 작성해보세요"
-                                )
+                                Box(modifier = Modifier.fillMaxSize()){
+                                    DefaultScreen(
+                                        title = "게시글이 아직 없습니다",
+                                        description = "첫 게시글을 작성해보세요"
+                                    )
+                                }
                             } else {
                                 data.posts.forEach { post ->
                                     CommunityItem(
@@ -151,11 +164,13 @@ fun MypageCommunityScreen(
                                 }
                             }
                         } else {
-                            if (data.posts.isEmpty()) {
-                                DefaultScreen(
-                                    title = "댓글이 아직 없습니다",
-                                    description = "첫 댓글을 작성해보세요"
-                                )
+                            if (data.comments.isEmpty()) {
+                                Box(modifier = Modifier.fillMaxSize()) {
+                                    DefaultScreen(
+                                        title = "댓글이 아직 없습니다",
+                                        description = "첫 댓글을 작성해보세요"
+                                    )
+                                }
                             } else {
                                 data.comments.forEach { comment ->
                                     CommunityItem(

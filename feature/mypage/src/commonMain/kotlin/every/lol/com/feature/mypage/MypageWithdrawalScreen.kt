@@ -32,22 +32,20 @@ import every.lol.com.core.designsystem.component.EverylolTopAppBar
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.core.ui.ext.everylolDefault
 import every.lol.com.feature.mypage.component.WithdrawalReasonSection
-import every.lol.com.feature.mypage.model.MypageIntent
 import every.lol.com.feature.mypage.model.MypageUiState
 import everylol.feature.mypage.generated.resources.Res
 import everylol.feature.mypage.generated.resources.img_withdrawal
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
-private fun MypageWithdrawalScreen(
+fun MypageWithdrawalScreen(
     state: MypageUiState,
-    snackbarHostState: SnackbarHostState,
     onBackClick: () -> Unit,
     onWithdrawalClick:() -> Unit ={},
     onWithdrawalConfrimClick:() -> Unit = {},
     onWithdrawalDismissClick:() -> Unit = {},
-    onIntent: (MypageIntent) -> Unit
 ){
+    val snackbarHostState = remember { SnackbarHostState() }
     var showWithdrawalModal by remember { mutableStateOf(false) }
     var isSelectedReason by remember { mutableStateOf(false) }
 

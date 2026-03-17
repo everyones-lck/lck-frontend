@@ -1,6 +1,8 @@
 package every.lol.com.feature.mypage
 
 import every.lol.com.core.domain.usecase.NicknameUseCase
+import every.lol.com.core.model.CommentsDetail
+import every.lol.com.core.model.PostsDetail
 import every.lol.com.core.model.Team
 import every.lol.com.feature.mypage.model.MypageIntent
 import every.lol.com.feature.mypage.model.MypageUiState
@@ -37,6 +39,9 @@ class MypageViewModel(
     private val _event = MutableSharedFlow<MypageEvent>()
     val event = _event.asSharedFlow()
 
+    private val _appVersion = MutableStateFlow("1.0.0")
+    val appVersion = _appVersion.asStateFlow()
+
     private var cachedMyInform: MypageUiState.MyInform? = null
 
     init {
@@ -44,8 +49,12 @@ class MypageViewModel(
     }
     fun onIntent(intent: MypageIntent) {
         when (intent) {
+            MypageIntent.LoadInitial -> checkInitialState()
             MypageIntent.LoadMypage -> loadMypageData()
             MypageIntent.LoadAppInform -> loadAppInformData()
+            MypageIntent.LoadProfileEdit -> loadMypageData()
+            MypageIntent.LoadMVP -> loadMVPData()
+            MypageIntent.LoadPrediction -> loadPredictionData()
             is MypageIntent.ClickMenu -> handleMenuClick(intent.type)
             MypageIntent.ClickBackToHome -> handleBackToHome()
             MypageIntent.FetchMyPosts -> loadCommunityData(MypageUiState.CommunityTab.POST)
@@ -96,11 +105,13 @@ class MypageViewModel(
     }
 
     private fun loadAppInformData() {
+        setAppVersion()
+
         val appInfoMenus = listOf(
-            MypageUiState.MypageMenu(MypageUiState.MypageMenuType.TOS_1, "서비스 이용약관"),
-            MypageUiState.MypageMenu(MypageUiState.MypageMenuType.TOS_2, "개인정보 처리방침"),
+            MypageUiState.MypageMenu(MypageUiState.MypageMenuType.TOS_1, "개인정보 처리방침"),
+            MypageUiState.MypageMenu(MypageUiState.MypageMenuType.TOS_2, "서비스 이용약관"),
             MypageUiState.MypageMenu(MypageUiState.MypageMenuType.OPEN_SOURCE_LICENCE, "오픈소스 라이선스"),
-            MypageUiState.MypageMenu(MypageUiState.MypageMenuType.APP_VERSION, "버전 정보", showDivider = false)
+            MypageUiState.MypageMenu(MypageUiState.MypageMenuType.APP_VERSION, "앱버전 (${appVersion.value})", showDivider = false)
         )
         _uiState.value = MypageUiState.AppInform(menuList = appInfoMenus)
     }
@@ -117,18 +128,95 @@ class MypageViewModel(
     private fun loadCommunityData(tab: MypageUiState.CommunityTab = MypageUiState.CommunityTab.POST) {
         _uiState.value = MypageUiState.Community(isLoading = true, selectedTab = tab)
         viewModelScope.launch {
-            // API 호출 후 데이터 업데이트 로직
+            val dummyPosts = listOf(
+                PostsDetail(id = 1, title = "오늘 T1 경기 보신 분? 역대급이네", postType = "자유게시판"),
+                PostsDetail(id = 2, title = "솔랭 꿀챔 추천해줌 (현직 다이아)", postType = "공략게시판"),
+                PostsDetail(id = 3, title = "이거 버그 아님? 판정 왜이래", postType = "질문게시판")
+            )
+
+            val dummyComments = listOf(
+                CommentsDetail(
+                    commentId = 1,
+                    postId = 1,
+                    content = "ㄹㅇㅋㅋ 페이커 무빙 미쳤음",
+                    postType = "자유게시판"
+                ),
+                CommentsDetail(
+                    commentId = 2,
+                    postId = 2,
+                    content = "이거 보고 연패 끊었습니다 감사합니다",
+                    postType = "공략게시판"
+                )
+            )
+            _uiState.update { state ->
+                if (state is MypageUiState.Community) {
+                    state.copy(
+                        isLoading = false,
+                        posts = if (tab == MypageUiState.CommunityTab.POST) dummyPosts else emptyList(),
+                        comments = if (tab == MypageUiState.CommunityTab.COMMENT) dummyComments else emptyList()
+                    )
+                } else state
+            }
+        }
+    }
+
+    private fun checkInitialState(){
+        viewModelScope.launch {
+            loadMypageData()
         }
     }
 
     private fun loadMVPData() {
         _uiState.value = MypageUiState.MVP(isLoading = true)
-        viewModelScope.launch { /* 데이터 로드 */ }
+        viewModelScope.launch {
+            val dummyMvpList = listOf(
+                MypageUiState.MVPItem(
+                    id = 1,
+                    matchDate = "2024.03.15",
+                    playerName = "Faker",
+                    playerTeam = 1
+                ),
+                MypageUiState.MVPItem(
+                    id = 2,
+                    matchDate = "2024.03.14",
+                    playerName = "Chovy",
+                    playerTeam = 2
+                )
+            )
+            _uiState.value = MypageUiState.MVP(
+                mvpList = dummyMvpList,
+                isLoading = false
+            )
+        }
     }
 
     private fun loadPredictionData() {
         _uiState.value = MypageUiState.Prediction(isLoading = true)
-        viewModelScope.launch { /* 데이터 로드 */ }
+        viewModelScope.launch {
+            val dummyPredictions = listOf(
+                MypageUiState.PredictionItem(
+                    id = 101,
+                    matchDate = "2024.03.16",
+                    homeTeamId = 3, // T1
+                    awayTeamId = 2, // GEN
+                    myVoteTeamId = 3, // 내가 T1 투표
+                    winnerTeamId = 3,
+                ),
+                MypageUiState.PredictionItem(
+                    id = 102,
+                    matchDate = "2024.03.17",
+                    homeTeamId = 1, // HLE
+                    awayTeamId = 10, // KT
+                    myVoteTeamId = 1, // 내가 HLE 투표
+                    winnerTeamId = null,
+                )
+            )
+            _uiState.value = MypageUiState.Prediction(
+                rank = 10,
+                predictions = dummyPredictions,
+                isLoading = false
+            )
+        }
     }
 
     private fun handleLogout() {
@@ -149,5 +237,9 @@ class MypageViewModel(
 
     private fun handleTosDetailClick(id: Int) {
         _uiState.update { MypageUiState.TosDetail(id) }
+    }
+
+    private fun setAppVersion(){
+        _appVersion.value = "1.0.0"
     }
 }

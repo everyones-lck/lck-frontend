@@ -83,6 +83,9 @@ sealed interface MypageIntent{
     data object LoadMypage : MypageIntent
     data object LoadAppInform: MypageIntent
     data object ClickBackToHome : MypageIntent
+    data object LoadProfileEdit : MypageIntent
+    data object LoadMVP: MypageIntent
+    data object LoadPrediction: MypageIntent
     data class ClickMenu(val type: MypageUiState.MypageMenuType) : MypageIntent
     data object FetchMyPosts : MypageIntent
     data object FetchMyComments : MypageIntent

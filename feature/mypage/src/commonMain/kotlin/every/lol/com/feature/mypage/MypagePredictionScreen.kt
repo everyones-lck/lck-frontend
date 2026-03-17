@@ -18,6 +18,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,7 +29,6 @@ import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.core.ui.component.DefaultScreen
 import every.lol.com.core.ui.ext.everylolDefault
 import every.lol.com.feature.mypage.component.Predictions
-import every.lol.com.feature.mypage.model.MypageIntent
 import every.lol.com.feature.mypage.model.MypageUiState
 import everylol.feature.mypage.generated.resources.Res
 import everylol.feature.mypage.generated.resources.img_top_001
@@ -44,12 +44,11 @@ import everylol.feature.mypage.generated.resources.img_top_100
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
-private fun MypagePredictionScreen(
+fun MypagePredictionScreen(
     state: MypageUiState,
-    snackbarHostState: SnackbarHostState,
-    onBackClick: () -> Unit,
-    onIntent: (MypageIntent) -> Unit
+    onBackClick: () -> Unit={},
 ){
+    val snackbarHostState = remember { SnackbarHostState() }
     val predictionState = state as? MypageUiState.Prediction
     val rank = 10
     val rankImage = when {
@@ -90,7 +89,7 @@ private fun MypagePredictionScreen(
                 ){
                     Image(
                         modifier = Modifier
-                            .weight(1f)
+                            .weight(2f)
                             .clip(RoundedCornerShape(12.dp))
                             .background(EveryLoLTheme.color.grayScale1000)
                             .padding(24.dp),
@@ -99,7 +98,7 @@ private fun MypagePredictionScreen(
                     )
                     Column(
                         modifier = Modifier
-                            .weight(1f)
+                            .weight(3f)
                             .clip(RoundedCornerShape(12.dp))
                             .background(EveryLoLTheme.color.grayScale1000)
                             .padding(14.dp, 24.dp),
@@ -122,7 +121,7 @@ private fun MypagePredictionScreen(
                             )
                         }
                         Text(
-                            text = "참여자 중 상위${rank.toString()}% 달성",
+                            text = "참여자 중 상위 ${rank.toString()}% 달성",
                             style = EveryLoLTheme.typography.pretendardBody02,
                             color = EveryLoLTheme.color.community600
                         )
