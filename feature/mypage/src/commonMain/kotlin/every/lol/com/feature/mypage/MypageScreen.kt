@@ -76,6 +76,15 @@ fun MypageRoute(
         is MypageUiState.ProfileEdit -> {
             MypageProfileEditScreen(
                 state = uiState as MypageUiState.ProfileEdit,
+                onValueChange = { name ->
+                    viewModel.handleInputNickName(name)
+                },
+                onTeamsChange = {
+                    viewModel.updateSelectedTeams(it)
+                },
+                onProfileImageChange = {
+                    viewModel.updateProfileImage(it)
+                },
                 onBackClick = { viewModel.onIntent(MypageIntent.LoadMypage) },
                 onIntent = viewModel::onIntent
             )

@@ -1,8 +1,8 @@
 package every.lol.com.core.model
 
-data class UserInform(
+data class Signup(
     val kakaoUserId: String,
     val nickname: String,
-    val profileImage: String?=null,
+    val profileImage: ByteArray?=null,
     val teamId: List<Int>
 )

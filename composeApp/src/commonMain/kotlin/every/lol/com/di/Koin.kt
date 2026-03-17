@@ -16,6 +16,8 @@ import every.lol.com.core.domain.repository.MyPagesRepository
 import every.lol.com.core.domain.usecase.CheckAuthUseCase
 import every.lol.com.core.domain.usecase.GetProfileUseCase
 import every.lol.com.core.domain.usecase.NicknameUseCase
+import every.lol.com.core.domain.usecase.PatchMyTeamUseCase
+import every.lol.com.core.domain.usecase.PatchProfileUseCase
 import every.lol.com.core.domain.usecase.SignupUseCase
 import every.lol.com.core.domain.usecase.SocialLoginUseCase
 import every.lol.com.core.network.datasource.AboutLCKDataSource
@@ -61,6 +63,8 @@ val appDependenciesModule = module {
     factory { NicknameUseCase(get()) }
     factory { CheckAuthUseCase(get()) }
     factory { GetProfileUseCase(get()) }
+    factory { PatchProfileUseCase(get()) }
+    factory { PatchMyTeamUseCase(get()) }
 
     factoryOf(::IntroViewModel)
     factoryOf(::MypageViewModel)

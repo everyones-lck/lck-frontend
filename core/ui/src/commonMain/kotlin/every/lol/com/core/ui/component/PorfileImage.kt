@@ -23,7 +23,7 @@ import org.jetbrains.compose.resources.painterResource
 fun ProfileImage(
     requiredGallery: Boolean?=false,
     onOpenGallery:(()-> Unit)?=null,
-    profile: ByteArray?=null,
+    profile: Any?=null,
     modifier: Modifier = Modifier
 ) {
     Box(

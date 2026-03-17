@@ -42,6 +42,7 @@ fun EverylolTextField(
     val borderColor = when (status) {
         1 -> EveryLoLTheme.color.semanticCheck
         2 -> EveryLoLTheme.color.semanticWarning
+        3 -> EveryLoLTheme.color.grayScale200
         else -> EveryLoLTheme.color.grayScale300
     }
 

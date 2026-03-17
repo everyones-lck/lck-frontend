@@ -9,6 +9,7 @@ import every.lol.com.core.model.Posts
 import every.lol.com.core.model.PostsDetail
 import every.lol.com.core.model.UserInform
 import every.lol.com.core.network.datasource.MyPagesDataSource
+import every.lol.com.core.network.model.request.PatchMyTeamRequest
 import every.lol.com.core.network.model.request.PatchProfileData
 import every.lol.com.core.network.model.request.PatchProfileRequest
 
@@ -22,7 +23,7 @@ class MyPageRepositoryImpl(
             UserInform(
                 kakaoUserId = "ex",
                 nickname = response.nickname,
-                profileImage = response.profileImageUrl?.encodeToByteArray(),
+                profileImage = response.profileImageUrl,
                 teamId = listOf(response.teamId),
             )
         }
@@ -36,6 +37,13 @@ class MyPageRepositoryImpl(
                 request = PatchProfileData(nickname = nickname, isDefaultImage = isDefaultImage)
             )
         ).toResult().map {
+            Unit
+        }
+    }
+
+    override suspend fun patchMyTeam(teamId: List<Int>): Result<Unit> {
+        val selectedId = teamId.first()
+        return remote.patchMyTeam(PatchMyTeamRequest(teamId = selectedId)).toResult().map {
             Unit
         }
     }

@@ -3,7 +3,7 @@ package every.lol.com.core.data.repository
 import every.lol.com.core.data.mapper.toResult
 import every.lol.com.core.datastore.AuthLocalDataSource
 import every.lol.com.core.domain.repository.AuthRepository
-import every.lol.com.core.model.UserInform
+import every.lol.com.core.model.Signup
 import every.lol.com.core.network.datasource.AuthDataSource
 import every.lol.com.core.network.model.ApiResponse
 import every.lol.com.core.network.model.request.KakaoRequest
@@ -34,7 +34,7 @@ class AuthRepositoryImpl(
                 println("로그: 저장 완료! accessToken: ${dto.accessToken}")
             }
 
-    override suspend fun signup(request: UserInform): Result<Unit> {
+    override suspend fun signup(request: Signup): Result<Unit> {
         val signupRequest = SignupRequest(
             profileImage = request.profileImage,
             signupUserData = SignupUserData(

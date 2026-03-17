@@ -2,6 +2,8 @@ package every.lol.com.feature.mypage
 
 import every.lol.com.core.domain.usecase.GetProfileUseCase
 import every.lol.com.core.domain.usecase.NicknameUseCase
+import every.lol.com.core.domain.usecase.PatchMyTeamUseCase
+import every.lol.com.core.domain.usecase.PatchProfileUseCase
 import every.lol.com.core.model.CommentsDetail
 import every.lol.com.core.model.PostsDetail
 import every.lol.com.core.model.Team
@@ -33,6 +35,8 @@ sealed class MypageEvent {
 class MypageViewModel(
     private val nicknameUseCase: NicknameUseCase,
     private val getProfileUseCase: GetProfileUseCase,
+    private val patchProfileUseCase: PatchProfileUseCase,
+    private val patchMyTeamUseCase: PatchMyTeamUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<MypageUiState>(MypageUiState.Loading)
@@ -61,6 +65,9 @@ class MypageViewModel(
             MypageIntent.ClickBackToHome -> handleBackToHome()
             MypageIntent.FetchMyPosts -> loadCommunityData(MypageUiState.CommunityTab.POST)
             MypageIntent.FetchMyComments -> loadCommunityData(MypageUiState.CommunityTab.COMMENT)
+            MypageIntent.SaveProfile -> saveProfile()
+            is MypageIntent.InputNickName -> handleInputNickName(intent.nickName)
+            is MypageIntent.ClickCheckDuplicateNickname -> checkNicknameDuplicate(intent.nickName)
             else -> {}
         }
     }
@@ -115,6 +122,118 @@ class MypageViewModel(
         }
     }
 
+    private fun loadProfileEditData() {
+        val currentInfo = cachedMyInform?: return
+
+        val editState = MypageUiState.ProfileEdit(
+            originalNickname = currentInfo.nickName,
+            nickName = "",
+            originalProfileImage = (currentInfo.profileImage as? ByteArray)?.copyOf() ?: currentInfo.profileImage,
+            profileImage = (currentInfo.profileImage as? ByteArray)?.copyOf() ?: currentInfo.profileImage,
+            originalTeamId = currentInfo.teamId.toSet(),
+            teamId = currentInfo.teamId.toSet(),
+            isDuplicateChecked = true,
+            isLoading = false
+        )
+
+        _uiState.value = editState
+    }
+
+    fun handleInputNickName(name: String) {
+        _uiState.update { state ->
+            if (state is MypageUiState.ProfileEdit) {
+                state.copy(
+                    nickName = name,
+                    isDuplicateChecked = name.isNotEmpty() || name == state.originalNickname
+                )
+            } else state
+        }
+    }
+
+    fun checkNicknameDuplicate(name: String) {
+        if (name.isBlank()) return
+        val currentState = _uiState.value as? MypageUiState.ProfileEdit
+        if (name == currentState?.originalNickname) {
+            _uiState.update { state ->
+                if (state is MypageUiState.ProfileEdit) state.copy(isDuplicateChecked = true) else state
+            }
+            return
+        }
+        viewModelScope.launch {
+            nicknameUseCase(name)
+                .onSuccess {
+                    _uiState.update { state ->
+                        if (state is MypageUiState.ProfileEdit) {
+                            state.copy(isDuplicateChecked = true)
+                        } else state
+                    }
+                }.onFailure { error ->
+                    _event.emit(MypageEvent.ShowErrorSnackbar(error))
+                }
+        }
+    }
+
+    fun updateProfileImage(newImage: Any?) {
+        _uiState.update { state ->
+            if (state is MypageUiState.ProfileEdit) {
+                state.copy(profileImage = newImage)
+            } else state
+        }
+    }
+
+    fun updateSelectedTeams(teams: Set<Team>) {
+        _uiState.update { state ->
+            if (state is MypageUiState.ProfileEdit) {
+                state.copy(teamId = teams.toSet())
+            } else state
+        }
+    }
+
+
+    private fun saveProfile() {
+        val current = _uiState.value as? MypageUiState.ProfileEdit ?: return
+
+        val isNicknameChanged = current.nickName.isNotEmpty() && current.nickName != current.originalNickname
+
+        if (isNicknameChanged && !current.isDuplicateChecked) {
+            viewModelScope.launch {
+                _event.emit(MypageEvent.ShowErrorSnackbar(Throwable("닉네임 중복 체크를 해주세요.")))
+            }
+            return
+        }
+
+        val isImageChanged = current.profileImage is ByteArray || (current.profileImage == null && current.originalProfileImage != null)
+        val isTeamChanged = current.teamId != current.originalTeamId
+
+        if (!isNicknameChanged && !isImageChanged && !isTeamChanged) {
+            loadMypageData()
+            return
+        }
+
+        viewModelScope.launch {
+            _uiState.update { if (it is MypageUiState.ProfileEdit) it.copy(isLoading = true) else it }
+
+            try {
+                if (isTeamChanged) {
+                    patchMyTeamUseCase(current.teamId.map { it.id }).getOrThrow()
+                }
+
+                if (isNicknameChanged || isImageChanged) {
+                    patchProfileUseCase(
+                        nickname = if (current.nickName.isEmpty()) current.originalNickname else current.nickName,
+                        profileImage = current.profileImage as? ByteArray
+                    ).getOrThrow()
+                }
+
+                loadMypageData()
+
+            } catch (e: Exception) {
+                _uiState.update { if (it is MypageUiState.ProfileEdit) it.copy(isLoading = false) else it }
+                _event.emit(MypageEvent.ShowErrorSnackbar(e))
+            }
+        }
+    }
+
     private fun loadAppInformData() {
         setAppVersion()
 
@@ -126,16 +245,6 @@ class MypageViewModel(
         )
         _uiState.value = MypageUiState.AppInform(menuList = appInfoMenus)
     }
-
-    private fun loadProfileEditData() {
-        val currentMypage = _uiState.value as? MypageUiState.Mypage
-        _uiState.value = MypageUiState.ProfileEdit(
-            nickName = currentMypage?.myInform?.nickName ?: "",
-            teamId = currentMypage?.myInform?.teamId ?: emptySet(),
-            profileImage = currentMypage?.myInform?.profileImage
-        )
-    }
-
     private fun loadCommunityData(tab: MypageUiState.CommunityTab = MypageUiState.CommunityTab.POST) {
         _uiState.value = MypageUiState.Community(isLoading = true, selectedTab = tab)
         viewModelScope.launch {

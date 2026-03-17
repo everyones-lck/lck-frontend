@@ -6,7 +6,7 @@ import every.lol.com.core.domain.usecase.NicknameUseCase
 import every.lol.com.core.domain.usecase.SignupUseCase
 import every.lol.com.core.domain.usecase.SocialLoginUseCase
 import every.lol.com.core.model.DomainException
-import every.lol.com.core.model.UserInform
+import every.lol.com.core.model.Signup
 import every.lol.com.core.model.Team
 import every.lol.com.feature.intro.model.IntroIntent
 import every.lol.com.feature.intro.model.IntroUiState
@@ -138,7 +138,7 @@ class IntroViewModel(
         viewModelScope.launch {
             _uiState.value = state.copy(isLoading = true)
 
-            val param = UserInform(
+            val param = Signup(
                 kakaoUserId = state.kakaoUserId,
                 nickname = state.nickName,
                 profileImage = state.profileImage,
