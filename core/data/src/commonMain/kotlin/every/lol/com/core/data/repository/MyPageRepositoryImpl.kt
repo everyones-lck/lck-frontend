@@ -82,13 +82,16 @@ class MyPageRepositoryImpl(
             )
         }
 
-    override suspend fun withdrawal(): Result<Unit?> =
-        remote.withdrawal().toResult().map {
+    override suspend fun withdrawal(): Result<Unit?> {
+        local.clearAuthData()
+        return remote.withdrawal().toResult().map {
             Unit
         }
+    }
 
     override suspend fun logout(): Result<Unit?> {
         val refreshToken = local.getAuthData()!!.refreshToken
+        local.clearAuthData()
         return remote.logout(refreshToken).toResult().map {
             Unit
         }

@@ -5,15 +5,12 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import everylol.feature.mypage.generated.resources.Res
@@ -44,12 +42,17 @@ fun WithdrawalReasonSection(
         "더 이상 LCK에 관심이 없어요",
         "직접 작성하기"
     )
-){
+) {
     var internalValue by remember { mutableStateOf("") }
-    val displayValue = value ?: internalValue
+    val displayValue = if (value.isNullOrEmpty()) internalValue else value
     var expanded by remember { mutableStateOf(false) }
-    Column(modifier = modifier) {
-        Box {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp, 12.dp),
+        contentAlignment = Alignment.CenterEnd
+    ) {
+        Box(contentAlignment = Alignment.TopEnd) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -57,7 +60,7 @@ fun WithdrawalReasonSection(
                     .background(EveryLoLTheme.color.grayScale1000)
                     .border(
                         1.dp,
-                        if (expanded) EveryLoLTheme.color.grayScale200 else EveryLoLTheme.color.grayScale800,
+                        if (displayValue.isEmpty()) EveryLoLTheme.color.grayScale800 else EveryLoLTheme.color.grayScale200,
                         RoundedCornerShape(12.dp)
                     )
                     .clickable { expanded = !expanded }
@@ -71,39 +74,40 @@ fun WithdrawalReasonSection(
                     color = if (displayValue.isEmpty()) EveryLoLTheme.color.gray800 else EveryLoLTheme.color.grayScale200
                 )
                 Icon(
-                    painter = if(expanded) painterResource(Res.drawable.ic_arrow_up) else painterResource(Res.drawable.ic_arrow_bottom),
+                    painter = if (expanded) painterResource(Res.drawable.ic_arrow_up) else painterResource(
+                        Res.drawable.ic_arrow_bottom
+                    ),
                     contentDescription = "Arrow Bottom",
                     tint = EveryLoLTheme.color.grayScale600
                 )
             }
-            Spacer(modifier = Modifier.height(4.dp))
             DropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false },
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .background(EveryLoLTheme.color.grayScale1000)
-                    .clip(RoundedCornerShape(12.dp))
-                    .padding(12.dp, 20.dp)
+                    .clip(RoundedCornerShape(12.dp)),
+                containerColor = EveryLoLTheme.color.grayScale1000,
+                tonalElevation = 0.dp,
+                shadowElevation = 0.dp,
+                scrollState = rememberScrollState(),
+                offset = DpOffset(x = 0.dp, y = 8.dp),
             ) {
                 reasons.forEachIndexed { index, reason ->
-                    DropdownMenuItem(
-                        modifier = Modifier.fillMaxWidth(),
-                        text = {
-                            Text(
-                                text = reason,
-                                style = EveryLoLTheme.typography.subtitle03,
-                                color = EveryLoLTheme.color.white200
-                            )
-                        },
-                        onClick = {
-                            internalValue = reason
-                            onValueChange(reason)
-                            expanded = false
-                        }
-                    )
-                    if (index < reasons.lastIndex) {
-                        Spacer(modifier = Modifier.height(20.dp))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                internalValue = reason
+                                onValueChange(reason)
+                                expanded = false
+                            }
+                            .padding(horizontal = 16.dp, vertical = 10.dp),
+                        ) {
+                        Text(
+                            text = reason,
+                            style = EveryLoLTheme.typography.subtitle03,
+                            color = EveryLoLTheme.color.white200
+                        )
                     }
                 }
             }

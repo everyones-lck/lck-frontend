@@ -37,14 +37,12 @@ fun EverylolModal (
     ) {
         Column(
             modifier = modifier
-                .align(Alignment.Center)
                 .padding(horizontal = 28.dp)
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(20.dp))
                 .background(EveryLoLTheme.color.grayScale100)
                 .padding(24.dp, 24.dp, 24.dp, 20.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
-            horizontalAlignment = Alignment.CenterHorizontally
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             title?.let {
                 Text(

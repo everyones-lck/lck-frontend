@@ -3,9 +3,11 @@ package every.lol.com.feature.mypage
 import every.lol.com.core.domain.usecase.GetMyCommentsUseCase
 import every.lol.com.core.domain.usecase.GetMyPostsUseCase
 import every.lol.com.core.domain.usecase.GetProfileUseCase
+import every.lol.com.core.domain.usecase.LogoutUseCase
 import every.lol.com.core.domain.usecase.NicknameUseCase
 import every.lol.com.core.domain.usecase.PatchMyTeamUseCase
 import every.lol.com.core.domain.usecase.PatchProfileUseCase
+import every.lol.com.core.domain.usecase.WithdrawalUseCase
 import every.lol.com.core.model.Team
 import every.lol.com.feature.mypage.model.MypageIntent
 import every.lol.com.feature.mypage.model.MypageUiState
@@ -20,6 +22,8 @@ import moe.tlaster.precompose.viewmodel.viewModelScope
 
 
 sealed class MypageEvent {
+    data object Logout: MypageEvent()
+    data object Withdrawal: MypageEvent()
     data object NavigateHome : MypageEvent()
     data object NavigateProfileEdit: MypageEvent()
     data object NavigateToMyPosts : MypageEvent()
@@ -38,7 +42,9 @@ class MypageViewModel(
     private val patchProfileUseCase: PatchProfileUseCase,
     private val patchMyTeamUseCase: PatchMyTeamUseCase,
     private val getMyPostsUseCase: GetMyPostsUseCase,
-    private val getMyCommentsUseCase: GetMyCommentsUseCase
+    private val getMyCommentsUseCase: GetMyCommentsUseCase,
+    private val logoutUseCase: LogoutUseCase,
+    private val withdrawalUseCase: WithdrawalUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<MypageUiState>(MypageUiState.Loading)
@@ -356,14 +362,18 @@ class MypageViewModel(
 
     private fun handleLogout() {
         viewModelScope.launch {
-            try {
-                // TODO: 로그아웃 로직 (캐시 삭제 등)
-                _event.emit(MypageEvent.NavigateHome)
-            } catch (e: Exception) {
-                _event.emit(MypageEvent.ShowErrorSnackbar(e))
-            }
+            logoutUseCase().getOrNull()
+            _event.emit(MypageEvent.Logout)
         }
     }
+
+    private fun handleWithdrawal() {
+        viewModelScope.launch {
+            withdrawalUseCase
+            _event.emit(MypageEvent.Withdrawal)
+        }
+    }
+
     private fun handleBackToHome() {
         viewModelScope.launch {
             _event.emit(MypageEvent.NavigateHome)
@@ -377,6 +387,7 @@ class MypageViewModel(
     private fun setAppVersion(){
         _appVersion.value = "1.0.0"
     }
+
     private suspend fun handleCommunityError(throwable: Throwable) {
         _uiState.update { state ->
             if (state is MypageUiState.Community) {

@@ -64,7 +64,6 @@ fun App() {
                                     },
                                     onClick = {
                                         navController.navigate(tab.route) {
-                                            // 탭 전환 시 뒤로가기 스택 관리
                                             popUpTo(navController.graph.findStartDestination().id) {
                                                 saveState = true
                                             }
@@ -100,6 +99,11 @@ fun App() {
                     mypageNavGraph(
                         onBackClick = {
                             navController.popBackStack()
+                        },
+                        onLogoutSuccess = {
+                            navController.navigate(Route.Intro) {
+                                popUpTo(Route.Home) { inclusive = true }
+                            }
                         }
                     )
                 }
