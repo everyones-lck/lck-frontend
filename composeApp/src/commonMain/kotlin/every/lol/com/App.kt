@@ -89,7 +89,7 @@ fun App() {
                             }
                         }
                     )
-                    composable<Route.Home> { HomeScreen() }
+                    composable<Route.Home> { HomeScreen(innerPadding = innerPadding) }
                     composable<Route.Matches> { MatchesScreen() }
                     composable<Route.AboutLCK> { AboutLCKScreen() }
                     composable<Route.Community> { CommunityScreen() }

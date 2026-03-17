@@ -26,6 +26,7 @@ interface EveryLoLColor{
     val semanticWarning: Color
     val semanticCheck: Color
     val newBg: Color
+    val white200: Color
 }
 
 @Stable
@@ -51,4 +52,5 @@ object EveryLoLDarkColor :EveryLoLColor{
     override val semanticWarning = Color(0xFFF26E6E)
     override val semanticCheck = Color(0xFFC5E3BA)
     override val newBg = Color(0xFF131313)
+    override val white200 = Color(0xFFF0F0F0)
 }
