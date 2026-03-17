@@ -1,5 +1,6 @@
 package every.lol.com.feature.mypage
 
+import every.lol.com.core.domain.usecase.GetProfileUseCase
 import every.lol.com.core.domain.usecase.NicknameUseCase
 import every.lol.com.core.model.CommentsDetail
 import every.lol.com.core.model.PostsDetail
@@ -30,7 +31,8 @@ sealed class MypageEvent {
 }
 
 class MypageViewModel(
-    private val nicknameUseCase: NicknameUseCase
+    private val nicknameUseCase: NicknameUseCase,
+    private val getProfileUseCase: GetProfileUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<MypageUiState>(MypageUiState.Loading)
@@ -84,23 +86,32 @@ class MypageViewModel(
     }
     private fun loadMypageData() {
         viewModelScope.launch {
-            val myInform = cachedMyInform ?: MypageUiState.MyInform(
-                nickName = "김승혁",
-                teamId = setOf(Team.T1)
-            )
-            cachedMyInform = myInform
+            getProfileUseCase().onSuccess { userInform ->
+                val myInform = MypageUiState.MyInform(
+                    nickName = userInform.nickname,
+                    teamId = userInform.teamId.mapNotNull { id ->
+                        Team.fromId(id)
+                    }.toSet(),
+                    profileImage = userInform.profileImage
+                )
+                cachedMyInform = myInform
 
-            val menuList = listOf(
-                MypageUiState.MypageMenu(MypageUiState.MypageMenuType.PROFILE_EDIT, "프로필 수정"),
-                MypageUiState.MypageMenu(MypageUiState.MypageMenuType.POST_COMMENT, "My Post / Comment"),
-                MypageUiState.MypageMenu(MypageUiState.MypageMenuType.POG_VOTE, "POG 투표 내역"),
-                MypageUiState.MypageMenu(MypageUiState.MypageMenuType.PREDICTION, "승부예측 투표 내역"),
-                MypageUiState.MypageMenu(MypageUiState.MypageMenuType.LOGOUT, "로그아웃"),
-                MypageUiState.MypageMenu(MypageUiState.MypageMenuType.WITHDRAWAL, "계정 탈퇴"),
-                MypageUiState.MypageMenu(MypageUiState.MypageMenuType.APP_INFO, "앱 정보", showDivider = false)
-            )
+                val menuList = listOf(
+                    MypageUiState.MypageMenu(MypageUiState.MypageMenuType.PROFILE_EDIT, "프로필 수정"),
+                    MypageUiState.MypageMenu(MypageUiState.MypageMenuType.POST_COMMENT, "My Post / Comment"),
+                    MypageUiState.MypageMenu(MypageUiState.MypageMenuType.POG_VOTE, "POG 투표 내역"),
+                    MypageUiState.MypageMenu(MypageUiState.MypageMenuType.PREDICTION, "승부예측 투표 내역"),
+                    MypageUiState.MypageMenu(MypageUiState.MypageMenuType.LOGOUT, "로그아웃"),
+                    MypageUiState.MypageMenu(MypageUiState.MypageMenuType.WITHDRAWAL, "계정 탈퇴"),
+                    MypageUiState.MypageMenu(MypageUiState.MypageMenuType.APP_INFO, "앱 정보", showDivider = false)
+                )
 
-            _uiState.value = MypageUiState.Mypage(myInform = myInform, menuList = menuList)
+                _uiState.value = MypageUiState.Mypage(myInform = myInform, menuList = menuList)
+
+            }.onFailure { throwable ->
+                // 에러 처리
+                _event.emit(MypageEvent.ShowErrorSnackbar(throwable))
+            }
         }
     }
 

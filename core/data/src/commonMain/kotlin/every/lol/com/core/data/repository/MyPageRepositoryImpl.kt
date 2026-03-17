@@ -7,7 +7,7 @@ import every.lol.com.core.model.Comments
 import every.lol.com.core.model.CommentsDetail
 import every.lol.com.core.model.Posts
 import every.lol.com.core.model.PostsDetail
-import every.lol.com.core.model.Profile
+import every.lol.com.core.model.UserInform
 import every.lol.com.core.network.datasource.MyPagesDataSource
 import every.lol.com.core.network.model.request.PatchProfileData
 import every.lol.com.core.network.model.request.PatchProfileRequest
@@ -17,13 +17,13 @@ class MyPageRepositoryImpl(
     private val local: AuthLocalDataSource
 ): MyPagesRepository {
 
-    override suspend fun getProfile(): Result<Profile> =
+    override suspend fun getProfile(): Result<UserInform> =
         remote.getProfile().toResult().mapCatching { response ->
-            Profile(
+            UserInform(
+                kakaoUserId = "ex",
                 nickname = response.nickname,
-                profileImageUrl = response.profileImage,
-                teamId = response.teamId,
-                tier = response.tier
+                profileImage = response.profileImageUrl?.encodeToByteArray(),
+                teamId = listOf(response.teamId),
             )
         }
 

@@ -16,7 +16,7 @@ import coil3.compose.AsyncImage
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import everylol.core.ui.generated.resources.Res
 import everylol.core.ui.generated.resources.ic_camera
-import everylol.core.ui.generated.resources.img_default_profile
+import everylol.core.ui.generated.resources.img_example
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
@@ -39,9 +39,9 @@ fun ProfileImage(
                 .background(EveryLoLTheme.color.grayScale900)
                 .clickable(enabled = onOpenGallery != null) { onOpenGallery?.invoke() },
             contentScale = ContentScale.Crop,
-            placeholder = painterResource(Res.drawable.img_default_profile),
-            error = painterResource(Res.drawable.img_default_profile),
-            fallback = painterResource(Res.drawable.img_default_profile)
+            placeholder = painterResource(Res.drawable.img_example),
+            error = painterResource(Res.drawable.img_example),
+            fallback = painterResource(Res.drawable.img_example)
         )
 
         if (requiredGallery == true) {

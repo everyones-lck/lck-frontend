@@ -22,11 +22,20 @@ fun TeamGroup(
     selectedTeams: Set<Team> = emptySet(),
     onSelectedTeamsChange: (Set<Team>) -> Unit = {}
 ) {
-    val allTeams = remember { Team.entries.filter { it != Team.NONE } }
+    val teamsToShow = remember(isSelectable, selectedTeams) {
+        val allTeams = Team.entries.filter { it != Team.NONE }
+        if (isSelectable) {
+            allTeams
+        } else {
+            allTeams.filter { it in selectedTeams }
+        }
+    }
+
     var internalSelectedTeams by remember { mutableStateOf(selectedTeams) }
-    val row1 = allTeams.take(3)
-    val row2 = allTeams.drop(3).take(4)
-    val row3 = allTeams.drop(7).take(3)
+
+    val row1 = if (isSelectable) teamsToShow.take(3) else teamsToShow
+    val row2 = if (isSelectable) teamsToShow.drop(3).take(4) else emptyList()
+    val row3 = if (isSelectable) teamsToShow.drop(7).take(3) else emptyList()
 
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -43,9 +52,9 @@ fun TeamGroup(
                 onSelectedTeamsChange(internalSelectedTeams)
             }
         }
-        TeamRow(teams = row1, selectedTeams = if (isSelectable) internalSelectedTeams else selectedTeams,isSelectable = isSelectable,onTeamClick = handleTeamClick)
-        TeamRow(teams = row2, selectedTeams = if (isSelectable) internalSelectedTeams else selectedTeams,isSelectable = isSelectable, onTeamClick = handleTeamClick)
-        TeamRow(teams = row3, selectedTeams = if (isSelectable) internalSelectedTeams else selectedTeams,isSelectable = isSelectable, onTeamClick = handleTeamClick)
+        if (row1.isNotEmpty()) { TeamRow(teams = row1, selectedTeams = if (isSelectable) internalSelectedTeams else selectedTeams, isSelectable = isSelectable, onTeamClick = handleTeamClick) }
+        if (isSelectable || row2.isNotEmpty()) { TeamRow(teams = row2, selectedTeams = if (isSelectable) internalSelectedTeams else selectedTeams, isSelectable = isSelectable, onTeamClick = handleTeamClick) }
+        if (isSelectable || row3.isNotEmpty()) { TeamRow(teams = row3, selectedTeams = if (isSelectable) internalSelectedTeams else selectedTeams, isSelectable = isSelectable, onTeamClick = handleTeamClick) }
     }
 }
 
