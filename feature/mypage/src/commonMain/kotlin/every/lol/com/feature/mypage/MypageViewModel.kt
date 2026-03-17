@@ -175,6 +175,7 @@ class MypageViewModel(
 
     fun updateProfileImage(newImage: Any?) {
         _uiState.update { state ->
+            println("updateProfileImage: $newImage")
             if (state is MypageUiState.ProfileEdit) {
                 state.copy(profileImage = newImage)
             } else state
@@ -202,9 +203,16 @@ class MypageViewModel(
             return
         }
 
-        val isImageChanged = current.profileImage is ByteArray || (current.profileImage == null && current.originalProfileImage != null)
-        val isTeamChanged = current.teamId != current.originalTeamId
+        val isImageChanged = when {
+            current.profileImage is ByteArray -> true
+            current.profileImage is String && !(current.profileImage as String).startsWith("http") -> true
+            current.profileImage == null && current.originalProfileImage != null -> true
 
+            else -> false
+        }
+
+        val isTeamChanged = current.teamId != current.originalTeamId
+        println("isNicknameChanged: $isNicknameChanged, isImageChanged: $isImageChanged, isTeamChanged: $isTeamChanged")
         if (!isNicknameChanged && !isImageChanged && !isTeamChanged) {
             loadMypageData()
             return

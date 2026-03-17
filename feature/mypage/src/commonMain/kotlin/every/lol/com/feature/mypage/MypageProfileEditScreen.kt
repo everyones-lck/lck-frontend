@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import every.lol.com.core.common.rememberImagePickerLauncher
+import every.lol.com.core.common.toImageByteArray
 import every.lol.com.core.designsystem.component.EverylolButton
 import every.lol.com.core.designsystem.component.EverylolModal
 import every.lol.com.core.designsystem.component.EverylolTopAppBar
@@ -56,7 +57,14 @@ fun MypageProfileEditScreen(
 
     val imagePickerLauncher = rememberImagePickerLauncher { uri ->
         if (uri != null) {
-            onProfileImageChange(uri)
+            val imageBytes = uri.toImageByteArray()
+
+            if (imageBytes != null) {
+                onProfileImageChange(imageBytes)
+            } else {
+                // 변환 실패 시 처리 (선택 사항)
+                println("이미지 변환 실패")
+            }
         }
     }
 

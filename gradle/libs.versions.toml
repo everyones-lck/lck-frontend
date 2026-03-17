@@ -38,7 +38,7 @@ activityKtx = "1.12.4"
 moko-permissions = "0.20.1"
 
 #ktor
-ktor = "3.0.0"
+ktor = "3.4.0"
 
 #https://github.com/gmazzo/gradle-buildconfig-plugin
 buildconfig="6.0.9"
@@ -104,7 +104,7 @@ androidx-navigation-compose = { module = "org.jetbrains.androidx.navigation:navi
 
 #coil
 coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
-coil-network-ktor = { group = "io.coil-kt.coil3", name = "coil-network-ktor2", version.ref = "coil" }
+coil-network-ktor = { group = "io.coil-kt.coil3", name = "coil-network-ktor3", version.ref = "coil" }
 androidx-activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "activityKtx" }
 
 #moko

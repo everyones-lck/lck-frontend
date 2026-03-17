@@ -10,7 +10,11 @@ object KoinHelper : KoinComponent {
 }
 
 actual fun Any?.toImageByteArray(): ByteArray? {
-    val uri = this as? Uri ?: return null
+    val uri = when (this) {
+        is Uri -> this
+        is String -> Uri.parse(this)
+        else -> return null
+    }
 
     return try {
         val inputStream = KoinHelper.context.contentResolver.openInputStream(uri)

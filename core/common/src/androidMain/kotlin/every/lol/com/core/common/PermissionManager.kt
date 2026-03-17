@@ -1,17 +1,15 @@
 package every.lol.com.core.common
 
-import androidx.compose.runtime.Composable
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.result.launch
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.values
 
 @Composable
 actual fun rememberPermissionManager(
@@ -55,7 +53,6 @@ actual fun rememberPermissionManager(
                 }
             }
 
-            // [추가] 인터페이스의 미구현 멤버 구현
             override fun isPermissionGranted(type: PermissionType): Boolean {
                 return when (type) {
                     PermissionType.LOCATION -> {
@@ -75,7 +72,6 @@ actual fun rememberPermissionManager(
     }
 }
 
-// 헬퍼 확장 함수
 private fun Context.hasPermission(permission: String): Boolean {
     return ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
 }

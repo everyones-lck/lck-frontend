@@ -83,8 +83,7 @@ internal fun IntroRoute(
                                 viewModel.onIntent(IntroIntent.InputNickName(nickName))
                             },
                             onProfileImageChange = { image ->
-                                // TODO: 필요 시 IntroIntent.ChangeProfileImage 추가
-                                // viewModel.onIntent(IntroIntent.ChangeProfileImage(image))
+                                viewModel.onIntent(IntroIntent.ChangeProfileImage(image))
                             },
                             onTeamsChange = { teams ->
                                 viewModel.onIntent(IntroIntent.ChangeSelectedTeams(teams))
