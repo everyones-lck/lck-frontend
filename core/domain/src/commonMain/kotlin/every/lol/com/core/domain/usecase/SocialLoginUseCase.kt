@@ -16,7 +16,7 @@ class SocialLoginUseCase(
             return Result.failure(kakaoResult.exceptionOrNull() ?: DomainException.UnknownException())
         }
 
-        return authRepository.login("123").fold(
+        return authRepository.login(kakaoToken).fold(
             onSuccess = {
                 Result.success(Unit)
             },

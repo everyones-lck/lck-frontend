@@ -61,13 +61,10 @@ class IntroViewModel(
 
     private fun checkInitialState() {
         viewModelScope.launch {
-            println("로그: checkInitialState 진입!")
             delay(1500)
-            println("로그: 1.5초 대기 끝, 토큰 체크 시작")
 
             checkAuthUseCase()
                 .onSuccess { isLoggedIn ->
-                    println("로그: 체크 결과 - 로그인됨? $isLoggedIn")
                     if (isLoggedIn) {
                         _event.emit(IntroEvent.NavigateHome)
                     } else {
@@ -75,7 +72,6 @@ class IntroViewModel(
                     }
                 }
                 .onFailure {
-                    println("로그: 체크 실패 - ${it.message}")
                     _uiState.value = IntroUiState.Login
                 }
         }
