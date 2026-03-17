@@ -1,6 +1,7 @@
 package every.lol.com.feature.intro
 
 import every.lol.com.core.common.toImageByteArray
+import every.lol.com.core.domain.usecase.CheckAuthUseCase
 import every.lol.com.core.domain.usecase.NicknameUseCase
 import every.lol.com.core.domain.usecase.SignupUseCase
 import every.lol.com.core.domain.usecase.SocialLoginUseCase
@@ -28,7 +29,8 @@ sealed class IntroEvent {
 class IntroViewModel(
     private val socialLoginUseCase: SocialLoginUseCase,
     private val signupUseCase: SignupUseCase,
-    private val nicknameUseCase: NicknameUseCase
+    private val nicknameUseCase: NicknameUseCase,
+    private val checkAuthUseCase: CheckAuthUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<IntroUiState>(IntroUiState.Loading)
@@ -59,8 +61,23 @@ class IntroViewModel(
 
     private fun checkInitialState() {
         viewModelScope.launch {
+            println("로그: checkInitialState 진입!")
             delay(1500)
-            _uiState.value = IntroUiState.Login
+            println("로그: 1.5초 대기 끝, 토큰 체크 시작")
+
+            checkAuthUseCase()
+                .onSuccess { isLoggedIn ->
+                    println("로그: 체크 결과 - 로그인됨? $isLoggedIn")
+                    if (isLoggedIn) {
+                        _event.emit(IntroEvent.NavigateHome)
+                    } else {
+                        _uiState.value = IntroUiState.Login
+                    }
+                }
+                .onFailure {
+                    println("로그: 체크 실패 - ${it.message}")
+                    _uiState.value = IntroUiState.Login
+                }
         }
     }
 
