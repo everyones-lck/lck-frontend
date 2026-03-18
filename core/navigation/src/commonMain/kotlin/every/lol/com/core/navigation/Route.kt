@@ -18,4 +18,7 @@ sealed interface Route {
 
     @Serializable
     data object Intro : Route
+
+    @Serializable
+    data object Mypage : Route
 }

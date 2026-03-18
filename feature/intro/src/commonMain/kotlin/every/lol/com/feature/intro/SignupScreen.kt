@@ -33,11 +33,11 @@ import every.lol.com.core.designsystem.component.EverylolTopAppBar
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.core.model.Team
 import every.lol.com.core.model.TosType
+import every.lol.com.core.ui.component.ImageBottomSheet
 import every.lol.com.core.ui.component.NicknameSection
+import every.lol.com.core.ui.component.ProfileImage
 import every.lol.com.core.ui.component.TeamGroup
 import every.lol.com.core.ui.ext.everylolDefault
-import every.lol.com.feature.intro.component.ImageBottomSheet
-import every.lol.com.feature.intro.component.Profile
 import every.lol.com.feature.intro.component.SignupBottomSheet
 import every.lol.com.feature.intro.model.IntroUiState
 
@@ -48,7 +48,6 @@ fun SignupScreen(
     onValueChange: (String) -> Unit = {},
     onProfileImageChange: (Any?) -> Unit = {},
     onTeamsChange: (Set<Team>) -> Unit = {},
-    isLoading: Boolean = false,
     checkNickName: (String) -> Unit = {},
     onBackClick: () -> Unit = {},
     onSignupClick: () -> Unit = {},
@@ -103,7 +102,7 @@ fun SignupScreen(
                         .padding(vertical = 56.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Profile(
+                    ProfileImage(
                         requiredGallery = true,
                         profile = state.profileImage,
                         onOpenGallery = { showImageSheet = true }

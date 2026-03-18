@@ -1,16 +1,15 @@
 package every.lol.com
 
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -23,12 +22,11 @@ import every.lol.com.core.navigation.Route
 import every.lol.com.feature.aboutlck.AboutLCKScreen
 import every.lol.com.feature.community.CommunityScreen
 import every.lol.com.feature.home.HomeScreen
-import every.lol.com.feature.intro.IntroViewModel
 import every.lol.com.feature.intro.navigation.introNavGraph
 import every.lol.com.feature.matches.MatchesScreen
+import every.lol.com.feature.mypage.navigation.mypageNavGraph
 import moe.tlaster.precompose.PreComposeApp
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.annotation.KoinExperimentalAPI
 
 @OptIn(KoinExperimentalAPI::class)
@@ -40,11 +38,14 @@ fun App() {
     EveryLoLTheme {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentDestination = navBackStackEntry?.destination
+
         Scaffold(
+            contentWindowInsets = WindowInsets(0, 0, 0, 0),
             bottomBar = {
                 val isIntro = currentDestination?.hasRoute<Route.Intro>() == true
+                val isMypage = currentDestination?.hasRoute<Route.Mypage>() == true
 
-                    if (!isIntro) {
+                    if (!isIntro && !isMypage) {
                         NavigationBar {
                             MainTab.entries.forEach { tab ->
                                 val isSelected =
@@ -89,10 +90,18 @@ fun App() {
                             }
                         }
                     )
-                    composable<Route.Home> { HomeScreen(innerPadding = innerPadding) }
-                    composable<Route.Matches> { MatchesScreen() }
+                    composable<Route.Home> { HomeScreen(innerPadding = innerPadding,
+                                                       onNavigateToMypage = {
+                        navController.navigate(Route.Mypage)) }
+                                                        composable<Route.Matches> { MatchesScreen() }
                     composable<Route.AboutLCK> { AboutLCKScreen() }
                     composable<Route.Community> { CommunityScreen() }
+
+                    mypageNavGraph(
+                        onBackClick = {
+                            navController.popBackStack()
+                        }
+                    )
                 }
             }
         }

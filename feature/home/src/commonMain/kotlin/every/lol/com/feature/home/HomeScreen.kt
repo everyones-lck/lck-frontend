@@ -27,11 +27,21 @@ import every.lol.com.feature.home.component.MatchCard
 import every.lol.com.feature.home.component.MatchNoticeBanner
 import every.lol.com.feature.home.component.NewsBanner
 import every.lol.com.feature.home.component.TopBar
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import every.lol.com.core.designsystem.theme.EveryLoLTheme
 
 
 @Composable
 fun HomeScreen(
-    innerPadding: PaddingValues = PaddingValues()
+    innerPadding: PaddingValues = PaddingValues(),
+      onNavigateToMypage: () -> Unit
 ) {
     var showMatchBanner by rememberSaveable { mutableStateOf(true) }
 
@@ -73,7 +83,7 @@ fun HomeScreen(
         item {
             TopBar(
                 onProfileClick = {
-                    // Todo: 프로필 화면 이동
+                  onNavigateToMypage
                 }
             )
         }
@@ -134,4 +144,3 @@ fun PreviewHome(){
     EveryLoLTheme {
         HomeScreen()
     }
-}

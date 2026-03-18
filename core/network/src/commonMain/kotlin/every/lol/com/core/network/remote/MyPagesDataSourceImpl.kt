@@ -4,13 +4,17 @@ import every.lol.com.core.network.datasource.MyPagesDataSource
 import every.lol.com.core.network.model.ApiResponse
 import every.lol.com.core.network.model.request.PatchMyTeamRequest
 import every.lol.com.core.network.model.request.PatchProfileRequest
+import every.lol.com.core.network.model.response.CommentsResponse
 import every.lol.com.core.network.model.response.PatchProfileResponse
+import every.lol.com.core.network.model.response.PostsResponse
 import every.lol.com.core.network.model.response.ProfileResponse
 import every.lol.com.core.network.util.asApiResponse
 import io.ktor.client.HttpClient
+import io.ktor.client.request.delete
 import io.ktor.client.request.forms.formData
 import io.ktor.client.request.forms.submitFormWithBinaryData
 import io.ktor.client.request.get
+import io.ktor.client.request.headers
 import io.ktor.client.request.patch
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
@@ -53,6 +57,36 @@ class MyPagesDataSourceImpl(
         httpClient.patch("/my-pages/my-team") {
             contentType(ContentType.Application.Json)
             setBody(request)
+        }
+    }.asApiResponse()
+
+    override suspend fun getPosts(page: Int, size: Int): ApiResponse<PostsResponse> = runCatching {
+        httpClient.get("/my-pages/posts"){
+            url {
+                parameters.append("page", page.toString())
+                parameters.append("size", size.toString())
+            }
+        }
+    }.asApiResponse()
+
+    override suspend fun getComments(page: Int, size: Int): ApiResponse<CommentsResponse> = runCatching {
+        httpClient.get("/my-pages/comments"){
+            url {
+                parameters.append("page", page.toString())
+                parameters.append("size", size.toString())
+            }
+        }
+    }.asApiResponse()
+
+    override suspend fun withdrawal(): ApiResponse<Unit?> = runCatching {
+        httpClient.delete("/my-pages/withdrawal")
+    }.asApiResponse()
+
+    override suspend fun logout(refreshToken: String): ApiResponse<Unit?> = runCatching {
+        httpClient.delete("/my-pages/logout") {
+            headers {
+                append("Refresh", refreshToken)
+            }
         }
     }.asApiResponse()
 }
