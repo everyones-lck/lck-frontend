@@ -8,7 +8,7 @@ class CheckAuthUseCase(
     suspend operator fun invoke(): Result<Boolean> {
         return runCatching {
             val token = authRepository.getValidAccessToken()
-            println("로그: 토큰: $token")
+            if(token != null)   println("토큰 불러오기 성공")
             token?.isNotBlank() == true
         }
     }

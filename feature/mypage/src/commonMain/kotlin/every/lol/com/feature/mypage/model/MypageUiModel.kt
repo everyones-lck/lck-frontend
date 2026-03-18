@@ -95,5 +95,6 @@ sealed interface MypageIntent{
     data object SaveProfile: MypageIntent
     data class InputNickName(val nickName: String) : MypageIntent
     data class ClickCheckDuplicateNickname(val nickName: String) : MypageIntent
+    data object Withdrawal : MypageIntent
 
 }

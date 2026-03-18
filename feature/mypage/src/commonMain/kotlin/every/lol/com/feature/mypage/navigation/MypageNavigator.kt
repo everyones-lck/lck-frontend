@@ -14,12 +14,14 @@ fun NavController.navigateMypage(navOptions: NavOptions) {
 
 fun NavGraphBuilder.mypageNavGraph(
     onBackClick: () -> Unit,
-    onLogoutSuccess: () -> Unit
+    onLogoutSuccess: () -> Unit,
+    onWithdrawalSuccess: () -> Unit
 ) {
     composable<Route.Mypage> {
         MypageRoute(
             onBackClick = onBackClick,
-            onLogoutSuccess = onLogoutSuccess
+            onLogoutSuccess = onLogoutSuccess,
+            onWithdrawalSuccess = onWithdrawalSuccess
         )
     }
 }

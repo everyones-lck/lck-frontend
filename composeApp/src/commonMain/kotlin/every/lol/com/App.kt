@@ -89,10 +89,15 @@ fun App() {
                             }
                         }
                     )
-                    composable<Route.Home> { HomeScreen(innerPadding = innerPadding,
-                                                       onNavigateToMypage = {
-                        navController.navigate(Route.Mypage)) }
-                                                        composable<Route.Matches> { MatchesScreen() }
+                    composable<Route.Home> {
+                        HomeScreen(
+                            innerPadding = innerPadding,
+                            onNavigateToMypage = {
+                                navController.navigate(Route.Mypage)
+                            }
+                        )
+                    }
+                    composable<Route.Matches> { MatchesScreen() }
                     composable<Route.AboutLCK> { AboutLCKScreen() }
                     composable<Route.Community> { CommunityScreen() }
 
@@ -102,7 +107,16 @@ fun App() {
                         },
                         onLogoutSuccess = {
                             navController.navigate(Route.Intro) {
-                                popUpTo(Route.Home) { inclusive = true }
+                                popUpTo(navController.graph.id) {
+                                    inclusive = true
+                                }
+                            }
+                        },
+                        onWithdrawalSuccess = {
+                            navController.navigate(Route.Intro) {
+                                popUpTo(navController.graph.id) {
+                                    inclusive = true
+                                }
                             }
                         }
                     )

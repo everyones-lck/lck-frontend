@@ -23,7 +23,6 @@ class AuthRepositoryImpl(
         remote.login(KakaoRequest(kakaoUserId))
             .toResult()
             .mapCatching { dto ->
-                println("로그: 서버 응답 성공! 토큰 저장 시작")
                 local.saveUserId(kakaoUserId)
                 local.saveToken(
                     dto.accessToken,
@@ -31,7 +30,6 @@ class AuthRepositoryImpl(
                     dto.accessTokenExpirationTime,
                     dto.refreshTokenExpirationTime
                 )
-                println("로그: 저장 완료! accessToken: ${dto.accessToken}")
             }
 
     override suspend fun signup(request: Signup): Result<Unit> {
@@ -50,6 +48,7 @@ class AuthRepositoryImpl(
         return remote.signup(request = signupRequest)
             .toResult()
             .mapCatching { dto ->
+                local.saveUserId(request.kakaoUserId)
                 local.saveToken(dto.accessToken, dto.refreshToken, dto.accessTokenExpirationTime, dto.refreshTokenExpirationTime)
             }
     }
@@ -66,7 +65,6 @@ class AuthRepositoryImpl(
 
     override suspend fun getValidAccessToken(): String? {
         val authData = local.getAuthData() ?: return null
-        println("로그: 로컬에서 가져온 데이터 -> $authData") // 이게 null이면 1번 범인
         val kakaoUserId = authData.kakaoUserId ?: return null
 
         val now = Clock.System.now().toEpochMilliseconds()
@@ -84,10 +82,8 @@ class AuthRepositoryImpl(
         val refreshExpiry = parseServerTime(authData.refreshTokenExpirationTime)
 
         return if (now >= expiry) {
-            println("로그: AccessToken 만료됨. 리프레시 시도!")
 
             if (now >= refreshExpiry) {
-                println("로그: RefreshToken까지 만료됨. 다시 로그인해라 자슥아!")
                 local.clearAuthData()
                 return null
             }
@@ -100,10 +96,8 @@ class AuthRepositoryImpl(
                     newData.accessTokenExpirationTime,
                     newData.refreshTokenExpirationTime
                 )
-                println("로그: 토큰 갱신 성공!")
                 newData.accessToken
             } else {
-                println("로그: 리프레시 API 실패")
                 null
             }
         } else {
