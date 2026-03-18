@@ -37,12 +37,16 @@ fun Modifier.customInsets(
 }
 
 @Composable
-fun Modifier.everylolDefault(color: Color): Modifier {
+fun Modifier.everylolDefault(
+    color: Color,
+    bottomPadding: Boolean = true
+): Modifier {
     return Modifier
         .background(color)
         .fillMaxSize()
         .then(this)
-        .customInsets(top= true, bottom = true)
-        //.padding(horizontal = 24.dp)
-        .padding(bottom = 24.dp)
+        .customInsets(top = true, bottom = bottomPadding)
+        .run {
+            if (bottomPadding) this.padding(bottom = 24.dp) else this
+        }
 }

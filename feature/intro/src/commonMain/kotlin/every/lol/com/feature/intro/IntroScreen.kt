@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import every.lol.com.core.common.EveryLolBackHandler
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
+import every.lol.com.core.ui.component.TosScreen
 import every.lol.com.core.ui.ext.everylolDefault
 import every.lol.com.feature.intro.model.IntroIntent
 import every.lol.com.feature.intro.model.IntroUiState

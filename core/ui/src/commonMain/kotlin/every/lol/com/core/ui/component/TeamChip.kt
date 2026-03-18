@@ -28,33 +28,43 @@ import every.lol.com.core.model.Team
 fun TeamChip(
     team: Team,
     isSelected: Boolean = false,
+    isSelectable: Boolean = true,
     onClick: () -> Unit = {}
 ){
+    val displaySelected = if (isSelectable) isSelected else true
+    val teamChipColor = if (displaySelected) EveryLoLTheme.color.grayScale200 else EveryLoLTheme.color.grayScale800
+
     Row(
         modifier = Modifier
             .clip(RoundedCornerShape(52.dp))
-            .combinedClickable(
-                onClick = onClick,
-                onLongClick = onClick
+            .then(
+                if (isSelectable) {
+                    Modifier.combinedClickable(
+                        onClick = onClick,
+                        onLongClick = onClick
+                    )
+                } else Modifier
             )
             .border(1.dp,
-                color = if(isSelected)EveryLoLTheme.color.grayScale200 else EveryLoLTheme.color.grayScale800,
+                color = teamChipColor,
                 shape = RoundedCornerShape(52.dp)
             )
             .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ){
-        Box(
-            modifier = Modifier
-                .size(8.dp)
-                .clip(CircleShape)
-                .background(team.getTeamBrush())
-        )
+        if (isSelectable) {
+            Box(
+                modifier = Modifier
+                    .size(8.dp)
+                    .clip(CircleShape)
+                    .background(team.getTeamBrush())
+            )
+        }
         Text(
             text = team.teamName,
             style = EveryLoLTheme.typography.body03,
-            color = if(isSelected)EveryLoLTheme.color.grayScale200 else EveryLoLTheme.color.grayScale800
+            color = teamChipColor
         )
     }
 }
