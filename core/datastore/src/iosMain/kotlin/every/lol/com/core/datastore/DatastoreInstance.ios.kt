@@ -3,7 +3,7 @@ package every.lol.com.core.datastore
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import kotlinx.cinterop.ExperimentalForeignApi
-import platform.Foundation.NSDocumentDirectory
+import platform.Foundation.NSApplicationSupportDirectory
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSURL
 import platform.Foundation.NSUserDomainMask
@@ -13,10 +13,10 @@ fun createDataStore(): DataStore<Preferences> =
     createDataStore(
         producePath = {
             val documentDirectory: NSURL? = NSFileManager.defaultManager.URLForDirectory(
-                directory = NSDocumentDirectory,
+                directory = NSApplicationSupportDirectory,
                 inDomain = NSUserDomainMask,
                 appropriateForURL = null,
-                create = false,
+                create = true,
                 error = null
             )
             requireNotNull(documentDirectory).path + "/$AUTH_DATASTORE_FILE_NAME"
