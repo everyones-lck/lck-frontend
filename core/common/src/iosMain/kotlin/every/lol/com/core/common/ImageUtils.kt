@@ -11,9 +11,6 @@ import platform.UIKit.UIImagePNGRepresentation
 import platform.posix.memcpy
 
 actual fun Any?.toImageByteArray(): ByteArray? {
-    println("iOS image object = $this")
-    println("iOS image class = ${this?.let { it::class }}")
-
     val data: NSData = when (this) {
         is ByteArray -> return this
         is NSData -> this
