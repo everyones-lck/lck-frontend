@@ -7,35 +7,22 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.core.model.HomeBannerModel
 import every.lol.com.core.model.LckStandingTeamModel
 import every.lol.com.core.model.MatchCardModel
-import every.lol.com.core.ui.component.DefaultScreen
 import every.lol.com.feature.home.component.LckRankingSection
 import every.lol.com.feature.home.component.MatchCard
 import every.lol.com.feature.home.component.MatchNoticeBanner
 import every.lol.com.feature.home.component.NewsBanner
 import every.lol.com.feature.home.component.TopBar
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import every.lol.com.core.designsystem.theme.EveryLoLTheme
 
 
 @Composable
@@ -83,7 +70,7 @@ fun HomeScreen(
         item {
             TopBar(
                 onProfileClick = {
-                  onNavigateToMypage
+                  onNavigateToMypage()
                 }
             )
         }
@@ -137,10 +124,3 @@ fun HomeScreen(
         }
     }
 }
-
-@Preview
-@Composable
-fun PreviewHome(){
-    EveryLoLTheme {
-        HomeScreen()
-    }

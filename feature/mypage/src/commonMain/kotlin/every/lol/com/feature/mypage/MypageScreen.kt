@@ -43,7 +43,8 @@ import moe.tlaster.precompose.koin.koinViewModel
 fun MypageRoute(
     viewModel: MypageViewModel = koinViewModel(MypageViewModel::class),
     onBackClick: () -> Unit,
-    onLogoutSuccess:() -> Unit
+    onLogoutSuccess:() -> Unit,
+    onWithdrawalSuccess:() -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -59,6 +60,7 @@ fun MypageRoute(
             when (event) {
                 MypageEvent.NavigateHome -> onBackClick()
                 MypageEvent.Logout -> onLogoutSuccess()
+                MypageEvent.Withdrawal -> onWithdrawalSuccess()
                 is MypageEvent.ShowErrorSnackbar -> {
                     snackbarHostState.showSnackbar(event.throwable.message ?: "에러 발생")
                 }
@@ -130,7 +132,10 @@ fun MypageRoute(
         is MypageUiState.Withdrawal -> {
             MypageWithdrawalScreen(
                 state = uiState as MypageUiState.Withdrawal,
-                onBackClick = { viewModel.onIntent(MypageIntent.LoadMypage)}
+                onBackClick = { viewModel.onIntent(MypageIntent.LoadMypage)},
+                onWithdrawalConfrimClick = {
+                    viewModel.onIntent(MypageIntent.Withdrawal)
+                }
             )
         }
         is MypageUiState.TosDetail -> {

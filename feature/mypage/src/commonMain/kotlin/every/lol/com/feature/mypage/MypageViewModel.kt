@@ -76,6 +76,7 @@ class MypageViewModel(
             MypageIntent.SaveProfile -> saveProfile()
             is MypageIntent.InputNickName -> handleInputNickName(intent.nickName)
             is MypageIntent.ClickCheckDuplicateNickname -> checkNicknameDuplicate(intent.nickName)
+            is MypageIntent.Withdrawal -> handleWithdrawal()
             else -> {}
         }
     }
@@ -369,7 +370,7 @@ class MypageViewModel(
 
     private fun handleWithdrawal() {
         viewModelScope.launch {
-            withdrawalUseCase
+            withdrawalUseCase()
             _event.emit(MypageEvent.Withdrawal)
         }
     }
