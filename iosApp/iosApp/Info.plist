@@ -13,7 +13,7 @@
 			<string>Kakao</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>kakao$(KakaoAppKey)</string>
+				<string>kakao$(KAKAO_APP_KEY)</string>
 			</array>
 		</dict>
 	</array>
@@ -22,6 +22,6 @@
 		<string>kakaokompassauth</string>
 	</array>
     <key>KakaoAppKey</key>
-    <string>$(KakaoAppKey)</string>
+    <string>$(KAKAO_APP_KEY)</string>
 </dict>
 </plist>
