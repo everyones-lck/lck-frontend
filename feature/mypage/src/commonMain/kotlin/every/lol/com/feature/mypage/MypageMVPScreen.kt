@@ -27,7 +27,7 @@ import every.lol.com.feature.mypage.model.MypageUiState
 @Composable
 fun MypageMVPScreen(
     state: MypageUiState,
-    onBackClick: () -> Unit,
+    onBackClick: () -> Unit={},
     onIntent: (MypageIntent) -> Unit
 ){
     val snackbarHostState = remember { SnackbarHostState() }

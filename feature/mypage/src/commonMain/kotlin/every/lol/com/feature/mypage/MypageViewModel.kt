@@ -1,8 +1,13 @@
 package every.lol.com.feature.mypage
 
+import every.lol.com.core.domain.usecase.GetMyCommentsUseCase
+import every.lol.com.core.domain.usecase.GetMyPostsUseCase
+import every.lol.com.core.domain.usecase.GetProfileUseCase
+import every.lol.com.core.domain.usecase.LogoutUseCase
 import every.lol.com.core.domain.usecase.NicknameUseCase
-import every.lol.com.core.model.CommentsDetail
-import every.lol.com.core.model.PostsDetail
+import every.lol.com.core.domain.usecase.PatchMyTeamUseCase
+import every.lol.com.core.domain.usecase.PatchProfileUseCase
+import every.lol.com.core.domain.usecase.WithdrawalUseCase
 import every.lol.com.core.model.Team
 import every.lol.com.feature.mypage.model.MypageIntent
 import every.lol.com.feature.mypage.model.MypageUiState
@@ -17,6 +22,8 @@ import moe.tlaster.precompose.viewmodel.viewModelScope
 
 
 sealed class MypageEvent {
+    data object Logout: MypageEvent()
+    data object Withdrawal: MypageEvent()
     data object NavigateHome : MypageEvent()
     data object NavigateProfileEdit: MypageEvent()
     data object NavigateToMyPosts : MypageEvent()
@@ -30,7 +37,14 @@ sealed class MypageEvent {
 }
 
 class MypageViewModel(
-    private val nicknameUseCase: NicknameUseCase
+    private val nicknameUseCase: NicknameUseCase,
+    private val getProfileUseCase: GetProfileUseCase,
+    private val patchProfileUseCase: PatchProfileUseCase,
+    private val patchMyTeamUseCase: PatchMyTeamUseCase,
+    private val getMyPostsUseCase: GetMyPostsUseCase,
+    private val getMyCommentsUseCase: GetMyCommentsUseCase,
+    private val logoutUseCase: LogoutUseCase,
+    private val withdrawalUseCase: WithdrawalUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<MypageUiState>(MypageUiState.Loading)
@@ -59,6 +73,9 @@ class MypageViewModel(
             MypageIntent.ClickBackToHome -> handleBackToHome()
             MypageIntent.FetchMyPosts -> loadCommunityData(MypageUiState.CommunityTab.POST)
             MypageIntent.FetchMyComments -> loadCommunityData(MypageUiState.CommunityTab.COMMENT)
+            MypageIntent.SaveProfile -> saveProfile()
+            is MypageIntent.InputNickName -> handleInputNickName(intent.nickName)
+            is MypageIntent.ClickCheckDuplicateNickname -> checkNicknameDuplicate(intent.nickName)
             else -> {}
         }
     }
@@ -84,23 +101,152 @@ class MypageViewModel(
     }
     private fun loadMypageData() {
         viewModelScope.launch {
-            val myInform = cachedMyInform ?: MypageUiState.MyInform(
-                nickName = "김승혁",
-                teamId = setOf(Team.T1)
-            )
-            cachedMyInform = myInform
+            getProfileUseCase().onSuccess { userInform ->
+                val myInform = MypageUiState.MyInform(
+                    nickName = userInform.nickname,
+                    teamId = userInform.teamId.mapNotNull { id ->
+                        Team.fromId(id)
+                    }.toSet(),
+                    profileImage = userInform.profileImage
+                )
+                cachedMyInform = myInform
 
-            val menuList = listOf(
-                MypageUiState.MypageMenu(MypageUiState.MypageMenuType.PROFILE_EDIT, "프로필 수정"),
-                MypageUiState.MypageMenu(MypageUiState.MypageMenuType.POST_COMMENT, "My Post / Comment"),
-                MypageUiState.MypageMenu(MypageUiState.MypageMenuType.POG_VOTE, "POG 투표 내역"),
-                MypageUiState.MypageMenu(MypageUiState.MypageMenuType.PREDICTION, "승부예측 투표 내역"),
-                MypageUiState.MypageMenu(MypageUiState.MypageMenuType.LOGOUT, "로그아웃"),
-                MypageUiState.MypageMenu(MypageUiState.MypageMenuType.WITHDRAWAL, "계정 탈퇴"),
-                MypageUiState.MypageMenu(MypageUiState.MypageMenuType.APP_INFO, "앱 정보", showDivider = false)
-            )
+                val menuList = listOf(
+                    MypageUiState.MypageMenu(MypageUiState.MypageMenuType.PROFILE_EDIT, "프로필 수정"),
+                    MypageUiState.MypageMenu(MypageUiState.MypageMenuType.POST_COMMENT, "My Post / Comment"),
+                    MypageUiState.MypageMenu(MypageUiState.MypageMenuType.POG_VOTE, "POG 투표 내역"),
+                    MypageUiState.MypageMenu(MypageUiState.MypageMenuType.PREDICTION, "승부예측 투표 내역"),
+                    MypageUiState.MypageMenu(MypageUiState.MypageMenuType.LOGOUT, "로그아웃"),
+                    MypageUiState.MypageMenu(MypageUiState.MypageMenuType.WITHDRAWAL, "계정 탈퇴"),
+                    MypageUiState.MypageMenu(MypageUiState.MypageMenuType.APP_INFO, "앱 정보", showDivider = false)
+                )
 
-            _uiState.value = MypageUiState.Mypage(myInform = myInform, menuList = menuList)
+                _uiState.value = MypageUiState.Mypage(myInform = myInform, menuList = menuList)
+
+            }.onFailure { throwable ->
+                // 에러 처리
+                _event.emit(MypageEvent.ShowErrorSnackbar(throwable))
+            }
+        }
+    }
+
+    private fun loadProfileEditData() {
+        val currentInfo = cachedMyInform?: return
+
+        val editState = MypageUiState.ProfileEdit(
+            originalNickname = currentInfo.nickName,
+            nickName = "",
+            originalProfileImage = (currentInfo.profileImage as? ByteArray)?.copyOf() ?: currentInfo.profileImage,
+            profileImage = (currentInfo.profileImage as? ByteArray)?.copyOf() ?: currentInfo.profileImage,
+            originalTeamId = currentInfo.teamId.toSet(),
+            teamId = currentInfo.teamId.toSet(),
+            isDuplicateChecked = true,
+            isLoading = false
+        )
+
+        _uiState.value = editState
+    }
+
+    fun handleInputNickName(name: String) {
+        _uiState.update { state ->
+            if (state is MypageUiState.ProfileEdit) {
+                state.copy(
+                    nickName = name,
+                    isDuplicateChecked = name.isNotEmpty() || name == state.originalNickname
+                )
+            } else state
+        }
+    }
+
+    fun checkNicknameDuplicate(name: String) {
+        if (name.isBlank()) return
+        val currentState = _uiState.value as? MypageUiState.ProfileEdit
+        if (name == currentState?.originalNickname) {
+            _uiState.update { state ->
+                if (state is MypageUiState.ProfileEdit) state.copy(isDuplicateChecked = true) else state
+            }
+            return
+        }
+        viewModelScope.launch {
+            nicknameUseCase(name)
+                .onSuccess {
+                    _uiState.update { state ->
+                        if (state is MypageUiState.ProfileEdit) {
+                            state.copy(isDuplicateChecked = true)
+                        } else state
+                    }
+                }.onFailure { error ->
+                    _event.emit(MypageEvent.ShowErrorSnackbar(error))
+                }
+        }
+    }
+
+    fun updateProfileImage(newImage: Any?) {
+        _uiState.update { state ->
+            println("updateProfileImage: $newImage")
+            if (state is MypageUiState.ProfileEdit) {
+                state.copy(profileImage = newImage)
+            } else state
+        }
+    }
+
+    fun updateSelectedTeams(teams: Set<Team>) {
+        _uiState.update { state ->
+            if (state is MypageUiState.ProfileEdit) {
+                state.copy(teamId = teams.toSet())
+            } else state
+        }
+    }
+
+
+    private fun saveProfile() {
+        val current = _uiState.value as? MypageUiState.ProfileEdit ?: return
+
+        val isNicknameChanged = current.nickName.isNotEmpty() && current.nickName != current.originalNickname
+
+        if (isNicknameChanged && !current.isDuplicateChecked) {
+            viewModelScope.launch {
+                _event.emit(MypageEvent.ShowErrorSnackbar(Throwable("닉네임 중복 체크를 해주세요.")))
+            }
+            return
+        }
+
+        val isImageChanged = when {
+            current.profileImage is ByteArray -> true
+            current.profileImage is String && !(current.profileImage as String).startsWith("http") -> true
+            current.profileImage == null && current.originalProfileImage != null -> true
+
+            else -> false
+        }
+
+        val isTeamChanged = current.teamId != current.originalTeamId
+        println("isNicknameChanged: $isNicknameChanged, isImageChanged: $isImageChanged, isTeamChanged: $isTeamChanged")
+        if (!isNicknameChanged && !isImageChanged && !isTeamChanged) {
+            loadMypageData()
+            return
+        }
+
+        viewModelScope.launch {
+            _uiState.update { if (it is MypageUiState.ProfileEdit) it.copy(isLoading = true) else it }
+
+            try {
+                if (isTeamChanged) {
+                    patchMyTeamUseCase(current.teamId.map { it.id }).getOrThrow()
+                }
+
+                if (isNicknameChanged || isImageChanged) {
+                    patchProfileUseCase(
+                        nickname = if (current.nickName.isEmpty()) current.originalNickname else current.nickName,
+                        profileImage = current.profileImage as? ByteArray
+                    ).getOrThrow()
+                }
+
+                loadMypageData()
+
+            } catch (e: Exception) {
+                _uiState.update { if (it is MypageUiState.ProfileEdit) it.copy(isLoading = false) else it }
+                _event.emit(MypageEvent.ShowErrorSnackbar(e))
+            }
         }
     }
 
@@ -115,47 +261,42 @@ class MypageViewModel(
         )
         _uiState.value = MypageUiState.AppInform(menuList = appInfoMenus)
     }
-
-    private fun loadProfileEditData() {
-        val currentMypage = _uiState.value as? MypageUiState.Mypage
-        _uiState.value = MypageUiState.ProfileEdit(
-            nickName = currentMypage?.myInform?.nickName ?: "",
-            teamId = currentMypage?.myInform?.teamId ?: emptySet(),
-            profileImage = currentMypage?.myInform?.profileImage
-        )
-    }
-
     private fun loadCommunityData(tab: MypageUiState.CommunityTab = MypageUiState.CommunityTab.POST) {
         _uiState.value = MypageUiState.Community(isLoading = true, selectedTab = tab)
-        viewModelScope.launch {
-            val dummyPosts = listOf(
-                PostsDetail(id = 1, title = "오늘 T1 경기 보신 분? 역대급이네", postType = "자유게시판"),
-                PostsDetail(id = 2, title = "솔랭 꿀챔 추천해줌 (현직 다이아)", postType = "공략게시판"),
-                PostsDetail(id = 3, title = "이거 버그 아님? 판정 왜이래", postType = "질문게시판")
-            )
 
-            val dummyComments = listOf(
-                CommentsDetail(
-                    commentId = 1,
-                    postId = 1,
-                    content = "ㄹㅇㅋㅋ 페이커 무빙 미쳤음",
-                    postType = "자유게시판"
-                ),
-                CommentsDetail(
-                    commentId = 2,
-                    postId = 2,
-                    content = "이거 보고 연패 끊었습니다 감사합니다",
-                    postType = "공략게시판"
-                )
-            )
-            _uiState.update { state ->
-                if (state is MypageUiState.Community) {
-                    state.copy(
-                        isLoading = false,
-                        posts = if (tab == MypageUiState.CommunityTab.POST) dummyPosts else emptyList(),
-                        comments = if (tab == MypageUiState.CommunityTab.COMMENT) dummyComments else emptyList()
-                    )
-                } else state
+        viewModelScope.launch {
+            val page = 0
+            when (tab) {
+                MypageUiState.CommunityTab.POST -> {
+                    getMyPostsUseCase(page).onSuccess { posts ->
+                        _uiState.update { state ->
+                            if (state is MypageUiState.Community) {
+                                state.copy(
+                                    isLoading = false,
+                                    posts = posts.posts,
+                                    comments = emptyList()
+                                )
+                            } else state
+                        }
+                    }.onFailure { throwable ->
+                        handleCommunityError(throwable)
+                    }
+                }
+                MypageUiState.CommunityTab.COMMENT -> {
+                    getMyCommentsUseCase(page).onSuccess { comments ->
+                        _uiState.update { state ->
+                            if (state is MypageUiState.Community) {
+                                state.copy(
+                                    isLoading = false,
+                                    posts = emptyList(),
+                                    comments = comments.comments
+                                )
+                            } else state
+                        }
+                    }.onFailure { throwable ->
+                        handleCommunityError(throwable)
+                    }
+                }
             }
         }
     }
@@ -221,14 +362,18 @@ class MypageViewModel(
 
     private fun handleLogout() {
         viewModelScope.launch {
-            try {
-                // TODO: 로그아웃 로직 (캐시 삭제 등)
-                _event.emit(MypageEvent.NavigateHome)
-            } catch (e: Exception) {
-                _event.emit(MypageEvent.ShowErrorSnackbar(e))
-            }
+            logoutUseCase().getOrNull()
+            _event.emit(MypageEvent.Logout)
         }
     }
+
+    private fun handleWithdrawal() {
+        viewModelScope.launch {
+            withdrawalUseCase
+            _event.emit(MypageEvent.Withdrawal)
+        }
+    }
+
     private fun handleBackToHome() {
         viewModelScope.launch {
             _event.emit(MypageEvent.NavigateHome)
@@ -241,5 +386,14 @@ class MypageViewModel(
 
     private fun setAppVersion(){
         _appVersion.value = "1.0.0"
+    }
+
+    private suspend fun handleCommunityError(throwable: Throwable) {
+        _uiState.update { state ->
+            if (state is MypageUiState.Community) {
+                state.copy(isLoading = false)
+            } else state
+        }
+        _event.emit(MypageEvent.ShowErrorSnackbar(throwable))
     }
 }

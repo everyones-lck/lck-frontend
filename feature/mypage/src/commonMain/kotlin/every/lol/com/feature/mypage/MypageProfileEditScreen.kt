@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import every.lol.com.core.common.rememberImagePickerLauncher
+import every.lol.com.core.common.toImageByteArray
 import every.lol.com.core.designsystem.component.EverylolButton
 import every.lol.com.core.designsystem.component.EverylolModal
 import every.lol.com.core.designsystem.component.EverylolTopAppBar
@@ -48,18 +49,34 @@ fun MypageProfileEditScreen(
     onTeamsChange: (Set<Team>) -> Unit = {},
     checkNickName: (String) -> Unit = {},
     onBackClick: () -> Unit = {},
-    onSignupClick: () -> Unit = {},
     onIntent: (MypageIntent) -> Unit,
 ) {
     var showImageSheet by remember { mutableStateOf(false) }
     var isNicknameValid by remember { mutableStateOf(false) }
     var showProfileEditModal by remember { mutableStateOf(false) }
-    var selectedTeams by remember { mutableStateOf(state.teamId) }
 
     val imagePickerLauncher = rememberImagePickerLauncher { uri ->
         if (uri != null) {
-            onProfileImageChange(uri)
+            val imageBytes = uri.toImageByteArray()
+
+            if (imageBytes != null) {
+                onProfileImageChange(imageBytes)
+            } else {
+                // 변환 실패 시 처리 (선택 사항)
+                println("이미지 변환 실패")
+            }
         }
+    }
+
+    val isChanged = remember(state.nickName, state.profileImage, state.teamId) {
+        val isTeamChanged = state.teamId != state.originalTeamId
+        val isImageChanged = when {
+            state.profileImage is ByteArray && state.originalProfileImage is ByteArray -> {
+                !(state.profileImage contentEquals state.originalProfileImage)
+            }
+            else -> state.profileImage != state.originalProfileImage
+        }
+        isTeamChanged || isImageChanged
     }
 
     val snackbarHostState = remember { SnackbarHostState() }
@@ -73,7 +90,10 @@ fun MypageProfileEditScreen(
             contentWindowInsets = WindowInsets(0, 0, 0, 0),
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
             topBar = {
-                EverylolTopAppBar(onBackClick = onBackClick, title = "프로필 수정")
+                EverylolTopAppBar( onBackClick = {
+                    if (isChanged) showProfileEditModal = true
+                    else onBackClick()
+                },  title = "프로필 수정")
             }
         ) { innerPadding ->
             Column(
@@ -103,10 +123,14 @@ fun MypageProfileEditScreen(
                     horizontalAlignment = Alignment.Start,
                 ) {
                     NicknameSection(
+                        isProfileEdit = true,
+                        originalNickname =  state.originalNickname,
                         nickName = state.nickName,
                         onValueChange = onValueChange,
                         isDuplicateChecked = state.isDuplicateChecked,
-                        onCheckNickName = { checkNickName(state.nickName) },
+                        onCheckNickName = {
+                            onIntent(MypageIntent.ClickCheckDuplicateNickname(state.nickName))
+                        },
                         onValidationChanged = { isNicknameValid = it }
                     )
 
@@ -117,10 +141,12 @@ fun MypageProfileEditScreen(
                         color = EveryLoLTheme.color.grayScale200
                     )
                     Spacer(modifier = Modifier.height(24.dp))
-                    TeamGroup { teams ->
-                        selectedTeams = teams
-                        onTeamsChange(teams)
-                    }
+                    TeamGroup(
+                        selectedTeams = state.teamId,
+                        onSelectedTeamsChange = { teams ->
+                            onTeamsChange(teams)
+                        }
+                    )
                 }
             }
         }
@@ -130,8 +156,8 @@ fun MypageProfileEditScreen(
                 .padding(horizontal = 24.dp, vertical = 24.dp)
                 .fillMaxWidth(),
             text = "저장",
-            enabled = isNicknameValid && state.isDuplicateChecked && !state.isLoading,
-            onClick = onSignupClick
+            enabled = isChanged || isNicknameValid && !state.isLoading,
+            onClick = { onIntent(MypageIntent.SaveProfile) }
         )
 
         if (showImageSheet) {
@@ -152,7 +178,7 @@ fun MypageProfileEditScreen(
                 context = "변경된 프로필을 저장하지 않고 나가시겠습니까?",
                 confirmText = "나가기",
                 onConfirm = onBackClick,
-                onDismiss = {}
+                onDismiss = { showProfileEditModal = false }
             )
         }
     }

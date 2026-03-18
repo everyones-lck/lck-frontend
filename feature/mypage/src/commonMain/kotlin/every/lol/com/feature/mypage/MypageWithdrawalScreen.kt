@@ -97,7 +97,9 @@ fun MypageWithdrawalScreen(
                         }
                     }
                 }
-                WithdrawalReasonSection()
+                WithdrawalReasonSection(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp), onValueChange = {
+                    isSelectedReason = it.isNotEmpty()
+                })
             }
 
         }
@@ -108,7 +110,7 @@ fun MypageWithdrawalScreen(
                 .fillMaxWidth(),
             text = "확인",
             enabled = isSelectedReason,
-            onClick = onWithdrawalClick
+            onClick = { showWithdrawalModal = true }
         )
         if(showWithdrawalModal) {
             EverylolModal(
@@ -117,7 +119,7 @@ fun MypageWithdrawalScreen(
                 confirmText = "확인",
                 onConfirm = onWithdrawalConfrimClick,
                 dismissText = "취소",
-                onDismiss = onWithdrawalDismissClick
+                onDismiss = { showWithdrawalModal = false }
             )
         }
     }

@@ -7,8 +7,9 @@ import every.lol.com.core.model.Comments
 import every.lol.com.core.model.CommentsDetail
 import every.lol.com.core.model.Posts
 import every.lol.com.core.model.PostsDetail
-import every.lol.com.core.model.Profile
+import every.lol.com.core.model.UserInform
 import every.lol.com.core.network.datasource.MyPagesDataSource
+import every.lol.com.core.network.model.request.PatchMyTeamRequest
 import every.lol.com.core.network.model.request.PatchProfileData
 import every.lol.com.core.network.model.request.PatchProfileRequest
 
@@ -17,13 +18,17 @@ class MyPageRepositoryImpl(
     private val local: AuthLocalDataSource
 ): MyPagesRepository {
 
-    override suspend fun getProfile(): Result<Profile> =
+    companion object {
+        private const val PAGING_SIZE = 10
+    }
+
+    override suspend fun getProfile(): Result<UserInform> =
         remote.getProfile().toResult().mapCatching { response ->
-            Profile(
+            UserInform(
+                kakaoUserId = "ex",
                 nickname = response.nickname,
-                profileImageUrl = response.profileImage,
-                teamId = response.teamId,
-                tier = response.tier
+                profileImage = response.profileImageUrl,
+                teamId = listOf(response.teamId),
             )
         }
 
@@ -40,8 +45,15 @@ class MyPageRepositoryImpl(
         }
     }
 
-    override suspend fun getPosts(page: Int, size: Int): Result<Posts> =
-        remote.getPosts(page, size).toResult().map { response ->
+    override suspend fun patchMyTeam(teamId: List<Int>): Result<Unit> {
+        val selectedId = teamId.first()
+        return remote.patchMyTeam(PatchMyTeamRequest(teamId = selectedId)).toResult().map {
+            Unit
+        }
+    }
+
+    override suspend fun getPosts(page: Int): Result<Posts> =
+        remote.getPosts(page, PAGING_SIZE).toResult().map { response ->
             Posts(
                 posts = response.posts.map { detail ->
                     PostsDetail(
@@ -54,8 +66,9 @@ class MyPageRepositoryImpl(
             )
         }
 
-    override suspend fun getComments(page: Int, size: Int): Result<Comments> =
-        remote.getComments(page, size).toResult().map { response ->
+
+    override suspend fun getComments(page: Int): Result<Comments> =
+        remote.getComments(page, PAGING_SIZE).toResult().map { response ->
             Comments(
                 comments = response.comments.map { detail ->
                     CommentsDetail(
@@ -69,13 +82,16 @@ class MyPageRepositoryImpl(
             )
         }
 
-    override suspend fun withdrawal(): Result<Unit?> =
-        remote.withdrawal().toResult().map {
+    override suspend fun withdrawal(): Result<Unit?> {
+        local.clearAuthData()
+        return remote.withdrawal().toResult().map {
             Unit
         }
+    }
 
     override suspend fun logout(): Result<Unit?> {
         val refreshToken = local.getAuthData()!!.refreshToken
+        local.clearAuthData()
         return remote.logout(refreshToken).toResult().map {
             Unit
         }

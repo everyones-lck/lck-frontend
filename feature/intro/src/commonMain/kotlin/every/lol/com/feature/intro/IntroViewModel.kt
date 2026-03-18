@@ -1,6 +1,7 @@
 package every.lol.com.feature.intro
 
 import every.lol.com.core.common.toImageByteArray
+import every.lol.com.core.domain.usecase.CheckAuthUseCase
 import every.lol.com.core.domain.usecase.NicknameUseCase
 import every.lol.com.core.domain.usecase.SignupUseCase
 import every.lol.com.core.domain.usecase.SocialLoginUseCase
@@ -28,7 +29,8 @@ sealed class IntroEvent {
 class IntroViewModel(
     private val socialLoginUseCase: SocialLoginUseCase,
     private val signupUseCase: SignupUseCase,
-    private val nicknameUseCase: NicknameUseCase
+    private val nicknameUseCase: NicknameUseCase,
+    private val checkAuthUseCase: CheckAuthUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<IntroUiState>(IntroUiState.Loading)
@@ -60,7 +62,18 @@ class IntroViewModel(
     private fun checkInitialState() {
         viewModelScope.launch {
             delay(1500)
-            _uiState.value = IntroUiState.Login
+
+            checkAuthUseCase()
+                .onSuccess { isLoggedIn ->
+                    if (isLoggedIn) {
+                        _event.emit(IntroEvent.NavigateHome)
+                    } else {
+                        _uiState.value = IntroUiState.Login
+                    }
+                }
+                .onFailure {
+                    _uiState.value = IntroUiState.Login
+                }
         }
     }
 

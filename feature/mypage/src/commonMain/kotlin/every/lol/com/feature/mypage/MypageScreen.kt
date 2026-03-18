@@ -14,6 +14,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,15 +42,23 @@ import moe.tlaster.precompose.koin.koinViewModel
 @Composable
 fun MypageRoute(
     viewModel: MypageViewModel = koinViewModel(MypageViewModel::class),
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onLogoutSuccess:() -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.onIntent(MypageIntent.LoadMypage)
+        }
+    }
 
     LaunchedEffect(viewModel.event) {
         viewModel.event.collect { event ->
             when (event) {
                 MypageEvent.NavigateHome -> onBackClick()
+                MypageEvent.Logout -> onLogoutSuccess()
                 is MypageEvent.ShowErrorSnackbar -> {
                     snackbarHostState.showSnackbar(event.throwable.message ?: "에러 발생")
                 }
@@ -62,7 +71,13 @@ fun MypageRoute(
         is MypageUiState.Mypage -> {
             MypageScreen(
                 state = uiState as MypageUiState.Mypage,
-                onBackClick = onBackClick,
+                onBackClick = {
+                    if (uiState is MypageUiState.Mypage) {
+                        onBackClick()
+                    } else {
+                        viewModel.onIntent(MypageIntent.LoadMypage)
+                    }
+                },
                 onIntent = viewModel::onIntent
             )
         }
@@ -76,6 +91,15 @@ fun MypageRoute(
         is MypageUiState.ProfileEdit -> {
             MypageProfileEditScreen(
                 state = uiState as MypageUiState.ProfileEdit,
+                onValueChange = { name ->
+                    viewModel.handleInputNickName(name)
+                },
+                onTeamsChange = {
+                    viewModel.updateSelectedTeams(it)
+                },
+                onProfileImageChange = {
+                    viewModel.updateProfileImage(it)
+                },
                 onBackClick = { viewModel.onIntent(MypageIntent.LoadMypage) },
                 onIntent = viewModel::onIntent
             )
@@ -168,7 +192,11 @@ private fun MypageScreen(
                     modifier = Modifier.fillMaxWidth(),
                     menuItems = menuList,
                     onMenuClick = { type ->
-                        onIntent(MypageIntent.ClickMenu(type))
+                        if (type == MypageUiState.MypageMenuType.LOGOUT) {
+                            showLogoutModal = true
+                        } else {
+                            onIntent(MypageIntent.ClickMenu(type))
+                        }
                     }
                 )
             }

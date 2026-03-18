@@ -12,7 +12,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.error
 import androidx.compose.ui.unit.dp
 import every.lol.com.core.designsystem.component.EverylolTextField
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
@@ -22,6 +21,8 @@ import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun NicknameSection(
+    isProfileEdit: Boolean = false,
+    originalNickname: String = "",
     modifier: Modifier = Modifier,
     nickName: String,
     onValueChange: (String) -> Unit,
@@ -29,26 +30,36 @@ fun NicknameSection(
     onCheckNickName: () -> Unit,
     onValidationChanged: (Boolean) -> Unit
 ) {
+    val isChanged = if (isProfileEdit) nickName != originalNickname else nickName.isNotEmpty()
+
     val isNotEmpty = nickName.isNotEmpty()
     val isProperLength = nickName.length in 1..10
     val isNoSpace = !nickName.contains(" ")
 
-    val isAllValid = isProperLength && isNoSpace && isDuplicateChecked
+    val isAllValid = if (isProfileEdit && !isChanged) {
+        true
+    } else {
+        isProperLength && isNoSpace && isDuplicateChecked
+    }
 
     val textFieldStatus = when {
         !isNotEmpty -> 0
         isAllValid -> 1
-        else -> 2
+        isProfileEdit  && !isChanged -> 2
+        else -> 3
     }
+
+    val dynamicHint = if (isProfileEdit) originalNickname else "닉네임을 입력해주세요"
     LaunchedEffect(textFieldStatus) {
-        onValidationChanged(textFieldStatus == 1)
+        onValidationChanged(textFieldStatus == 1 || (isProfileEdit && textFieldStatus == 2))
     }
+
 
     Column(modifier = modifier.fillMaxWidth()) {
         EverylolTextField(
             value = nickName,
             onValueChange = onValueChange,
-            hint = "닉네임을 입력해주세요",
+            hint = dynamicHint,
             status = textFieldStatus,
             onDone = onCheckNickName
         )
@@ -56,6 +67,7 @@ fun NicknameSection(
         Spacer(modifier = Modifier.height(16.dp))
 
         NicknameValidationGroup(
+            isChanged = isChanged,
             nickName = nickName,
             isProperLength = isProperLength,
             isNoSpace = isNoSpace,
@@ -66,6 +78,7 @@ fun NicknameSection(
 
 @Composable
 private fun NicknameValidationGroup(
+    isChanged: Boolean,
     nickName: String,
     isProperLength: Boolean,
     isNoSpace: Boolean,
@@ -77,14 +90,14 @@ private fun NicknameValidationGroup(
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         if (!isEmpty) {
             NicknameValidation(
-                status = if (isDuplicateChecked) 1 else 2,
+                status = if (!isChanged) 0 else if (isDuplicateChecked) 1 else 2,
                 message = "중복된 닉네임은 사용할 수 없습니다"
             )
         }
 
         NicknameValidation(
             status = when {
-                isEmpty -> 0
+                !isChanged || isEmpty -> 0
                 isProperLength -> 1
                 else -> 2
             },
@@ -93,7 +106,7 @@ private fun NicknameValidationGroup(
 
         NicknameValidation(
             status = when {
-                isEmpty -> 0
+                !isChanged || isEmpty -> 0
                 isNoSpace -> 1
                 else -> 2
             },

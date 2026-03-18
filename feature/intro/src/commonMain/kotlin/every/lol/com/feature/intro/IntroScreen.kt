@@ -15,6 +15,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -44,7 +45,14 @@ internal fun IntroRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
-    LaunchedEffect(viewModel.event) {
+
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.onIntent(IntroIntent.LoadInitial)
+        }
+    }
+
+    LaunchedEffect(Unit) {
         viewModel.event.collect { event ->
             when (event) {
                 is IntroEvent.ShowErrorSnackbar -> {
@@ -52,7 +60,6 @@ internal fun IntroRoute(
                         message = event.throwable.message ?: "에러가 발생했습니다."
                     )
                 }
-
                 IntroEvent.NavigateHome -> onNavigateHome()
             }
         }
@@ -83,8 +90,7 @@ internal fun IntroRoute(
                                 viewModel.onIntent(IntroIntent.InputNickName(nickName))
                             },
                             onProfileImageChange = { image ->
-                                // TODO: 필요 시 IntroIntent.ChangeProfileImage 추가
-                                // viewModel.onIntent(IntroIntent.ChangeProfileImage(image))
+                                viewModel.onIntent(IntroIntent.ChangeProfileImage(image))
                             },
                             onTeamsChange = { teams ->
                                 viewModel.onIntent(IntroIntent.ChangeSelectedTeams(teams))

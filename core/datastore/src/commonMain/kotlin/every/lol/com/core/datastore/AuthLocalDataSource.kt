@@ -8,6 +8,7 @@ class AuthLocalDataSource(
 
     suspend fun saveToken(accessToken: String, refreshToken: String, accessTokenExpirationTime: String, refreshTokenExpirationTime: String) {
         authPreferences.saveToken(accessToken, refreshToken, accessTokenExpirationTime, refreshTokenExpirationTime)
+        println("로그: 토큰 저장 완료")
     }
 
     suspend fun saveUserId(kakaoUserId: String){

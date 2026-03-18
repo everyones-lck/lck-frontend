@@ -128,7 +128,7 @@ fun MypageCommunityScreen(
                                         ) {
                                             Text(
                                                 text = if (tab == MypageUiState.CommunityTab.POST) "My Post" else "My Comment",
-                                                style = EveryLoLTheme.typography.body03,
+                                                style = EveryLoLTheme.typography.subtitle03,
                                                 color = EveryLoLTheme.color.grayScale200
                                             )
                                         }

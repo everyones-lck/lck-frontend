@@ -17,11 +17,9 @@ import io.ktor.client.request.get
 import io.ktor.client.request.headers
 import io.ktor.client.request.patch
 import io.ktor.client.request.setBody
-import io.ktor.http.ContentType
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod.Companion.Patch
-import io.ktor.http.contentType
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -44,7 +42,7 @@ class MyPagesDataSourceImpl(
                     })
                 }
                 val jsonRequest = Json.encodeToString(request.request)
-                append("request", jsonRequest, Headers.build {
+                append("updateProfileRequest", jsonRequest, Headers.build {
                     append(HttpHeaders.ContentType, "application/json")
                 })
             }
@@ -55,10 +53,10 @@ class MyPagesDataSourceImpl(
 
     override suspend fun patchMyTeam(request: PatchMyTeamRequest): ApiResponse<Unit?> = runCatching {
         httpClient.patch("/my-pages/my-team") {
-            contentType(ContentType.Application.Json)
             setBody(request)
         }
     }.asApiResponse()
+
 
     override suspend fun getPosts(page: Int, size: Int): ApiResponse<PostsResponse> = runCatching {
         httpClient.get("/my-pages/posts"){

@@ -13,9 +13,17 @@ import every.lol.com.core.domain.repository.AboutLCKRepository
 import every.lol.com.core.domain.repository.AuthRepository
 import every.lol.com.core.domain.repository.CommunityRepository
 import every.lol.com.core.domain.repository.MyPagesRepository
+import every.lol.com.core.domain.usecase.CheckAuthUseCase
+import every.lol.com.core.domain.usecase.GetMyCommentsUseCase
+import every.lol.com.core.domain.usecase.GetMyPostsUseCase
+import every.lol.com.core.domain.usecase.GetProfileUseCase
+import every.lol.com.core.domain.usecase.LogoutUseCase
 import every.lol.com.core.domain.usecase.NicknameUseCase
+import every.lol.com.core.domain.usecase.PatchMyTeamUseCase
+import every.lol.com.core.domain.usecase.PatchProfileUseCase
 import every.lol.com.core.domain.usecase.SignupUseCase
 import every.lol.com.core.domain.usecase.SocialLoginUseCase
+import every.lol.com.core.domain.usecase.WithdrawalUseCase
 import every.lol.com.core.network.datasource.AboutLCKDataSource
 import every.lol.com.core.network.datasource.AuthDataSource
 import every.lol.com.core.network.datasource.CommunityDataSource
@@ -57,6 +65,14 @@ val appDependenciesModule = module {
     factory { SocialLoginUseCase(get(), get()) }
     factory { SignupUseCase(get()) }
     factory { NicknameUseCase(get()) }
+    factory { CheckAuthUseCase(get()) }
+    factory { GetProfileUseCase(get()) }
+    factory { PatchProfileUseCase(get()) }
+    factory { PatchMyTeamUseCase(get()) }
+    factory { GetMyPostsUseCase(get()) }
+    factory { GetMyCommentsUseCase(get()) }
+    factory { LogoutUseCase(get()) }
+    factory { WithdrawalUseCase(get()) }
 
     factoryOf(::IntroViewModel)
     factoryOf(::MypageViewModel)

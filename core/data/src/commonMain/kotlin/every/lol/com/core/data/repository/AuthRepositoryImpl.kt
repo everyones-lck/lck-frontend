@@ -9,6 +9,9 @@ import every.lol.com.core.network.model.ApiResponse
 import every.lol.com.core.network.model.request.KakaoRequest
 import every.lol.com.core.network.model.request.SignupRequest
 import every.lol.com.core.network.model.request.SignupUserData
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
 import kotlin.time.Clock
 
 class AuthRepositoryImpl(
@@ -20,6 +23,7 @@ class AuthRepositoryImpl(
         remote.login(KakaoRequest(kakaoUserId))
             .toResult()
             .mapCatching { dto ->
+                println("로그: 서버 응답 성공! 토큰 저장 시작")
                 local.saveUserId(kakaoUserId)
                 local.saveToken(
                     dto.accessToken,
@@ -27,6 +31,7 @@ class AuthRepositoryImpl(
                     dto.accessTokenExpirationTime,
                     dto.refreshTokenExpirationTime
                 )
+                println("로그: 저장 완료! accessToken: ${dto.accessToken}")
             }
 
     override suspend fun signup(request: Signup): Result<Unit> {
@@ -61,28 +66,44 @@ class AuthRepositoryImpl(
 
     override suspend fun getValidAccessToken(): String? {
         val authData = local.getAuthData() ?: return null
+        println("로그: 로컬에서 가져온 데이터 -> $authData") // 이게 null이면 1번 범인
         val kakaoUserId = authData.kakaoUserId ?: return null
 
         val now = Clock.System.now().toEpochMilliseconds()
-        val expiry = authData.accessTokenExpirationTime.toLongOrNull() ?: 0L
-        val refreshExpiry = authData.refreshTokenExpirationTime.toLongOrNull() ?: 0L
+        fun parseServerTime(timeStr: String): Long {
+            return try {
+                val formatted = timeStr.replace(" ", "T")
+                LocalDateTime.parse(formatted)
+                    .toInstant(TimeZone.currentSystemDefault())
+                    .toEpochMilliseconds()
+            } catch (e: Exception) {
+                0L
+            }
+        }
+        val expiry = parseServerTime(authData.accessTokenExpirationTime)
+        val refreshExpiry = parseServerTime(authData.refreshTokenExpirationTime)
 
         return if (now >= expiry) {
+            println("로그: AccessToken 만료됨. 리프레시 시도!")
+
             if (now >= refreshExpiry) {
+                println("로그: RefreshToken까지 만료됨. 다시 로그인해라 자슥아!")
                 local.clearAuthData()
                 return null
             }
-            val refreshResult = remote.refresh(KakaoRequest(kakaoUserId))
-            if (refreshResult is ApiResponse.Success) {
-                val newData = refreshResult.data
+            val response = remote.refresh(KakaoRequest(kakaoUserId))
+            if (response is ApiResponse.Success) {
+                val newData = response.data
                 local.saveToken(
                     newData.accessToken,
                     newData.refreshToken,
                     newData.accessTokenExpirationTime,
                     newData.refreshTokenExpirationTime
                 )
+                println("로그: 토큰 갱신 성공!")
                 newData.accessToken
             } else {
+                println("로그: 리프레시 API 실패")
                 null
             }
         } else {

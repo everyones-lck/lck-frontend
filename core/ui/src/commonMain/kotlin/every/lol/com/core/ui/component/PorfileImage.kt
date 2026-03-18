@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
@@ -17,13 +18,14 @@ import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import everylol.core.ui.generated.resources.Res
 import everylol.core.ui.generated.resources.ic_camera
 import everylol.core.ui.generated.resources.img_default_profile
+import everylol.core.ui.generated.resources.img_example
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun ProfileImage(
     requiredGallery: Boolean?=false,
     onOpenGallery:(()-> Unit)?=null,
-    profile: ByteArray?=null,
+    profile: Any?=null,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -39,9 +41,19 @@ fun ProfileImage(
                 .background(EveryLoLTheme.color.grayScale900)
                 .clickable(enabled = onOpenGallery != null) { onOpenGallery?.invoke() },
             contentScale = ContentScale.Crop,
+            filterQuality = FilterQuality.High,
             placeholder = painterResource(Res.drawable.img_default_profile),
-            error = painterResource(Res.drawable.img_default_profile),
-            fallback = painterResource(Res.drawable.img_default_profile)
+            error = painterResource(Res.drawable.img_example),
+            fallback = painterResource(Res.drawable.img_example),
+            onLoading = {
+                println("이미지 로딩 중...")
+            },
+            onSuccess = { success ->
+                println("이미지 로드 성공: ${success.result.dataSource}")
+            },
+            onError = { error ->
+                println("이미지 로드 에러: ${error.result.throwable}")
+            }
         )
 
         if (requiredGallery == true) {

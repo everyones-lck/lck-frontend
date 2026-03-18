@@ -55,13 +55,16 @@ sealed interface MypageUiState {
         val menuList: List<MypageMenu> = emptyList()
     ) : MypageUiState
     data class MyInform(
-        val profileImage: ByteArray? = null,
+        val profileImage: String? = null,
         val nickName: String = "",
         val teamId: Set<Team> = emptySet()
     )
     data class ProfileEdit(
-        val profileImage: ByteArray? = null,
+        val originalNickname: String,
         val nickName: String = "",
+        val originalProfileImage: Any?,
+        val profileImage: Any?=null,
+        val originalTeamId: Set<Team>,
         val teamId: Set<Team> = emptySet(),
         val isDuplicateChecked: Boolean = false,
         val isEnabled: Boolean = false,
@@ -89,4 +92,8 @@ sealed interface MypageIntent{
     data class ClickMenu(val type: MypageUiState.MypageMenuType) : MypageIntent
     data object FetchMyPosts : MypageIntent
     data object FetchMyComments : MypageIntent
+    data object SaveProfile: MypageIntent
+    data class InputNickName(val nickName: String) : MypageIntent
+    data class ClickCheckDuplicateNickname(val nickName: String) : MypageIntent
+
 }
