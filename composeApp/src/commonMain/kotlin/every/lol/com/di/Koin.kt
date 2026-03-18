@@ -65,18 +65,22 @@ val appDependenciesModule = module {
 fun initKoin(
     appDeclaration: KoinAppDeclaration = {},
     platformModules: List<Module> = emptyList()
-    ) {
-    if (KoinPlatformTools.defaultContext().getOrNull() == null) {
-        startKoin {
-            appDeclaration()
-            printLogger(Level.DEBUG)
-            modules(
-                networkModule,
-                dataSourceModule,
-                repositoryModule,
-                appDependenciesModule,
-                *platformModules.toTypedArray()
-            )
-        }
+) {
+    startKoin {
+        appDeclaration()
+        printLogger(Level.DEBUG)
+        modules(
+            networkModule,
+            dataSourceModule,
+            repositoryModule,
+            appDependenciesModule,
+            *platformModules.toTypedArray()
+        )
     }
+}
+
+object KoinBridge {
+    fun start() {
+        initKoin()
+  }
 }

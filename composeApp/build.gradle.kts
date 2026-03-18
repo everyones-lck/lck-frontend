@@ -29,6 +29,7 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
+            export(project(":core:network"))
         }
     }
     sourceSets {
@@ -66,6 +67,8 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.koin.core)
             implementation(libs.ktor.client.core)
+
+            api(project(":core:network"))
         }
 
         commonTest.dependencies {

@@ -90,10 +90,10 @@ fun App() {
                             }
                         }
                     )
-                    composable<Route.Home> { HomeScreen(onNavigateToMypage = {
-                        navController.navigate(Route.Mypage)
-                    }) }
-                    composable<Route.Matches> { MatchesScreen() }
+                    composable<Route.Home> { HomeScreen(innerPadding = innerPadding,
+                                                       onNavigateToMypage = {
+                        navController.navigate(Route.Mypage)) }
+                                                        composable<Route.Matches> { MatchesScreen() }
                     composable<Route.AboutLCK> { AboutLCKScreen() }
                     composable<Route.Community> { CommunityScreen() }
 
