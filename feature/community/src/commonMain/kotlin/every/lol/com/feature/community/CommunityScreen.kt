@@ -11,11 +11,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -34,6 +34,7 @@ import every.lol.com.feature.community.component.TabBar
 import every.lol.com.feature.community.component.TitleText
 import every.lol.com.feature.community.model.CommunityIntent
 import every.lol.com.feature.community.model.CommunityUiState
+import every.lol.com.feature.community.model.CommunityUiState.Loading.selectedTab
 import moe.tlaster.precompose.koin.koinViewModel
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -42,23 +43,15 @@ fun CommunityRoute(
     innerPadding : PaddingValues,
     viewModel: CommunityViewModel = koinViewModel(CommunityViewModel::class),
     onBackClick: () -> Unit,
-    onWriteSuccess: () -> Unit,
-    onDeleteSuccess: () -> Unit
+    onReadClick: (Int) -> Unit,
 ){
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val snackbarHostState = remember { SnackbarHostState() }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            viewModel.onIntent(CommunityIntent.Loading)
-        }
-    }
 
     LaunchedEffect(viewModel.event) {
         viewModel.event.collect { event ->
             when (event) {
-                CommunityEvent.NavigateWrite -> onWriteSuccess()
+                is CommunityEvent.NavigateRead -> {  }
                 else -> {}
             }
         }
@@ -68,11 +61,18 @@ fun CommunityRoute(
         is CommunityUiState.Community -> {
             CommunityScreen(
                 state = uiState,
-                onBackClick = onBackClick,
+                onReadClick = onReadClick,
                 onIntent = viewModel::onIntent
             )
         }
-        else -> {}
+        else-> {
+            Box(
+                modifier = Modifier.fillMaxSize().everylolDefault(EveryLoLTheme.color.newBg, false),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = EveryLoLTheme.color.grayScale200)
+            }
+        }
     }
 }
 
@@ -80,7 +80,7 @@ fun CommunityRoute(
 @Composable
 fun CommunityScreen(
     state: CommunityUiState,
-    onBackClick: () -> Unit,
+    onReadClick: (Int) -> Unit,
     onIntent: (CommunityIntent) -> Unit
 ) {
 
@@ -117,7 +117,7 @@ fun CommunityScreen(
                         onIntent(CommunityIntent.ClickTab(tab))
                     }
                 )
-                if(state.selectedTab == CommunityUiState.CommunityTab.ALL) {
+                if(selectedTab == CommunityUiState.CommunityTab.ALL) {
                     TitleText("주간 인기글")
                     PopularPost(popularPosts =popularPosts)
                     TitleText("전체 게시판")
@@ -131,8 +131,9 @@ fun CommunityScreen(
                     } else {
                         posts.forEach { post ->
                             CommunityItem(
-                                type = state.selectedTab,
-                                post = post
+                                type = selectedTab,
+                                post = post,
+                                onPostClick = { onReadClick(post.postId) }
                             )
                         }
                     }

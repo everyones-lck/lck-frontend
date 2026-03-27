@@ -33,6 +33,7 @@ import every.lol.com.core.navigation.MainTab
 import every.lol.com.core.navigation.Route
 import every.lol.com.feature.aboutlck.AboutLCKScreen
 import every.lol.com.feature.community.navigation.communityNavGraph
+import every.lol.com.feature.community.navigation.readNavGraph
 import every.lol.com.feature.home.HomeScreen
 import every.lol.com.feature.intro.navigation.introNavGraph
 import every.lol.com.feature.matches.MatchesScreen
@@ -56,8 +57,11 @@ fun App() {
                 bottomBar = {
                     val isIntro = currentDestination?.hasRoute<Route.Intro>() == true
                     val isMypage = currentDestination?.hasRoute<Route.Mypage>() == true
+                    val isWrite = currentDestination?.hasRoute<Route.Write>() == true
+                    val isRead = currentDestination?.hasRoute<Route.Read>() == true
 
-                    if (!isIntro && !isMypage) {
+
+                    if (!isIntro && !isMypage && !isWrite && !isRead) {
                         Surface(
                             color = EveryLoLTheme.color.newBg,
                             modifier = Modifier
@@ -148,7 +152,14 @@ fun App() {
                         onBackClick = {
                             navController.popBackStack()
                         },
-                        onWriteSuccess = {
+                        onReadClick = { postId ->
+                            navController.navigate(Route.Read(postId))
+                        }
+                    )
+
+                    readNavGraph(
+                        innerPadding = innerPadding,
+                        onBackClick = {
                             navController.popBackStack()
                         },
                         onDeleteSuccess = {

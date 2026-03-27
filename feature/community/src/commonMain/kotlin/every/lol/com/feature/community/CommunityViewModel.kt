@@ -1,6 +1,7 @@
 package every.lol.com.feature.community
 
 import every.lol.com.core.domain.usecase.GetCommunityPostsUseCase
+import every.lol.com.core.domain.usecase.GetReadPostUseCase
 import every.lol.com.feature.community.model.CommunityIntent
 import every.lol.com.feature.community.model.CommunityUiState
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -14,10 +15,12 @@ import moe.tlaster.precompose.viewmodel.viewModelScope
 
 sealed interface CommunityEvent{
     data object NavigateWrite: CommunityEvent
+    data object NavigateRead: CommunityEvent
 }
 
 class CommunityViewModel(
-    private val getCommunityPostsUseCase: GetCommunityPostsUseCase
+    private val getCommunityPostsUseCase: GetCommunityPostsUseCase,
+    private val getReadPostUseCase: GetReadPostUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<CommunityUiState>(CommunityUiState.Loading)
@@ -35,6 +38,7 @@ class CommunityViewModel(
             CommunityIntent.Loading -> loadCommunityData()
             is CommunityIntent.ClickTab -> handleTabClick(intent.tab)
             CommunityIntent.FetchPosts -> loadCommunityData()
+            is CommunityIntent.DetailPost -> loadReadPost(intent.postId)
             else -> {}
         }
     }
@@ -68,6 +72,30 @@ class CommunityViewModel(
                 }
             }.onFailure { throwable ->
 
+            }
+        }
+    }
+
+    private fun loadReadPost(postId: Int){
+
+        val state = _uiState.value
+        if (state is CommunityUiState.Read && state.postId == postId) return
+
+        _uiState.value = CommunityUiState.Read(postId = postId, isLoading = true)
+
+        viewModelScope.launch {
+            getReadPostUseCase(postId).onSuccess { post ->
+                _uiState.update { current ->
+                    if (current is CommunityUiState.Read && current.postId == postId) {
+                        current.copy(post = post, isLoading = false)
+                    } else current
+                }
+            }.onFailure {
+                _uiState.update { current ->
+                    if (current is CommunityUiState.Read && current.postId == postId) {
+                        current.copy(isLoading = false)
+                    } else current
+                }
             }
         }
     }

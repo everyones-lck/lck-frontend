@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 data class PostDetailResponse(
     val postType: String,
     val writerProfileUrl: String,
-    val writerNickName: String,
+    val writerNickname: String,
     val writerTeam: String,
     val postTitle: String,
     val postCreatedAt: String,

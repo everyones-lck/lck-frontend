@@ -16,15 +16,13 @@ fun NavController.navigateCommunity(navOptions: NavOptions) {
 fun NavGraphBuilder.communityNavGraph(
     innerPadding: PaddingValues,
     onBackClick: () -> Unit,
-    onWriteSuccess: () -> Unit,
-    onDeleteSuccess: () -> Unit
+    onReadClick: (Int) -> Unit,
 ) {
     composable<Route.Community> {
         CommunityRoute(
             innerPadding = innerPadding,
             onBackClick = onBackClick,
-            onWriteSuccess = onWriteSuccess,
-            onDeleteSuccess = onDeleteSuccess
+            onReadClick = onReadClick
         )
     }
 }

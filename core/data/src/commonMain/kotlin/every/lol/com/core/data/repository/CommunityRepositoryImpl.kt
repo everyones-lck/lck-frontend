@@ -31,7 +31,7 @@ class CommunityRepositoryImpl(
             PostDetail(
                 postType = response.postType,
                 writerProfileUrl = response.writerProfileUrl,
-                writerNickName = response.writerNickName,
+                writerNickName = response.writerNickname,
                 writerTeam = response.writerTeam,
                 postTitle = response.postTitle,
                 postCreatedAt = response.postCreatedAt,
