@@ -20,7 +20,7 @@ import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.core.navigation.MainTab
 import every.lol.com.core.navigation.Route
 import every.lol.com.feature.aboutlck.AboutLCKScreen
-import every.lol.com.feature.community.CommunityScreen
+import every.lol.com.feature.community.navigation.communityNavGraph
 import every.lol.com.feature.home.HomeScreen
 import every.lol.com.feature.intro.navigation.introNavGraph
 import every.lol.com.feature.matches.MatchesScreen
@@ -99,7 +99,19 @@ fun App() {
                     }
                     composable<Route.Matches> { MatchesScreen() }
                     composable<Route.AboutLCK> { AboutLCKScreen() }
-                    composable<Route.Community> { CommunityScreen() }
+
+                    communityNavGraph(
+                        innerPadding = innerPadding,
+                        onBackClick = {
+                            navController.popBackStack()
+                        },
+                        onWriteSuccess = {
+                            navController.popBackStack()
+                        },
+                        onDeleteSuccess = {
+
+                        }
+                    )
 
                     mypageNavGraph(
                         onBackClick = {

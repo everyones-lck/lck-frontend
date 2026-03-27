@@ -34,7 +34,7 @@ import every.lol.com.core.designsystem.component.EverylolTopAppBar
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.core.ui.component.DefaultScreen
 import every.lol.com.core.ui.ext.everylolDefault
-import every.lol.com.feature.mypage.component.CommunityItem
+import every.lol.com.feature.mypage.component.MypageCommunityItem
 import every.lol.com.feature.mypage.model.MypageIntent
 import every.lol.com.feature.mypage.model.MypageUiState
 import everylol.feature.mypage.generated.resources.Res
@@ -155,7 +155,7 @@ fun MypageCommunityScreen(
                                 }
                             } else {
                                 data.posts.forEach { post ->
-                                    CommunityItem(
+                                    MypageCommunityItem(
                                         type = MypageUiState.CommunityTab.POST,
                                         title = post.title,
                                         content = null, //Todo: API 수정 후 반영
@@ -173,7 +173,7 @@ fun MypageCommunityScreen(
                                 }
                             } else {
                                 data.comments.forEach { comment ->
-                                    CommunityItem(
+                                    MypageCommunityItem(
                                         type = MypageUiState.CommunityTab.COMMENT,
                                         title = null, // TODO: API 수정 후 반영
                                         content = comment.content,

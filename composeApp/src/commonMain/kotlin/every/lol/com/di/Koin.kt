@@ -14,6 +14,7 @@ import every.lol.com.core.domain.repository.AuthRepository
 import every.lol.com.core.domain.repository.CommunityRepository
 import every.lol.com.core.domain.repository.MyPagesRepository
 import every.lol.com.core.domain.usecase.CheckAuthUseCase
+import every.lol.com.core.domain.usecase.GetCommunityPostsUseCase
 import every.lol.com.core.domain.usecase.GetMyCommentsUseCase
 import every.lol.com.core.domain.usecase.GetMyPostsUseCase
 import every.lol.com.core.domain.usecase.GetProfileUseCase
@@ -34,6 +35,7 @@ import every.lol.com.core.network.remote.AboutLCKDataSourceImpl
 import every.lol.com.core.network.remote.AuthDataSourceImpl
 import every.lol.com.core.network.remote.CommunityDataSourceImpl
 import every.lol.com.core.network.remote.MyPagesDataSourceImpl
+import every.lol.com.feature.community.CommunityViewModel
 import every.lol.com.feature.intro.IntroViewModel
 import every.lol.com.feature.mypage.MypageViewModel
 import org.koin.core.context.startKoin
@@ -43,7 +45,6 @@ import org.koin.core.module.dsl.factoryOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.module
-import org.koin.mp.KoinPlatformTools
 
 val appDependenciesModule = module {
 
@@ -73,9 +74,11 @@ val appDependenciesModule = module {
     factory { GetMyCommentsUseCase(get()) }
     factory { LogoutUseCase(get()) }
     factory { WithdrawalUseCase(get()) }
+    factory { GetCommunityPostsUseCase(get()) }
 
     factoryOf(::IntroViewModel)
     factoryOf(::MypageViewModel)
+    factoryOf(::CommunityViewModel)
 }
 
 fun initKoin(
