@@ -1,5 +1,6 @@
 package every.lol.com.feature.community
 
+import every.lol.com.core.common.compressImage
 import every.lol.com.core.domain.usecase.GetCommunityPostsUseCase
 import every.lol.com.core.domain.usecase.GetReadPostUseCase
 import every.lol.com.core.domain.usecase.PostCommunityPostUseCase
@@ -7,13 +8,16 @@ import every.lol.com.feature.community.model.CommunityIntent
 import every.lol.com.feature.community.model.CommunityUiState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import moe.tlaster.precompose.viewmodel.ViewModel
 import moe.tlaster.precompose.viewmodel.viewModelScope
 
@@ -33,10 +37,15 @@ class CommunityViewModel(
     private val _uiState = MutableStateFlow<CommunityUiState>(CommunityUiState.Loading)
     val uiState = _uiState.asStateFlow()
 
-    private val _event = MutableSharedFlow<CommunityEvent>()
+    private val _event = MutableSharedFlow<CommunityEvent>(replay = 0)
     val event = _event.asSharedFlow()
 
-    private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+    private val uploadScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+
+    override fun onCleared() {
+        super.onCleared()
+        uploadScope.cancel()
+    }
 
     init {
         onIntent(CommunityIntent.Loading)
@@ -254,25 +263,28 @@ class CommunityViewModel(
             state.copy(selectedMedias = newList)
         }
     }
+
     private fun handleWritePost(title: String, content: String) {
         val currentState = _uiState.value as? CommunityUiState.Write ?: return
 
-        appScope.launch {
+        uploadScope.launch {
             try {
                 _uiState.update { if (it is CommunityUiState.Write) it.copy(isLoading = true) else it }
 
-                val files = currentState.selectedMedias.map { it.url }
+                val compressedFiles = withContext(Dispatchers.Default) {
+                    currentState.selectedMedias.map { it.url.compressImage(30) }
+                }
 
-                // 🚀 비즈니스 로직 실행
-                postCommunityPostUseCase(
-                    files = files,
-                    type = "잡담",
-                    title = title,
-                    content = content
-                ).onSuccess {
-                    _event.emit(CommunityEvent.WriteSuccess)
-                }.onFailure {
-                    _uiState.update { if (it is CommunityUiState.Write) it.copy(isLoading = false) else it }
+                withContext(Dispatchers.IO) {
+                    postCommunityPostUseCase(compressedFiles, "잡담", title, content)
+                        .onSuccess {
+                            withContext(Dispatchers.Main) {
+                                _event.emit(CommunityEvent.WriteSuccess)
+                            }
+                        }
+                        .onFailure {
+                            _uiState.update { if (it is CommunityUiState.Write) it.copy(isLoading = false) else it }
+                        }
                 }
             } catch (e: Exception) {
                 _uiState.update { if (it is CommunityUiState.Write) it.copy(isLoading = false) else it }

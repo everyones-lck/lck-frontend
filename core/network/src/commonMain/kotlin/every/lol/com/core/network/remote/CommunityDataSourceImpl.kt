@@ -12,6 +12,7 @@ import every.lol.com.core.network.model.response.PostIdResponse
 import every.lol.com.core.network.model.response.PostListResponse
 import every.lol.com.core.network.util.asApiResponse
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.timeout
 import io.ktor.client.request.delete
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
@@ -29,6 +30,9 @@ class CommunityDataSourceImpl(
 
     override suspend fun postPost(request: PostPostRequest): ApiResponse<PostIdResponse> = runCatching {
         httpClient.post("/post/create") {
+            timeout {
+                requestTimeoutMillis = 120_000L // 이 요청만 특별히 2분 허용
+            }
             setBody(
                 MultiPartFormDataContent(
                     formData {
