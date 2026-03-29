@@ -13,13 +13,12 @@ import every.lol.com.core.network.model.response.PostListResponse
 import every.lol.com.core.network.util.asApiResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.request.delete
+import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
-import io.ktor.client.request.forms.submitFormWithBinaryData
 import io.ktor.client.request.get
 import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
-import io.ktor.http.ContentType
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import kotlinx.serialization.json.Json
@@ -28,26 +27,25 @@ class CommunityDataSourceImpl(
     private val httpClient: HttpClient
 ): CommunityDataSource {
 
-
     override suspend fun postPost(request: PostPostRequest): ApiResponse<PostIdResponse> = runCatching {
-        httpClient.submitFormWithBinaryData(
-            url = "/post/create",
-            formData = formData {
-                val files = request.files
-                if (files.isNullOrEmpty()) {
-                    append("files", "")
-                } else {
-                    files.forEach { file ->
-                        append("files", file)
-                    }
-                }
-                val jsonString = Json.encodeToString(request.request)
+        httpClient.post("/post/create") {
+            setBody(
+                MultiPartFormDataContent(
+                    formData {
+                        request.files?.forEachIndexed { index, bytes ->
+                            append("files", bytes, Headers.build {
+                                append(HttpHeaders.ContentType, "image/jpeg")
+                                append(HttpHeaders.ContentDisposition, "filename=\"image_$index.jpg\"")
+                            })
+                        }
 
-                append("request", jsonString, Headers.build {
-                    append(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                })
-            }
-        )
+                        append("request", Json.encodeToString(request.request), Headers.build {
+                            append(HttpHeaders.ContentType, "application/json")
+                        })
+                    }
+                )
+            )
+        }
     }.asApiResponse()
 
     override suspend fun editPost(postId: Int, request: PostPostDetailRequest): ApiResponse<PostIdResponse> = runCatching {

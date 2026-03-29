@@ -1,5 +1,6 @@
 package every.lol.com.feature.community
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,10 +30,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import every.lol.com.core.common.rememberImagePickerLauncher
+import every.lol.com.core.common.toImageByteArray
 import every.lol.com.core.designsystem.component.EverylolButton
 import every.lol.com.core.designsystem.component.EverylolModal
 import every.lol.com.core.designsystem.component.EverylolTextField
@@ -76,18 +79,38 @@ fun WriteRoute(
     }
 
     val currentState = uiState
-    if (currentState is CommunityUiState.Write) {
-        WriteCommunityScreen(
-            state = currentState,
-            onBackClick = onBackClick,
-            onIntent = viewModel::onIntent
-        )
-    } else {
-        Box(
-            modifier = Modifier.fillMaxSize().everylolDefault(EveryLoLTheme.color.newBg, false),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator(color = EveryLoLTheme.color.grayScale200)
+
+
+    Box(modifier = Modifier.fillMaxSize()) {
+
+        // 1. 작성 화면은 항상 메모리에 유지 (데이터 전송 중 취소 방지)
+        if (currentState is CommunityUiState.Write) {
+            WriteCommunityScreen(
+                state = currentState,
+                onBackClick = onBackClick,
+                onIntent = viewModel::onIntent
+            )
+
+            // 2. 로딩 중일 때만 화면 위에 반투명 레이어와 로딩바를 띄움
+            if (currentState.isLoading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.5f)) // 배경 클릭 방지 및 시각적 효과
+                        .pointerInput(Unit) {}, // 로딩 중 하단 클릭 무시
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = EveryLoLTheme.color.grayScale200)
+                }
+            }
+        } else {
+            // 초기 진입 시 로딩 (데이터 로드 전)
+            Box(
+                modifier = Modifier.fillMaxSize().everylolDefault(EveryLoLTheme.color.newBg, false),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = EveryLoLTheme.color.grayScale200)
+            }
         }
     }
 }
@@ -106,12 +129,16 @@ fun WriteCommunityScreen(
 
     val imagePickerLauncher = rememberImagePickerLauncher { result ->
         result?.let { uri ->
+
+            val imageData = uri.toImageByteArray() ?: return@let
+
             val newMedias = listOf(
-                CommunityUiState.MediaItem(
-                    id = uri.toString(),
-                    url = uri.toString(),
-                    isVideo = uri.toString().contains("video") || uri.toString().contains(".mp4")
-                )
+                    CommunityUiState.MediaItem(
+                        id = uri.toString(),
+                        url = imageData,
+                        isVideo = uri.toString().contains("video") || uri.toString()
+                            .contains(".mp4")
+                    )
             )
             onIntent(CommunityIntent.AddMedias(newMedias))
         }

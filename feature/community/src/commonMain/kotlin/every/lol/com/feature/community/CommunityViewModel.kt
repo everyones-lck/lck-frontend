@@ -5,6 +5,9 @@ import every.lol.com.core.domain.usecase.GetReadPostUseCase
 import every.lol.com.core.domain.usecase.PostCommunityPostUseCase
 import every.lol.com.feature.community.model.CommunityIntent
 import every.lol.com.feature.community.model.CommunityUiState
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -33,6 +36,8 @@ class CommunityViewModel(
     private val _event = MutableSharedFlow<CommunityEvent>()
     val event = _event.asSharedFlow()
 
+    private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+
     init {
         onIntent(CommunityIntent.Loading)
     }
@@ -57,14 +62,7 @@ class CommunityViewModel(
             is CommunityIntent.ChangeContent -> {
                 val currentState = uiState.value
                 if (currentState is CommunityUiState.Write) {
-                    val oldLineCount = currentState.content.split("\n").size
-                    val newLineCount = intent.content.split("\n").size
-
-                    if (oldLineCount != newLineCount) {
-                        handleContentLineChange(currentState, intent.content)
-                    } else {
-                        _uiState.value = currentState.copy(content = intent.content)
-                    }
+                    _uiState.value = currentState.copy(content = intent.content)
                 }
             }
             is CommunityIntent.WritePost -> {
@@ -256,23 +254,29 @@ class CommunityViewModel(
             state.copy(selectedMedias = newList)
         }
     }
-
     private fun handleWritePost(title: String, content: String) {
-
         val currentState = _uiState.value as? CommunityUiState.Write ?: return
-        _uiState.value = currentState.copy(isLoading = true)
 
-        viewModelScope.launch {
-            postCommunityPostUseCase(null, "잡담", title, content).onSuccess {
-                // 2. 성공 시 'WriteSuccess' 이벤트를 보냄
-                _event.emit(CommunityEvent.WriteSuccess)
-            }.onFailure {
-                _uiState.update { state ->
-                    if (state is CommunityUiState.Write) state.copy(isLoading = false) else state
+        appScope.launch {
+            try {
+                _uiState.update { if (it is CommunityUiState.Write) it.copy(isLoading = true) else it }
+
+                val files = currentState.selectedMedias.map { it.url }
+
+                // 🚀 비즈니스 로직 실행
+                postCommunityPostUseCase(
+                    files = files,
+                    type = "잡담",
+                    title = title,
+                    content = content
+                ).onSuccess {
+                    _event.emit(CommunityEvent.WriteSuccess)
+                }.onFailure {
+                    _uiState.update { if (it is CommunityUiState.Write) it.copy(isLoading = false) else it }
                 }
+            } catch (e: Exception) {
+                _uiState.update { if (it is CommunityUiState.Write) it.copy(isLoading = false) else it }
             }
         }
     }
-
-
 }

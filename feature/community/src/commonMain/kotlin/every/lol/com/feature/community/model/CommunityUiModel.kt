@@ -46,7 +46,7 @@ sealed interface CommunityUiState {
 
     data class MediaItem(
         val id: String,
-        val url: String,
+        val url: ByteArray,
         val isVideo: Boolean = false,
         val durationMs: Long = 0L,
         val order : Int = -1
