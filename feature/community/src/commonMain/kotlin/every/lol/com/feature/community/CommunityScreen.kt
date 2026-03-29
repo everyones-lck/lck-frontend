@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import every.lol.com.core.designsystem.component.EverylolFab
 import every.lol.com.core.designsystem.component.EverylolTopAppBar
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.core.ui.ext.everylolDefault
@@ -34,7 +35,6 @@ import every.lol.com.feature.community.component.TabBar
 import every.lol.com.feature.community.component.TitleText
 import every.lol.com.feature.community.model.CommunityIntent
 import every.lol.com.feature.community.model.CommunityUiState
-import every.lol.com.feature.community.model.CommunityUiState.Loading.selectedTab
 import moe.tlaster.precompose.koin.koinViewModel
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -44,6 +44,7 @@ fun CommunityRoute(
     viewModel: CommunityViewModel = koinViewModel(CommunityViewModel::class),
     onBackClick: () -> Unit,
     onReadClick: (Int) -> Unit,
+    onWriteClick: () -> Unit
 ){
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -51,7 +52,8 @@ fun CommunityRoute(
     LaunchedEffect(viewModel.event) {
         viewModel.event.collect { event ->
             when (event) {
-                is CommunityEvent.NavigateRead -> {  }
+                is CommunityEvent.NavigateCommunityHome -> onBackClick
+                is CommunityEvent.NavigateWrite -> {  }
                 else -> {}
             }
         }
@@ -62,6 +64,7 @@ fun CommunityRoute(
             CommunityScreen(
                 state = uiState,
                 onReadClick = onReadClick,
+                onWriteClick = onWriteClick,
                 onIntent = viewModel::onIntent
             )
         }
@@ -81,11 +84,15 @@ fun CommunityRoute(
 fun CommunityScreen(
     state: CommunityUiState,
     onReadClick: (Int) -> Unit,
+    onWriteClick: () -> Unit,
     onIntent: (CommunityIntent) -> Unit
 ) {
 
     val snackbarHostState = remember { SnackbarHostState() }
+
     val communityState = state as? CommunityUiState.Community
+
+    val currentTab = communityState?.selectedTab ?: CommunityUiState.CommunityTab.ALL
     val popularPosts = communityState?.popularPosts ?: emptyList()
     val posts = communityState?.posts ?: emptyList()
 
@@ -99,6 +106,12 @@ fun CommunityScreen(
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
             topBar = {
                 EverylolTopAppBar(title = "커뮤니티")
+            },
+            floatingActionButton = {
+                EverylolFab(
+                    modifier = Modifier.padding(bottom = 107.dp),
+                    onClick = {onWriteClick()}
+                )
             }
         ) { innerPadding ->
             Column(
@@ -112,12 +125,12 @@ fun CommunityScreen(
             ) {
                 TabBar(
                     tabItems = CommunityUiState.CommunityTab.entries,
-                    selectedTab = if (state is CommunityUiState.Community) state.selectedTab else CommunityUiState.CommunityTab.ALL,
-                    onTabSelected = { tab ->
-                        onIntent(CommunityIntent.ClickTab(tab))
-                    }
+                    selectedTab = currentTab,
+                    onTabSelected = { onIntent(CommunityIntent.ClickTab(it)) },
+                    getDisplayName = { it.displayName }
                 )
-                if(selectedTab == CommunityUiState.CommunityTab.ALL) {
+
+                if(currentTab == CommunityUiState.CommunityTab.ALL) {
                     TitleText("주간 인기글")
                     PopularPost(popularPosts =popularPosts)
                     TitleText("전체 게시판")
@@ -131,7 +144,7 @@ fun CommunityScreen(
                     } else {
                         posts.forEach { post ->
                             CommunityItem(
-                                type = selectedTab,
+                                type = currentTab,
                                 post = post,
                                 onPostClick = { onReadClick(post.postId) }
                             )

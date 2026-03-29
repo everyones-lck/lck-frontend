@@ -34,6 +34,7 @@ import every.lol.com.core.navigation.Route
 import every.lol.com.feature.aboutlck.AboutLCKScreen
 import every.lol.com.feature.community.navigation.communityNavGraph
 import every.lol.com.feature.community.navigation.readNavGraph
+import every.lol.com.feature.community.navigation.writeNavGraph
 import every.lol.com.feature.home.HomeScreen
 import every.lol.com.feature.intro.navigation.introNavGraph
 import every.lol.com.feature.matches.MatchesScreen
@@ -154,6 +155,9 @@ fun App() {
                         },
                         onReadClick = { postId ->
                             navController.navigate(Route.Read(postId))
+                        },
+                        onWriteClick = {
+                            navController.navigate(Route.Write)
                         }
                     )
 
@@ -164,6 +168,13 @@ fun App() {
                         },
                         onDeleteSuccess = {
 
+                        }
+                    )
+
+                    writeNavGraph(
+                        innerPadding = innerPadding,
+                        onBackClick = {
+                            navController.popBackStack()
                         }
                     )
 

@@ -11,13 +11,16 @@ sealed interface CommunityUiState {
         ALL("전체"),
         TALK("잡담"),
         QUESTION("질문"),
-        TRADE("후기/거래"),
-        HOT("인기")
+        TRADE("후기")
     }
 
-    data object Loading : CommunityUiState {
-        val selectedTab = CommunityTab.ALL
+    enum class WriteTab(val displayName: String){
+        TALK("잡담"),
+        QUESTION("질문"),
+        TRADE("후기")
     }
+
+    data object Loading : CommunityUiState
 
     data class Community(
         val selectedTab: CommunityTab = CommunityTab.ALL,
@@ -32,12 +35,23 @@ sealed interface CommunityUiState {
         val post: PostDetail? = null,
         val comments: List<CommentList> = emptyList(),
     ): CommunityUiState
+
+    data class Write(
+        val isLoading: Boolean = false,
+        val selectedTab: WriteTab = WriteTab.TALK,
+        val title: String = "",
+        val content: String = ""
+    ): CommunityUiState
 }
 
 sealed interface CommunityIntent{
     data object Loading : CommunityIntent
     data class ClickTab(val tab: CommunityUiState.CommunityTab) : CommunityIntent
+    data class ClickWriteTab(val tab: CommunityUiState.WriteTab) : CommunityIntent
     data object FetchPosts : CommunityIntent
     data class DetailPost(val postId: Int) : CommunityIntent
+    data class ChangeTitle(val title: String) : CommunityIntent
+    data class ChangeContent(val content: String) : CommunityIntent
+    data class WritePost(val title: String, val content: String) : CommunityIntent
 
 }

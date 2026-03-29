@@ -34,16 +34,40 @@ fun EverylolTextField(
     onValueChange: (String) -> Unit,
     hint: String? = null,
     onDone: (() -> Unit)? = null,
-    status: Int = 0
+    status: Int = 0,
+    maxLine: Int = 1,
+    community: Boolean = false
 ) {
     val isNotEmpty = value.isNotEmpty()
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    val borderColor = when (status) {
-        1 -> EveryLoLTheme.color.semanticCheck
-        2 -> EveryLoLTheme.color.semanticWarning
-        3 -> EveryLoLTheme.color.grayScale200
-        else -> EveryLoLTheme.color.grayScale300
+    val currentBorderColor = if (community) {
+        EveryLoLTheme.color.grayScale1000
+    } else {
+        when (status) {
+            1 -> EveryLoLTheme.color.semanticCheck
+            2 -> EveryLoLTheme.color.semanticWarning
+            3 -> EveryLoLTheme.color.grayScale200
+            else -> EveryLoLTheme.color.grayScale300
+        }
+    }
+
+    val currentTextStyle = if (community) {
+        EveryLoLTheme.typography.pretendardBody02.copy(color = EveryLoLTheme.color.white200)
+    } else {
+        EveryLoLTheme.typography.subtitle02.copy(color = EveryLoLTheme.color.grayScale100)
+    }
+
+    val currentHintStyle = if (community) {
+        EveryLoLTheme.typography.pretendardBody02.copy(color = EveryLoLTheme.color.black900)
+    } else {
+        EveryLoLTheme.typography.subtitle02.copy(color = EveryLoLTheme.color.grayScale800)
+    }
+
+    val backgroundColor = if (community) {
+        EveryLoLTheme.color.grayScale1000
+    } else {
+        EveryLoLTheme.color.newBg
     }
 
     val customTextSelectionColors = TextSelectionColors(
@@ -73,13 +97,11 @@ fun EverylolTextField(
             onValueChange = {
                 onValueChange(it)
             },
-            maxLines = 1,
-            singleLine = true,
-            textStyle = EveryLoLTheme.typography.subtitle02.copy(
-                color = EveryLoLTheme.color.grayScale100
-            ),
+            maxLines = maxLine,
+            singleLine = maxLine == 1,
+            textStyle = currentTextStyle,
             keyboardOptions = KeyboardOptions(
-                imeAction = ImeAction.Done
+                imeAction = if (maxLine > 1) ImeAction.Default else ImeAction.Done
             ),
             keyboardActions = KeyboardActions(
                 onDone = {
@@ -93,30 +115,30 @@ fun EverylolTextField(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(
-                            color = EveryLoLTheme.color.newBg,
+                            color = backgroundColor,
                             shape = RoundedCornerShape(4.dp)
                         )
                         .border(
                             width = 1.dp,
-                            color = borderColor,
+                            color = currentBorderColor,
                             shape = RoundedCornerShape(4.dp)
                         )
                         .padding(horizontal = 16.dp, vertical = 14.dp),
                     horizontalArrangement = Arrangement.Start,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
+                    verticalAlignment = if (maxLine > 1) Alignment.Top else Alignment.CenterVertically,
+                    ) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f),
-                        contentAlignment = Alignment.CenterStart
+                        contentAlignment = if (maxLine > 1) Alignment.TopStart else Alignment.CenterStart
                     ) {
                         if (!isNotEmpty) {
                             hint?.let { h ->
                                 Text(
                                     text = h,
-                                    style = EveryLoLTheme.typography.subtitle02,
-                                    color = EveryLoLTheme.color.grayScale800
+                                    style = currentHintStyle,
+                                    color = currentHintStyle.color
                                 )
                             }
                         }

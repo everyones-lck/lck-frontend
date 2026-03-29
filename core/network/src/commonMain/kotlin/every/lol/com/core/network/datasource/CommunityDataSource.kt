@@ -20,5 +20,4 @@ interface CommunityDataSource {
     suspend fun deleteComment(commentId: Int): ApiResponse<Unit?>
     suspend fun reportPost(request: ReportPostRequest): ApiResponse<Unit?>
     suspend fun reportComment(request: ReportCommentRequest): ApiResponse<Unit?>
-
 }

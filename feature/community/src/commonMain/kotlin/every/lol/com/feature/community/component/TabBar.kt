@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -15,15 +16,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
-import every.lol.com.feature.community.model.CommunityUiState
 
 
 @Composable
-fun TabBar(
+fun <T> TabBar(
     modifier: Modifier = Modifier,
-    tabItems: List<CommunityUiState.CommunityTab>,
-    selectedTab: CommunityUiState.CommunityTab,
-    onTabSelected: (CommunityUiState.CommunityTab) -> Unit
+    tabItems: List<T>,
+    selectedTab: T,
+    onTabSelected: (T) -> Unit,
+    getDisplayName: (T) -> String // 각 탭의 이름을 어떻게 가져올지 정의
 ) {
     Row(
         modifier = modifier
@@ -36,7 +37,7 @@ fun TabBar(
     ){
         tabItems.forEach { tab ->
             TabItem(
-                name = tab.displayName,
+                name = getDisplayName(tab),
                 onClick = { onTabSelected(tab) },
                 isSelected = tab == selectedTab
             )
@@ -53,6 +54,7 @@ fun TabItem(
 ){
     Text(
         modifier = Modifier
+            .width(72.dp)
             .clip(RoundedCornerShape(12.dp))
             .background(if (isSelected) EveryLoLTheme.color.grayScale900 else EveryLoLTheme.color.grayScale1000)
             .clickable(onClick = onClick)

@@ -6,25 +6,21 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
 import every.lol.com.core.navigation.Route
-import every.lol.com.feature.community.CommunityRoute
+import every.lol.com.feature.community.WriteRoute
 
 
-fun NavController.navigateCommunity(navOptions: NavOptions) {
-    navigate(route = Route.Community, navOptions = navOptions)
+fun NavController.navigateWrite(navOptions: NavOptions? = null) {
+    navigate(route = Route.Write, navOptions = navOptions)
 }
 
-fun NavGraphBuilder.communityNavGraph(
+fun NavGraphBuilder.writeNavGraph(
     innerPadding: PaddingValues,
     onBackClick: () -> Unit,
-    onReadClick: (Int) -> Unit,
-    onWriteClick: () -> Unit
 ) {
-    composable<Route.Community> {
-        CommunityRoute(
+    composable<Route.Write> {
+        WriteRoute(
             innerPadding = innerPadding,
             onBackClick = onBackClick,
-            onReadClick = onReadClick,
-            onWriteClick = onWriteClick
         )
     }
 }

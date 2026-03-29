@@ -20,7 +20,7 @@ class CommunityRepositoryImpl(
     private val local: AuthLocalDataSource
 ): CommunityRepository {
 
-    override suspend fun postPost(files: List<String>, type: String, title: String, content: String): Result<Unit> =
+    override suspend fun postPost(files: List<ByteArray>?, type: String, title: String, content: String): Result<Unit> =
         remote.postPost( PostPostRequest(files, PostPostDetailRequest(type, title, content))).toResult().map {it.postId}
 
     override suspend fun editPost(postId: Int, type: String, title: String, content: String): Result<Unit> =
