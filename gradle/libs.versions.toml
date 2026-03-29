@@ -54,6 +54,9 @@ firebaseCrashlyticsBuildtools = "3.0.6"
 kakao = "2.23.2"
 datastoreCore = "1.2.1"
 
+#reorderable (이미지 드로그앤 드롭 구현)
+reorderable = "3.0.0"
+
 [libraries]
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
 kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
@@ -128,6 +131,9 @@ firebase-crashlytics-buildtools = { group = "com.google.firebase", name = "fireb
 #kakao
 kakao-sdk-user = { group = "com.kakao.sdk", name = "v2-user", version.ref = "kakao" }
 datastore-core = { group = "androidx.datastore", name = "datastore-core", version.ref = "datastoreCore" }
+
+#reorderable
+compose-reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

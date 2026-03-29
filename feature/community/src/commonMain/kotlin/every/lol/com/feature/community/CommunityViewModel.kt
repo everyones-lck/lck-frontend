@@ -18,6 +18,7 @@ sealed interface CommunityEvent{
     data object NavigateWrite: CommunityEvent
     data object NavigateCommunityHome: CommunityEvent
     data object WriteSuccess: CommunityEvent
+    data class ShowToast(val message: String): CommunityEvent
 }
 
 class CommunityViewModel(
@@ -49,15 +50,32 @@ class CommunityViewModel(
                     _uiState.value = currentState.copy(title = intent.title)
                 }
             }
+            is CommunityIntent.UpdateMediaOrder -> {
+                handleUpdateMediaOrder(intent.mediaId, intent.newOrder)
+            }
+
             is CommunityIntent.ChangeContent -> {
                 val currentState = uiState.value
                 if (currentState is CommunityUiState.Write) {
-                    _uiState.value = currentState.copy(content = intent.content)
+                    val oldLineCount = currentState.content.split("\n").size
+                    val newLineCount = intent.content.split("\n").size
+
+                    if (oldLineCount != newLineCount) {
+                        handleContentLineChange(currentState, intent.content)
+                    } else {
+                        _uiState.value = currentState.copy(content = intent.content)
+                    }
                 }
             }
             is CommunityIntent.WritePost -> {
                 handleWritePost(intent.title, intent.content)
             }
+            is CommunityIntent.AddMedias -> handleAddMedias(intent.medias)
+
+            is CommunityIntent.RemoveMedia -> handleRemoveMedia(intent.index)
+
+            is CommunityIntent.MoveMedia -> handleMoveMedia(intent.from, intent.to)
+
             else -> {}
         }
     }
@@ -69,6 +87,39 @@ class CommunityViewModel(
         }
 
         loadCommunityData(tab)
+    }
+
+    private fun handleUpdateMediaOrder(mediaId: String, newOrder: Int) {
+        val currentState = uiState.value
+        if (currentState is CommunityUiState.Write) {
+            val updatedMedias = currentState.selectedMedias.map {
+                if (it.id == mediaId) it.copy(order = newOrder) else it
+            }
+            _uiState.value = currentState.copy(selectedMedias = updatedMedias)
+        }
+    }
+
+    private fun handleContentLineChange(currentState: CommunityUiState.Write, newContent: String) {
+        val oldLines = currentState.content.split("\n")
+        val newLines = newContent.split("\n")
+
+        val diffIndex = oldLines.zip(newLines).indexOfFirst { it.first != it.second }
+        val isAdded = newLines.size > oldLines.size
+
+        val adjustedMedias = currentState.selectedMedias.map { media ->
+            if (isAdded && media.order >= diffIndex && diffIndex != -1) {
+                media.copy(order = media.order + 1)
+            } else if (!isAdded && media.order > diffIndex && diffIndex != -1) {
+                media.copy(order = (media.order - 1).coerceAtLeast(0))
+            } else {
+                media
+            }
+        }
+
+        _uiState.value = currentState.copy(
+            content = newContent,
+            selectedMedias = adjustedMedias
+        )
     }
 
     private fun handleWriteTabClick(tab: CommunityUiState.WriteTab) {
@@ -135,6 +186,77 @@ class CommunityViewModel(
         }
     }
 
+    private fun updateWriteState(transform: (CommunityUiState.Write) -> CommunityUiState.Write) {
+        _uiState.update { state ->
+            if (state is CommunityUiState.Write) transform(state) else state
+        }
+    }
+
+    private fun handleAddMedias(newMedias: List<CommunityUiState.MediaItem>) {
+        val timeLimit = 3 * 60 * 1000L
+
+        val timeFilteredMedias = newMedias.filter {
+            if (it.isVideo) it.durationMs <= timeLimit else true
+        }
+
+        if (timeFilteredMedias.size < newMedias.size) {
+            viewModelScope.launch {
+                _event.emit(CommunityEvent.ShowToast("3분을 초과하는 영상은 제외되었습니다."))
+            }
+        }
+
+        updateWriteState { state ->
+            val currentMedias = state.selectedMedias
+
+            val currentImages = currentMedias.filter { !it.isVideo }
+            val currentVideos = currentMedias.filter { it.isVideo }
+
+            val newImages = timeFilteredMedias.filter { !it.isVideo }
+            val newVideos = timeFilteredMedias.filter { it.isVideo }
+
+            val finalImages = (currentImages + newImages).take(10)
+            val finalVideos = (currentVideos + newVideos).take(2)
+
+            if (newImages.size + currentImages.size > 10 || newVideos.size + currentVideos.size > 2) {
+                viewModelScope.launch {
+                    _event.emit(CommunityEvent.ShowToast("사진은 최대 10장, 영상은 최대 2개까지 가능합니다."))
+                }
+            }
+
+            val currentLines = state.content.split("\n").toMutableList()
+            val lastLineIndex = (currentLines.size - 1).coerceAtLeast(0)
+            currentLines.add("")
+            val newContent = currentLines.joinToString("\n")
+            val processedNewMedias = (newImages + newVideos).map {
+                it.copy(order = lastLineIndex)
+            }
+            state.copy(
+                content = newContent,
+                selectedMedias = currentMedias + processedNewMedias
+            )
+        }
+    }
+
+    private fun handleRemoveMedia(index: Int) {
+        updateWriteState { state ->
+            val newList = state.selectedMedias.toMutableList().apply {
+                if (index in indices) removeAt(index)
+            }
+            state.copy(selectedMedias = newList)
+        }
+    }
+
+    private fun handleMoveMedia(from: Int, to: Int) {
+        updateWriteState { state ->
+            val newList = state.selectedMedias.toMutableList().apply {
+                if (from in indices && to in indices) {
+                    add(to, removeAt(from))
+                }
+            }
+            state.copy(selectedMedias = newList)
+        }
+    }
+
     private fun handleWritePost(title: String, content: String) {
 
         val currentState = _uiState.value as? CommunityUiState.Write ?: return
@@ -151,4 +273,6 @@ class CommunityViewModel(
             }
         }
     }
+
+
 }

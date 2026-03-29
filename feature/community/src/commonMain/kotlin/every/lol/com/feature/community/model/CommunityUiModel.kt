@@ -40,8 +40,17 @@ sealed interface CommunityUiState {
         val isLoading: Boolean = false,
         val selectedTab: WriteTab = WriteTab.TALK,
         val title: String = "",
-        val content: String = ""
+        val content: String = "",
+        val selectedMedias: List<MediaItem> = emptyList(),
     ): CommunityUiState
+
+    data class MediaItem(
+        val id: String,
+        val url: String,
+        val isVideo: Boolean = false,
+        val durationMs: Long = 0L,
+        val order : Int = -1
+    )
 }
 
 sealed interface CommunityIntent{
@@ -52,6 +61,14 @@ sealed interface CommunityIntent{
     data class DetailPost(val postId: Int) : CommunityIntent
     data class ChangeTitle(val title: String) : CommunityIntent
     data class ChangeContent(val content: String) : CommunityIntent
-    data class WritePost(val title: String, val content: String) : CommunityIntent
-
-}
+    data class WritePost(
+        val title: String,
+        val content: String,
+        val medias: List<CommunityUiState.MediaItem>
+    ) : CommunityIntent
+    data object OpenGallery : CommunityIntent
+    data class AddMedias(val medias: List<CommunityUiState.MediaItem>) : CommunityIntent
+    data class RemoveMedia(val index: Int) : CommunityIntent
+    data class MoveMedia(val from: Int, val to: Int) : CommunityIntent
+    data class UpdateMediaOrder(val mediaId: String, val newOrder: Int) : CommunityIntent
+    data class ShowMessage(val message: String) : CommunityIntent}

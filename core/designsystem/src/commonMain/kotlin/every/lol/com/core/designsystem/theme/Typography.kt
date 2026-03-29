@@ -2,16 +2,18 @@ package every.lol.com.core.designsystem.theme
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import everylol.core.designsystem.generated.resources.Res
-import everylol.core.designsystem.generated.resources.*
+import everylol.core.designsystem.generated.resources.esamanru_bold
+import everylol.core.designsystem.generated.resources.esamanru_light
+import everylol.core.designsystem.generated.resources.esamanru_medium
+import everylol.core.designsystem.generated.resources.pretendard_medium
+import everylol.core.designsystem.generated.resources.pretendard_regular
+import everylol.core.designsystem.generated.resources.pretendard_semibold
 import org.jetbrains.compose.resources.Font
 
 /*
@@ -98,7 +100,7 @@ val everyLoLTypography: EveryLoLTypography
             subtitle03 = TextStyle(fontFamily = pretendard, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, lineHeight = 14.sp, letterSpacing = (-0.03).em),
             subtitle04 = TextStyle(fontFamily = pretendard, fontSize = 12.sp, fontWeight = FontWeight.Medium, lineHeight = 12.sp, letterSpacing = (-0.03).em),
             pretendardBody01 = TextStyle(fontFamily = pretendard, fontSize = 16.sp, fontWeight = FontWeight.Normal, lineHeight = 16.sp, letterSpacing = (-0.03).em),
-            pretendardBody02 = TextStyle(fontFamily = pretendard, fontSize = 14.sp, fontWeight = FontWeight.Normal, lineHeight = 14.sp, letterSpacing = (-0.03).em),
+            pretendardBody02 = TextStyle(fontFamily = pretendard, fontSize = 14.sp, fontWeight = FontWeight.Normal, lineHeight = 16.sp, letterSpacing = (-0.03).em),
             caption01 = TextStyle(fontFamily = pretendard, fontSize = 12.sp, fontWeight = FontWeight.Normal, lineHeight = 12.sp, letterSpacing = (-0.03).em),
             caption02 = TextStyle(fontFamily = pretendard, fontSize = 10.sp, fontWeight = FontWeight.Normal, lineHeight = 10.sp, letterSpacing = (-0.03).em)
         )
