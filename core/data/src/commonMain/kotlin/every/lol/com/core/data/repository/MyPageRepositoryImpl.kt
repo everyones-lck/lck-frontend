@@ -25,10 +25,10 @@ class MyPageRepositoryImpl(
     override suspend fun getProfile(): Result<UserInform> =
         remote.getProfile().toResult().mapCatching { response ->
             UserInform(
-                kakaoUserId = "ex",
+                kakaoUserId = "1234",
                 nickname = response.nickname,
                 profileImage = response.profileImageUrl,
-                teamId = listOf(response.teamId),
+                teamIds = response.teamNames,
             )
         }
 
@@ -45,9 +45,8 @@ class MyPageRepositoryImpl(
         }
     }
 
-    override suspend fun patchMyTeam(teamId: List<Int>): Result<Unit> {
-        val selectedId = teamId.first()
-        return remote.patchMyTeam(PatchMyTeamRequest(teamId = selectedId)).toResult().map {
+    override suspend fun patchMyTeam(teamIds: List<Int>): Result<Unit> {
+        return remote.patchMyTeam(PatchMyTeamRequest(teamIds)).toResult().map {
             Unit
         }
     }

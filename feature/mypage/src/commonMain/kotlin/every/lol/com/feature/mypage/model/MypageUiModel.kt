@@ -57,7 +57,7 @@ sealed interface MypageUiState {
     data class MyInform(
         val profileImage: String? = null,
         val nickName: String = "",
-        val teamId: Set<Team> = emptySet()
+        val teamIds: Set<Team> = emptySet()
     )
     data class ProfileEdit(
         val originalNickname: String,

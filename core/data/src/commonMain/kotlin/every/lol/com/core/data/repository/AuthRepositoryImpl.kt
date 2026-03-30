@@ -40,8 +40,7 @@ class AuthRepositoryImpl(
                 nickName = request.nickname,
                 role = "ROLE_USER",
                 tier = "bronze",
-                // Todo: 서버 수정시 teamId List로 넘겨주기
-                teamId = request.teamId.firstOrNull() ?: 0
+                teamIds = request.teamIds
             )
         )
 

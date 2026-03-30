@@ -32,7 +32,6 @@ class CommunityRepositoryImpl(
                 postType = response.postType,
                 writerProfileUrl = response.writerProfileUrl,
                 writerNickName = response.writerNickname,
-                writerTeam = response.writerTeam,
                 postTitle = response.postTitle,
                 postCreatedAt = response.postCreatedAt,
                 content = response.content,
@@ -44,7 +43,6 @@ class CommunityRepositoryImpl(
                     CommentList(
                         profileImageUrl = it.profileImageUrl,
                         nickname = it.nickname,
-                        supportTeam = it.supportTeam,
                         content = it.content,
                         createdAt = it.createdAt,
                         commentId = it.commentId,
@@ -63,7 +61,6 @@ class CommunityRepositoryImpl(
                         postTitle = it.postTitle,
                         postCreatedAt = it.postCreatedAt,
                         userNickname = it.userNickname,
-                        supportTeamName = it.supportTeamName,
                         userProfilePicture = it.userProfilePicture,
                         thumbnailFileUrl = it.thumbnailFileUrl,
                         commentCounts = it.commentCounts

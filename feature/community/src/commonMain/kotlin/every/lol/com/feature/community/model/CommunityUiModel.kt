@@ -75,4 +75,5 @@ sealed interface CommunityIntent{
     data class RemoveMedia(val index: Int) : CommunityIntent
     data class MoveMedia(val from: Int, val to: Int) : CommunityIntent
     data class UpdateMediaOrder(val mediaId: String, val newOrder: Int) : CommunityIntent
+    data class WriteComment(val postId: Int, val content: String) : CommunityIntent
     data class ShowMessage(val message: String) : CommunityIntent}

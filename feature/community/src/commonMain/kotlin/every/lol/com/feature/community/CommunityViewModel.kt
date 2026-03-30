@@ -4,6 +4,7 @@ import every.lol.com.core.common.compressImage
 import every.lol.com.core.domain.usecase.DeletePostUseCase
 import every.lol.com.core.domain.usecase.GetCommunityPostsUseCase
 import every.lol.com.core.domain.usecase.GetReadPostUseCase
+import every.lol.com.core.domain.usecase.PostCommunityCommentUseCase
 import every.lol.com.core.domain.usecase.PostCommunityPostUseCase
 import every.lol.com.core.domain.usecase.ReportPostUseCase
 import every.lol.com.feature.community.model.CommunityIntent
@@ -35,7 +36,8 @@ class CommunityViewModel(
     private val getReadPostUseCase: GetReadPostUseCase,
     private val postCommunityPostUseCase: PostCommunityPostUseCase,
     private val deletePostUseCase: DeletePostUseCase,
-    private val reportPostUseCase: ReportPostUseCase
+    private val reportPostUseCase: ReportPostUseCase,
+    private val postCommunityCommentUseCase: PostCommunityCommentUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<CommunityUiState>(CommunityUiState.Loading)
@@ -94,6 +96,7 @@ class CommunityViewModel(
             }
             is CommunityIntent.DeletePost -> handleDeletePost(intent.postId)
             is CommunityIntent.ReportPost -> handleReportPost(intent.postId)
+            is CommunityIntent.WriteComment -> handleWriteComment(intent.postId, intent.content)
             else -> {}
         }
     }
@@ -328,6 +331,16 @@ class CommunityViewModel(
                 _event.emit(CommunityEvent.NavigateCommunityHome)
             }.onFailure {
                 _event.emit(CommunityEvent.ShowToast("신고에 실패하였습니다."))
+            }
+        }
+    }
+
+    private fun handleWriteComment(postId: Int, content: String) {
+        viewModelScope.launch {
+            postCommunityCommentUseCase(postId, content).onSuccess {
+                _event.emit(CommunityEvent.NavigateCommunityHome)
+            }.onFailure {
+                _event.emit(CommunityEvent.ShowToast("댓글 작성에 실패하였습니다."))
             }
         }
     }

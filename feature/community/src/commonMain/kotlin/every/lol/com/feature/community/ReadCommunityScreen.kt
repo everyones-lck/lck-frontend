@@ -39,6 +39,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import every.lol.com.core.designsystem.component.EverylolBottomInputBar
 import every.lol.com.core.designsystem.component.EverylolTopAppBar
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.core.model.mapToUiState
@@ -110,7 +111,7 @@ fun ReadCommunityScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     var selectedImageUrl by remember { mutableStateOf<String?>(null) }
     var isMenuExpanded by remember { mutableStateOf(false) }
-
+    var commentText by remember { mutableStateOf("") }
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             modifier = Modifier
@@ -121,6 +122,19 @@ fun ReadCommunityScreen(
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
             topBar = {
                 EverylolTopAppBar(onBackClick = onBackClick)
+            },
+            bottomBar = {
+                EverylolBottomInputBar(
+                    value = commentText,
+                    onValueChange = { commentText = it },
+                    hint = "댓글을 입력해주세요",
+                    onDone = {
+                        if (commentText.isNotBlank()) {
+                            onIntent(CommunityIntent.WriteComment(postId, commentText))
+                            commentText = ""
+                        }
+                    }
+                )
             }
         ) { innerPadding ->
             state.post?.let { postDetail ->
@@ -129,7 +143,7 @@ fun ReadCommunityScreen(
                         .fillMaxSize()
                         .padding(
                             top = innerPadding.calculateTopPadding(),
-                            bottom = 0.dp
+                            bottom = innerPadding.calculateBottomPadding()
                         )
                         .padding(horizontal = 16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -195,7 +209,6 @@ fun ReadCommunityScreen(
                 }
             }
         }
-
         selectedImageUrl?.let { url ->
             FullScreenImageViewer(
                 imageUrl = url,

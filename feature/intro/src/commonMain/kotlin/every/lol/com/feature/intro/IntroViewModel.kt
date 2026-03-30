@@ -138,7 +138,7 @@ class IntroViewModel(
                 kakaoUserId = state.kakaoUserId,
                 nickname = state.nickName,
                 profileImage = state.profileImage,
-                teamId = state.teamId.map { it.id }
+                teamIds = state.teamId.map { it.id }
             )
 
             signupUseCase(param).fold(
