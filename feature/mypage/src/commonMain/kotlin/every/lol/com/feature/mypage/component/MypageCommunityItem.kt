@@ -24,7 +24,7 @@ import everylol.feature.mypage.generated.resources.ic_comment
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
-fun CommunityItem(
+fun MypageCommunityItem(
     type: MypageUiState.CommunityTab,
     title: String?= null,
     content: String?= null,

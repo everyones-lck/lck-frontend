@@ -4,6 +4,7 @@ import every.lol.com.core.domain.repository.AuthRepository
 import every.lol.com.core.network.BuildConfig
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.HttpClientEngineFactory
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.auth.providers.BearerTokens
 import io.ktor.client.plugins.auth.providers.bearer
@@ -46,12 +47,20 @@ fun Scope.createHttpClient(
     json: Json,
     withAuth: Boolean
 ) = HttpClient(engine) {
+    install(HttpTimeout) {
+        requestTimeoutMillis = 30_000L
+        connectTimeoutMillis = 30_000L
+        socketTimeoutMillis = 30_000L
+    }
+
     install(ContentNegotiation) { json(json) }
 
     install(Logging) {
         level = if (BuildConfig.DEBUG) LogLevel.BODY else LogLevel.INFO
         logger = object : Logger {
-            override fun log(message: String) { println("Ktor Log: $message") }
+            override fun log(message: String) { println("Ktor Log: $message")
+                if (message.contains("Content-Type: image") || message.length > 1000) return
+            }
         }
     }
 

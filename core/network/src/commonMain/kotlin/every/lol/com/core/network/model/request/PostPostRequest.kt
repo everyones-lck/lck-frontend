@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class PostPostRequest(
-    val files: List<String>,
+    val files: List<ByteArray>?=null,
     val request: PostPostDetailRequest
 )
 

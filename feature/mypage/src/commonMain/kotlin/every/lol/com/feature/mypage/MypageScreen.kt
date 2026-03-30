@@ -190,7 +190,7 @@ private fun MypageScreen(
                     Text(myInform.nickName,style=EveryLoLTheme.typography.title02, color = EveryLoLTheme.color.grayScale200)
                     TeamGroup(
                         isSelectable = false,
-                        selectedTeams = myInform.teamId
+                        selectedTeams = myInform.teamIds
                     )
                 }
                 MypageMenuSection(

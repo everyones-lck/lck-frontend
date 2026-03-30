@@ -6,6 +6,6 @@ import kotlinx.serialization.Serializable
 data class ProfileResponse(
     val nickname: String,
     val profileImageUrl: String,
-    val teamId: Int,
+    val teamNames: List<String>,
     val tier: String
 )

@@ -20,7 +20,7 @@ class CommunityRepositoryImpl(
     private val local: AuthLocalDataSource
 ): CommunityRepository {
 
-    override suspend fun postPost(files: List<String>, type: String, title: String, content: String): Result<Unit> =
+    override suspend fun postPost(files: List<ByteArray>?, type: String, title: String, content: String): Result<Unit> =
         remote.postPost( PostPostRequest(files, PostPostDetailRequest(type, title, content))).toResult().map {it.postId}
 
     override suspend fun editPost(postId: Int, type: String, title: String, content: String): Result<Unit> =
@@ -31,8 +31,7 @@ class CommunityRepositoryImpl(
             PostDetail(
                 postType = response.postType,
                 writerProfileUrl = response.writerProfileUrl,
-                writerNickName = response.writerNickName,
-                writerTeam = response.writerTeam,
+                writerNickName = response.writerNickname,
                 postTitle = response.postTitle,
                 postCreatedAt = response.postCreatedAt,
                 content = response.content,
@@ -44,7 +43,6 @@ class CommunityRepositoryImpl(
                     CommentList(
                         profileImageUrl = it.profileImageUrl,
                         nickname = it.nickname,
-                        supportTeam = it.supportTeam,
                         content = it.content,
                         createdAt = it.createdAt,
                         commentId = it.commentId,
@@ -63,7 +61,6 @@ class CommunityRepositoryImpl(
                         postTitle = it.postTitle,
                         postCreatedAt = it.postCreatedAt,
                         userNickname = it.userNickname,
-                        supportTeamName = it.supportTeamName,
                         userProfilePicture = it.userProfilePicture,
                         thumbnailFileUrl = it.thumbnailFileUrl,
                         commentCounts = it.commentCounts

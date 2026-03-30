@@ -15,7 +15,6 @@ data class PostListDetailResponse(
     val postTitle: String,
     val postCreatedAt: String,
     val userNickname: String,
-    val supportTeamName: String,
     val userProfilePicture: String,
     val thumbnailFileUrl: String,
     val commentCounts: Int

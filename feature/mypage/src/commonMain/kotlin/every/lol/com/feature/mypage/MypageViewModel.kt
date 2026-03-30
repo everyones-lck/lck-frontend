@@ -105,8 +105,8 @@ class MypageViewModel(
             getProfileUseCase().onSuccess { userInform ->
                 val myInform = MypageUiState.MyInform(
                     nickName = userInform.nickname,
-                    teamId = userInform.teamId.mapNotNull { id ->
-                        Team.fromId(id)
+                    teamIds = userInform.teamIds.mapNotNull { id ->
+                        Team.fromTeamName(id) //Todo: TeamName -> TeamId로 추후 변경
                     }.toSet(),
                     profileImage = userInform.profileImage
                 )
@@ -139,8 +139,8 @@ class MypageViewModel(
             nickName = "",
             originalProfileImage = (currentInfo.profileImage as? ByteArray)?.copyOf() ?: currentInfo.profileImage,
             profileImage = (currentInfo.profileImage as? ByteArray)?.copyOf() ?: currentInfo.profileImage,
-            originalTeamId = currentInfo.teamId.toSet(),
-            teamId = currentInfo.teamId.toSet(),
+            originalTeamId = currentInfo.teamIds.toSet(),
+            teamId = currentInfo.teamIds.toSet(),
             isDuplicateChecked = true,
             isLoading = false
         )

@@ -25,10 +25,10 @@ class MyPageRepositoryImpl(
     override suspend fun getProfile(): Result<UserInform> =
         remote.getProfile().toResult().mapCatching { response ->
             UserInform(
-                kakaoUserId = "ex",
+                kakaoUserId = "1234",
                 nickname = response.nickname,
                 profileImage = response.profileImageUrl,
-                teamId = listOf(response.teamId),
+                teamIds = response.teamNames,
             )
         }
 
@@ -45,9 +45,8 @@ class MyPageRepositoryImpl(
         }
     }
 
-    override suspend fun patchMyTeam(teamId: List<Int>): Result<Unit> {
-        val selectedId = teamId.first()
-        return remote.patchMyTeam(PatchMyTeamRequest(teamId = selectedId)).toResult().map {
+    override suspend fun patchMyTeam(teamIds: List<Int>): Result<Unit> {
+        return remote.patchMyTeam(PatchMyTeamRequest(teamIds)).toResult().map {
             Unit
         }
     }
@@ -83,17 +82,16 @@ class MyPageRepositoryImpl(
         }
 
     override suspend fun withdrawal(): Result<Unit?> {
+        val result = remote.withdrawal().toResult()
         local.clearAuthData()
-        return remote.withdrawal().toResult().map {
-            Unit
-        }
+        return result.map { Unit }
     }
 
     override suspend fun logout(): Result<Unit?> {
-        val refreshToken = local.getAuthData()!!.refreshToken
+        val authData = local.getAuthData() ?: return Result.success(Unit)
+        val refreshToken = authData.refreshToken
+        val result = remote.logout(refreshToken).toResult()
         local.clearAuthData()
-        return remote.logout(refreshToken).toResult().map {
-            Unit
-        }
+        return result.map { Unit }
     }
 }

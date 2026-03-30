@@ -7,8 +7,7 @@ import kotlinx.serialization.Serializable
 data class PostDetailResponse(
     val postType: String,
     val writerProfileUrl: String,
-    val writerNickName: String,
-    val writerTeam: String,
+    val writerNickname: String,
     val postTitle: String,
     val postCreatedAt: String,
     val content: String,
@@ -27,7 +26,6 @@ data class FileListResponse(
 data class CommentListResponse(
     val profileImageUrl: String,
     val nickname: String,
-    val supportTeam: String,
     val content: String,
     val createdAt: String,
     val commentId: Int,
