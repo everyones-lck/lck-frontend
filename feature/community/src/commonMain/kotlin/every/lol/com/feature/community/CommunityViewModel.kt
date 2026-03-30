@@ -57,10 +57,9 @@ class CommunityViewModel(
 
     fun onIntent(intent: CommunityIntent){
         when(intent){
-            CommunityIntent.Loading -> loadCommunityData()
+            CommunityIntent.Loading -> loadCommunityData(tab = CommunityUiState.CommunityTab.ALL)
             is CommunityIntent.ClickTab -> handleTabClick(intent.tab)
             is CommunityIntent.ClickWriteTab -> handleWriteTabClick(intent.tab)
-            CommunityIntent.FetchPosts -> loadCommunityData()
             is CommunityIntent.DetailPost -> loadReadPost(intent.postId)
             is CommunityIntent.ChangeTitle -> {
                 val currentState = uiState.value
@@ -86,7 +85,13 @@ class CommunityViewModel(
             is CommunityIntent.RemoveMedia -> handleRemoveMedia(intent.index)
 
             is CommunityIntent.MoveMedia -> handleMoveMedia(intent.from, intent.to)
-            is CommunityIntent.LoadNextPage -> loadCommunityData(isNextPage = true)
+            is CommunityIntent.LoadNextPage -> {
+                println("Ktor Debug: LoadNextPage 이벤트 수신함 : ${uiState.value}")
+                val currentState = uiState.value as? CommunityUiState.Community
+                if (currentState != null) {
+                    loadCommunityData(tab = currentState.selectedTab, isNextPage = true)
+                }
+            }
             is CommunityIntent.DeletePost -> handleDeletePost(intent.postId)
             is CommunityIntent.ReportPost -> handleReportPost(intent.postId)
             else -> {}
@@ -133,7 +138,14 @@ class CommunityViewModel(
     private var isFetching = false
 
 
-    private fun loadCommunityData(tab: CommunityUiState.CommunityTab = CommunityUiState.CommunityTab.ALL, isNextPage: Boolean = false) {
+    private fun loadCommunityData(
+        tab: CommunityUiState.CommunityTab?=null,
+        isNextPage: Boolean = false
+    ) {
+        val currentTab = tab
+            ?: (uiState.value as? CommunityUiState.Community)?.selectedTab
+            ?: CommunityUiState.CommunityTab.ALL
+
         if (isFetching || (isNextPage && isLastPage)) return
 
         isFetching = true
@@ -143,7 +155,7 @@ class CommunityViewModel(
         }
 
         viewModelScope.launch {
-            getCommunityPostsUseCase("잡담", currentPage, 10).onSuccess { response ->
+            getCommunityPostsUseCase(currentTab.displayName, currentPage, 10).onSuccess { response ->
                 _uiState.update { state ->
                     val currentState = state as? CommunityUiState.Community ?: CommunityUiState.Community()
 
@@ -159,12 +171,19 @@ class CommunityViewModel(
                     currentState.copy(
                         isLoading = false,
                         posts = updatedPosts,
-                        selectedTab = tab
+                        selectedTab = currentTab
                     )
                 }
                 isFetching = false
             }.onFailure {
                 isFetching = false
+                _uiState.update { state ->
+                    val currentState = state as? CommunityUiState.Community ?: CommunityUiState.Community()
+                    currentState.copy(
+                        isLoading = false,
+                        posts = if (currentPage == 0) emptyList() else currentState.posts
+                    )
+                }
             }
         }
     }
@@ -277,7 +296,7 @@ class CommunityViewModel(
                 }
 
                 withContext(Dispatchers.IO) {
-                    postCommunityPostUseCase(compressedFiles, "잡담", title, content)
+                    postCommunityPostUseCase(compressedFiles, currentState.selectedTab.displayName, title, content)
                         .onSuccess {
                             withContext(Dispatchers.Main) {
                                 _event.emit(CommunityEvent.WriteSuccess)
