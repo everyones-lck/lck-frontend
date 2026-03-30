@@ -9,14 +9,16 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -96,6 +98,21 @@ fun CommunityScreen(
     val popularPosts = communityState?.popularPosts ?: emptyList()
     val posts = communityState?.posts ?: emptyList()
 
+    val listState = rememberLazyListState()
+
+    val shouldLoadMore = remember {
+        derivedStateOf {
+            val lastVisibleItemIndex = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+            posts.isNotEmpty() && lastVisibleItemIndex >= (listState.layoutInfo.totalItemsCount - 2)
+        }
+    }
+
+    LaunchedEffect(shouldLoadMore.value) {
+        if (shouldLoadMore.value) {
+            onIntent(CommunityIntent.LoadNextPage)
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             modifier = Modifier
@@ -114,44 +131,47 @@ fun CommunityScreen(
                 )
             }
         ) { innerPadding ->
-            Column(
+            LazyColumn(
+                state = listState,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(top = innerPadding.calculateTopPadding(), bottom = 0.dp)
-                    .padding(horizontal = 16.dp)
-                    .verticalScroll(rememberScrollState()),
+                    .padding(horizontal = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                TabBar(
-                    tabItems = CommunityUiState.CommunityTab.entries,
-                    selectedTab = currentTab,
-                    onTabSelected = { onIntent(CommunityIntent.ClickTab(it)) },
-                    getDisplayName = { it.displayName }
-                )
+                item {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        TabBar(
+                            tabItems = CommunityUiState.CommunityTab.entries,
+                            selectedTab = currentTab,
+                            onTabSelected = { onIntent(CommunityIntent.ClickTab(it)) },
+                            getDisplayName = { it.displayName }
+                        )
 
-                if(currentTab == CommunityUiState.CommunityTab.ALL) {
-                    TitleText("주간 인기글")
-                    PopularPost(popularPosts =popularPosts)
-                    TitleText("전체 게시판")
-                }
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ){
-                    if (posts.isEmpty()) {
-
-                    } else {
-                        posts.forEach { post ->
-                            CommunityItem(
-                                type = currentTab,
-                                post = post,
-                                onPostClick = { onReadClick(post.postId) }
-                            )
+                        if (currentTab == CommunityUiState.CommunityTab.ALL) {
+                            TitleText("주간 인기글")
+                            PopularPost(popularPosts = popularPosts)
+                            TitleText("전체 게시판")
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(80.dp))
+                items(
+                    items = posts,
+                    key = { it.postId }
+                ) { post ->
+                    CommunityItem(
+                        type = currentTab,
+                        post = post,
+                        onPostClick = { onReadClick(post.postId) }
+                    )
+                }
+                item {
+                    Spacer(modifier = Modifier.height(80.dp))
+                }
             }
         }
     }

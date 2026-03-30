@@ -82,7 +82,7 @@ class CommunityViewModel(
             is CommunityIntent.RemoveMedia -> handleRemoveMedia(intent.index)
 
             is CommunityIntent.MoveMedia -> handleMoveMedia(intent.from, intent.to)
-
+            is CommunityIntent.LoadNextPage -> loadCommunityData(isNextPage = true)
             else -> {}
         }
     }
@@ -106,29 +106,6 @@ class CommunityViewModel(
         }
     }
 
-    private fun handleContentLineChange(currentState: CommunityUiState.Write, newContent: String) {
-        val oldLines = currentState.content.split("\n")
-        val newLines = newContent.split("\n")
-
-        val diffIndex = oldLines.zip(newLines).indexOfFirst { it.first != it.second }
-        val isAdded = newLines.size > oldLines.size
-
-        val adjustedMedias = currentState.selectedMedias.map { media ->
-            if (isAdded && media.order >= diffIndex && diffIndex != -1) {
-                media.copy(order = media.order + 1)
-            } else if (!isAdded && media.order > diffIndex && diffIndex != -1) {
-                media.copy(order = (media.order - 1).coerceAtLeast(0))
-            } else {
-                media
-            }
-        }
-
-        _uiState.value = currentState.copy(
-            content = newContent,
-            selectedMedias = adjustedMedias
-        )
-    }
-
     private fun handleWriteTabClick(tab: CommunityUiState.WriteTab) {
         _uiState.update { state ->
             if (state is CommunityUiState.Write) {
@@ -145,29 +122,48 @@ class CommunityViewModel(
     }
 
 
-    private fun loadCommunityData(tab: CommunityUiState.CommunityTab = CommunityUiState.CommunityTab.ALL) {
-        _uiState.update { state ->if (state is CommunityUiState.Community) {
-            state.copy(isLoading = true, selectedTab = tab)
-        } else {
-            CommunityUiState.Community(isLoading = true, selectedTab = tab)
-        }
-        }
-        viewModelScope.launch {
-            val page = 0
-            getCommunityPostsUseCase("잡담", page, 10).onSuccess { posts ->
-                _uiState.update { state ->
-                    if (state is CommunityUiState.Community) {
-                        state.copy(
-                            isLoading = false,
-                            posts = posts.postDetailList
-                        )
-                    } else state
-                }
-            }.onFailure { throwable ->
+    private var currentPage = 0
+    private var isLastPage = false
+    private var isFetching = false
 
+
+    private fun loadCommunityData(tab: CommunityUiState.CommunityTab = CommunityUiState.CommunityTab.ALL, isNextPage: Boolean = false) {
+        if (isFetching || (isNextPage && isLastPage)) return
+
+        isFetching = true
+        if (!isNextPage) {
+            currentPage = 0
+            isLastPage = false
+        }
+
+        viewModelScope.launch {
+            getCommunityPostsUseCase("잡담", currentPage, 10).onSuccess { response ->
+                _uiState.update { state ->
+                    val currentState = state as? CommunityUiState.Community ?: CommunityUiState.Community()
+
+                    // 다음 페이지면 기존 리스트에 추가, 첫 페이지면 교체
+                    val updatedPosts = if (isNextPage) {
+                        currentState.posts + response.postDetailList
+                    } else {
+                        response.postDetailList
+                    }
+
+                    isLastPage = response.postDetailList.isEmpty() // 더 이상 데이터가 없으면 마지막 페이지
+                    if (!isLastPage) currentPage++
+
+                    currentState.copy(
+                        isLoading = false,
+                        posts = updatedPosts,
+                        selectedTab = tab
+                    )
+                }
+                isFetching = false
+            }.onFailure {
+                isFetching = false
             }
         }
     }
+
 
     private fun loadReadPost(postId: Int){
 

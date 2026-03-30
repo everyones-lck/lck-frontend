@@ -56,6 +56,7 @@ sealed interface CommunityUiState {
 sealed interface CommunityIntent{
     data object Loading : CommunityIntent
     data class ClickTab(val tab: CommunityUiState.CommunityTab) : CommunityIntent
+    data object LoadNextPage : CommunityIntent
     data class ClickWriteTab(val tab: CommunityUiState.WriteTab) : CommunityIntent
     data object FetchPosts : CommunityIntent
     data class DetailPost(val postId: Int) : CommunityIntent
