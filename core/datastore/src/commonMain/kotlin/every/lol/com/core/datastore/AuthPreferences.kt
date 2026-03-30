@@ -49,8 +49,12 @@ class AuthPreferences(
         }
     }
     suspend fun clearAuthData() {
-        dataStore.edit {
-            it.clear()
+        dataStore.edit { preferences ->
+            preferences.remove(ACCESS_TOKEN_KEY)
+            preferences.remove(REFRESH_TOKEN_KEY)
+            preferences.remove(ACCESS_TOKEN_EXPIRATION_TIME_KEY)
+            preferences.remove(REFRESH_TOKEN_EXPIRATION_TIME_KEY)
+            preferences.remove(KAKAO_USER_ID)
         }
     }
 }

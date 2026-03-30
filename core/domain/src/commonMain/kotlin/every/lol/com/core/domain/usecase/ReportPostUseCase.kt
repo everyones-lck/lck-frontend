@@ -7,5 +7,5 @@ class ReportPostUseCase(
     private val communityRepository: CommunityRepository
 ) {
     suspend operator fun invoke(postId: Int): Result<Unit?> =
-        communityRepository.reportPost(postId, reportDetail = "")
+        communityRepository.reportPost(postId, "신고했으")
 }
