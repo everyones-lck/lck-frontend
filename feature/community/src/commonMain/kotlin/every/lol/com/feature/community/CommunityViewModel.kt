@@ -1,9 +1,11 @@
 package every.lol.com.feature.community
 
 import every.lol.com.core.common.compressImage
+import every.lol.com.core.domain.usecase.DeletePostUseCase
 import every.lol.com.core.domain.usecase.GetCommunityPostsUseCase
 import every.lol.com.core.domain.usecase.GetReadPostUseCase
 import every.lol.com.core.domain.usecase.PostCommunityPostUseCase
+import every.lol.com.core.domain.usecase.ReportPostUseCase
 import every.lol.com.feature.community.model.CommunityIntent
 import every.lol.com.feature.community.model.CommunityUiState
 import kotlinx.coroutines.CoroutineScope
@@ -32,6 +34,8 @@ class CommunityViewModel(
     private val getCommunityPostsUseCase: GetCommunityPostsUseCase,
     private val getReadPostUseCase: GetReadPostUseCase,
     private val postCommunityPostUseCase: PostCommunityPostUseCase,
+    private val deletePostUseCase: DeletePostUseCase,
+    private val reportPostUseCase: ReportPostUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<CommunityUiState>(CommunityUiState.Loading)
@@ -83,6 +87,8 @@ class CommunityViewModel(
 
             is CommunityIntent.MoveMedia -> handleMoveMedia(intent.from, intent.to)
             is CommunityIntent.LoadNextPage -> loadCommunityData(isNextPage = true)
+            is CommunityIntent.DeletePost -> handleDeletePost(intent.postId)
+            is CommunityIntent.ReportPost -> handleReportPost(intent.postId)
             else -> {}
         }
     }
@@ -141,14 +147,13 @@ class CommunityViewModel(
                 _uiState.update { state ->
                     val currentState = state as? CommunityUiState.Community ?: CommunityUiState.Community()
 
-                    // 다음 페이지면 기존 리스트에 추가, 첫 페이지면 교체
                     val updatedPosts = if (isNextPage) {
                         currentState.posts + response.postDetailList
                     } else {
                         response.postDetailList
                     }
 
-                    isLastPage = response.postDetailList.isEmpty() // 더 이상 데이터가 없으면 마지막 페이지
+                    isLastPage = response.postDetailList.isEmpty()
                     if (!isLastPage) currentPage++
 
                     currentState.copy(
@@ -176,7 +181,7 @@ class CommunityViewModel(
             getReadPostUseCase(postId).onSuccess { post ->
                 _uiState.update { current ->
                     if (current is CommunityUiState.Read && current.postId == postId) {
-                        current.copy(post = post, isLoading = false)
+                        current.copy(post = post, isLoading = false, isMine = post.isWriter)
                     } else current
                 }
             }.onFailure {
@@ -284,6 +289,26 @@ class CommunityViewModel(
                 }
             } catch (e: Exception) {
                 _uiState.update { if (it is CommunityUiState.Write) it.copy(isLoading = false) else it }
+            }
+        }
+    }
+
+    private fun handleDeletePost(postId: Int) {
+        viewModelScope.launch {
+            deletePostUseCase(postId).onSuccess {
+                _event.emit(CommunityEvent.NavigateCommunityHome)
+            }.onFailure {
+                _event.emit(CommunityEvent.ShowToast("삭제에 실패하였습니다."))
+            }
+        }
+    }
+
+    private fun handleReportPost(postId: Int) {
+        viewModelScope.launch {
+            reportPostUseCase(postId).onSuccess {
+                _event.emit(CommunityEvent.NavigateCommunityHome)
+            }.onFailure {
+                _event.emit(CommunityEvent.ShowToast("신고에 실패하였습니다."))
             }
         }
     }

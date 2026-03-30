@@ -15,11 +15,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -86,6 +89,14 @@ fun ReadRoute(
             CircularProgressIndicator(color = EveryLoLTheme.color.grayScale200)
         }
     }
+    LaunchedEffect(viewModel.event) {
+        viewModel.event.collect { event ->
+            when (event) {
+                is CommunityEvent.NavigateCommunityHome -> onBackClick
+                else -> {}
+            }
+        }
+    }
 }
 
 @Composable
@@ -98,6 +109,7 @@ fun ReadCommunityScreen(
 
     val snackbarHostState = remember { SnackbarHostState() }
     var selectedImageUrl by remember { mutableStateOf<String?>(null) }
+    var isMenuExpanded by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
@@ -127,7 +139,7 @@ fun ReadCommunityScreen(
                         ReadPost(
                             postDetail = postDetail,
                             contentBlocks = mapToUiState(postDetail),
-                            onMoreClick = {},
+                            onMoreClick = { isMenuExpanded = true },
                             onImageClick = { imageUrl ->
                                 selectedImageUrl = imageUrl
                             },
@@ -138,12 +150,52 @@ fun ReadCommunityScreen(
                     items(postDetail.commentList.size) { index ->
                         ReadComment(
                             comment = postDetail.commentList[index],
-                            onMoreClick = {}
+                            onMoreClick = { isMenuExpanded = true }
                         )
                     }
                 }
             }
         }
+        if (isMenuExpanded) {
+            Box(
+                modifier = Modifier
+                    .padding(top = 100.dp),
+                contentAlignment = Alignment.TopEnd
+            ) {
+                DropdownMenu(
+                    expanded = isMenuExpanded,
+                    onDismissRequest = { isMenuExpanded = false },
+                    modifier = Modifier
+                        .background(
+                            color = EveryLoLTheme.color.grayScale800,
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                ) {
+                    if (state.isMine) {
+                        DropdownMenuItem(
+                            text = { Text("수정하기", style = EveryLoLTheme.typography.pretendardBody02, color = EveryLoLTheme.color.white200) },
+                            onClick = { isMenuExpanded = false }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("삭제하기", style = EveryLoLTheme.typography.pretendardBody02, color = EveryLoLTheme.color.white200) },
+                            onClick = {
+                                isMenuExpanded = false
+                                onIntent(CommunityIntent.DeletePost(postId))
+                            }
+                        )
+                    } else {
+                        DropdownMenuItem(
+                            text = { Text("신고하기", style = EveryLoLTheme.typography.pretendardBody02, color = EveryLoLTheme.color.white200) },
+                            onClick = {
+                                isMenuExpanded = false
+                                onIntent(CommunityIntent.ReportPost(postId))
+                            }
+                        )
+                    }
+                }
+            }
+        }
+
         selectedImageUrl?.let { url ->
             FullScreenImageViewer(
                 imageUrl = url,

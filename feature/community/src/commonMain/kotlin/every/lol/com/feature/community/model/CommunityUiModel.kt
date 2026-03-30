@@ -33,6 +33,7 @@ sealed interface CommunityUiState {
         val isLoading: Boolean = false,
         val postId: Int,
         val post: PostDetail? = null,
+        val isMine: Boolean = false,
         val comments: List<CommentList> = emptyList(),
     ): CommunityUiState
 
@@ -60,6 +61,8 @@ sealed interface CommunityIntent{
     data class ClickWriteTab(val tab: CommunityUiState.WriteTab) : CommunityIntent
     data object FetchPosts : CommunityIntent
     data class DetailPost(val postId: Int) : CommunityIntent
+    data class DeletePost(val postId: Int) : CommunityIntent
+    data class ReportPost(val postId: Int) : CommunityIntent
     data class ChangeTitle(val title: String) : CommunityIntent
     data class ChangeContent(val content: String) : CommunityIntent
     data class WritePost(
