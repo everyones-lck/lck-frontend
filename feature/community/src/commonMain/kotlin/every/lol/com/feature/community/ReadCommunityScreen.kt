@@ -5,13 +5,18 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
@@ -112,29 +117,37 @@ fun ReadCommunityScreen(
     var selectedImageUrl by remember { mutableStateOf<String?>(null) }
     var isMenuExpanded by remember { mutableStateOf(false) }
     var commentText by remember { mutableStateOf("") }
+    val isKeyboardOpen = WindowInsets.ime.asPaddingValues().calculateBottomPadding() > 0.dp
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             modifier = Modifier
                 .fillMaxSize()
                 .everylolDefault(EveryLoLTheme.color.newBg, false),
             containerColor = Color.Transparent,
-            contentWindowInsets = WindowInsets(0, 0, 0, 0),
+            contentWindowInsets = WindowInsets.navigationBars,
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
             topBar = {
                 EverylolTopAppBar(onBackClick = onBackClick)
             },
             bottomBar = {
-                EverylolBottomInputBar(
-                    value = commentText,
-                    onValueChange = { commentText = it },
-                    hint = "댓글을 입력해주세요",
-                    onDone = {
-                        if (commentText.isNotBlank()) {
-                            onIntent(CommunityIntent.WriteComment(postId, commentText))
-                            commentText = ""
+                Column(
+                    modifier = Modifier
+                        .background(EveryLoLTheme.color.newBg)
+                        .padding(bottom = if (isKeyboardOpen) 12.dp else 36.dp)
+                        .windowInsetsPadding(WindowInsets.ime)
+                ) {
+                    EverylolBottomInputBar(
+                        value = commentText,
+                        onValueChange = { commentText = it },
+                        hint = "댓글을 입력해주세요",
+                        onDone = {
+                            if (commentText.isNotBlank()) {
+                                onIntent(CommunityIntent.WriteComment(postId, commentText))
+                                commentText = ""
+                            }
                         }
-                    }
-                )
+                    )
+                }
             }
         ) { innerPadding ->
             state.post?.let { postDetail ->
@@ -167,6 +180,7 @@ fun ReadCommunityScreen(
                             onMoreClick = { isMenuExpanded = true }
                         )
                     }
+                    item{Spacer(Modifier.height(20.dp))}
                 }
             }
         }

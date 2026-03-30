@@ -77,7 +77,9 @@ class CommunityDataSourceImpl(
     }.asApiResponse()
 
     override suspend fun postComment(postId: Int, request: PostCommentRequest): ApiResponse<Unit?> = runCatching {
-        httpClient.post("/comment/$postId/create")
+        httpClient.post("/comment/$postId/create"){
+            setBody(request)
+        }
     }.asApiResponse()
 
     override suspend fun deleteComment(commentId: Int): ApiResponse<Unit?> = runCatching {

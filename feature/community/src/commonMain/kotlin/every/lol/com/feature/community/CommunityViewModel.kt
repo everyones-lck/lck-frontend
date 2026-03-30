@@ -7,6 +7,7 @@ import every.lol.com.core.domain.usecase.GetReadPostUseCase
 import every.lol.com.core.domain.usecase.PostCommunityCommentUseCase
 import every.lol.com.core.domain.usecase.PostCommunityPostUseCase
 import every.lol.com.core.domain.usecase.ReportPostUseCase
+import every.lol.com.core.model.CommentList
 import every.lol.com.feature.community.model.CommunityIntent
 import every.lol.com.feature.community.model.CommunityUiState
 import kotlinx.coroutines.CoroutineScope
@@ -192,12 +193,14 @@ class CommunityViewModel(
     }
 
 
-    private fun loadReadPost(postId: Int){
-
+    private fun loadReadPost(postId: Int, isRefresh: Boolean = false) {
         val state = _uiState.value
-        if (state is CommunityUiState.Read && state.postId == postId) return
 
-        _uiState.value = CommunityUiState.Read(postId = postId, isLoading = true)
+        if (!isRefresh && state is CommunityUiState.Read && state.postId == postId) return
+
+        if (!isRefresh) {
+            _uiState.value = CommunityUiState.Read(postId = postId, isLoading = true)
+        }
 
         viewModelScope.launch {
             getReadPostUseCase(postId).onSuccess { post ->
@@ -336,10 +339,37 @@ class CommunityViewModel(
     }
 
     private fun handleWriteComment(postId: Int, content: String) {
+        val currentState = uiState.value as? CommunityUiState.Read ?: return
+        val currentPost = currentState.post ?: return
+
         viewModelScope.launch {
+            val tempComment = CommentList(
+                profileImageUrl = "String",
+                nickname = "String",
+                content= content,
+                createdAt= "방금 전",
+                commentId= 1000,
+                isWriter = if(currentPost.isWriter) true else false
+            )
+
+            val updatedPost = currentPost.copy(
+                commentList = currentPost.commentList + tempComment
+            )
+
+            _uiState.update { state ->
+                if (state is CommunityUiState.Read) {
+                    state.copy(post = updatedPost)
+                } else state
+            }
+
             postCommunityCommentUseCase(postId, content).onSuccess {
-                _event.emit(CommunityEvent.NavigateCommunityHome)
+                loadReadPost(postId, isRefresh = true)
             }.onFailure {
+                _uiState.update { state ->
+                    if (state is CommunityUiState.Read) {
+                        state.copy(post = currentPost)
+                    } else state
+                }
                 _event.emit(CommunityEvent.ShowToast("댓글 작성에 실패하였습니다."))
             }
         }

@@ -9,7 +9,7 @@ interface CommunityRepository {
     suspend fun detailPost(postId: Int): Result<PostDetail>
     suspend fun postList(postType: String, page: Int, size: Int): Result<PostList>
     suspend fun deletePost(postId: Int): Result<Unit?>
-    suspend fun postComment(postId: Int, content: String): Result<Unit?>
+    suspend fun postComment(postId: Int, content: String, parentCommentId: Long?=null): Result<Unit?>
     suspend fun deleteComment(commentId: Int): Result<Unit?>
     suspend fun reportPost(postId: Int, reportDetail: String): Result<Unit?>
     suspend fun reportComment(commentId: Int, reportDetail: String): Result<Unit?>
