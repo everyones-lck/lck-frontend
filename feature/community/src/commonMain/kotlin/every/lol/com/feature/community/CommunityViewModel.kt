@@ -5,6 +5,7 @@ import every.lol.com.core.domain.usecase.DeletePostUseCase
 import every.lol.com.core.domain.usecase.GetCommunityPostsUseCase
 import every.lol.com.core.domain.usecase.GetReadPostUseCase
 import every.lol.com.core.domain.usecase.PostCommunityCommentUseCase
+import every.lol.com.core.domain.usecase.PostCommunityPostLikeUseCase
 import every.lol.com.core.domain.usecase.PostCommunityPostUseCase
 import every.lol.com.core.domain.usecase.ReportPostUseCase
 import every.lol.com.feature.community.model.CommunityIntent
@@ -37,7 +38,8 @@ class CommunityViewModel(
     private val postCommunityPostUseCase: PostCommunityPostUseCase,
     private val deletePostUseCase: DeletePostUseCase,
     private val reportPostUseCase: ReportPostUseCase,
-    private val postCommunityCommentUseCase: PostCommunityCommentUseCase
+    private val postCommunityCommentUseCase: PostCommunityCommentUseCase,
+    private val postCommunityPostLikeUseCase: PostCommunityPostLikeUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<CommunityUiState>(CommunityUiState.Loading)
@@ -341,6 +343,16 @@ class CommunityViewModel(
                 _event.emit(CommunityEvent.NavigateCommunityHome)
             }.onFailure {
                 _event.emit(CommunityEvent.ShowToast("댓글 작성에 실패하였습니다."))
+            }
+        }
+    }
+
+    private fun handleLikePost(postId: Int){
+        viewModelScope.launch {
+            postCommunityPostLikeUseCase(postId).onSuccess {
+
+            }.onFailure {
+                _event.emit(CommunityEvent.ShowToast("좋아요에 실패하였습니다."))
             }
         }
     }
