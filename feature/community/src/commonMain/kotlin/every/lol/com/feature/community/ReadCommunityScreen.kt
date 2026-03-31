@@ -29,6 +29,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -41,6 +44,8 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -59,6 +64,7 @@ import every.lol.com.feature.community.model.CommunityIntent
 import every.lol.com.feature.community.model.CommunityUiState
 import everylol.feature.community.generated.resources.Res
 import everylol.feature.community.generated.resources.ic_x
+import kotlinx.coroutines.delay
 import moe.tlaster.precompose.koin.koinViewModel
 import org.jetbrains.compose.resources.painterResource
 
@@ -83,6 +89,7 @@ fun ReadRoute(
             viewModel.onIntent(CommunityIntent.Loading)
         }
     }
+
     val currentState = uiState
     if (currentState is CommunityUiState.Read) {
         ReadCommunityScreen(
@@ -128,6 +135,31 @@ fun ReadCommunityScreen(
     fun String.truncate(maxChar: Int): String {
         return if (this.length > maxChar) this.take(maxChar) + "..." else this
     }
+
+    var isRefreshing by remember { mutableStateOf(false) }
+    val pullToRefreshState = rememberPullToRefreshState()
+
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(replyingTo) {
+        if (replyingTo != null) {
+            delay(100)
+            focusRequester.requestFocus()
+        }
+    }
+
+    LaunchedEffect(state.isLoading) {
+        println("EveryLoL_Debug: state.isLoading = ${state.isLoading}")
+        if (!state.isLoading) {
+            isRefreshing = false
+            println("EveryLoL_Debug: isRefreshing set to FALSE (Indicator should hide)")
+        }
+    }
+
+    LaunchedEffect(isRefreshing) {
+        println("EveryLoL_Debug: isRefreshing = $isRefreshing")
+    }
+
 
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
@@ -180,13 +212,20 @@ fun ReadCommunityScreen(
                         }
                     }
                     EverylolBottomInputBar(
+                        modifier = Modifier.focusRequester(focusRequester),
                         value = commentText,
                         onValueChange = { commentText = it },
                         hint = "댓글을 입력해주세요",
                         onDone = {
                             if (commentText.isNotBlank()) {
                                 if (replyingTo != null) {
-                                    onIntent(CommunityIntent.WriteReply(postId, replyingTo!!.commentId.toLong(), commentText))
+                                    onIntent(
+                                        CommunityIntent.WriteReply(
+                                            postId,
+                                            replyingTo!!.commentId.toLong(),
+                                            commentText
+                                        )
+                                    )
                                 } else {
                                     onIntent(CommunityIntent.WriteComment(postId, commentText))
                                 }
@@ -199,65 +238,86 @@ fun ReadCommunityScreen(
             }
         ) { innerPadding ->
             state.post?.let { postDetail ->
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(
-                            top = innerPadding.calculateTopPadding(),
-                            bottom = innerPadding.calculateBottomPadding()
+                PullToRefreshBox(
+                    state = pullToRefreshState,
+                    isRefreshing = isRefreshing,
+                    onRefresh = {
+                        isRefreshing = true
+                        onIntent(CommunityIntent.DetailPost(postId, isRefresh = true))
+                    },
+                    indicator = {
+                        PullToRefreshDefaults.Indicator(
+                            state = pullToRefreshState,
+                            isRefreshing = isRefreshing,
+                            containerColor = EveryLoLTheme.color.grayScale800,
+                            color = EveryLoLTheme.color.grayScale1000,
+                            modifier = Modifier.align(Alignment.TopCenter)
                         )
-                        .padding(horizontal = 16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    },
+                    modifier = Modifier.fillMaxSize()
                 ) {
-                    item {
-                        ReadPost(
-                            postDetail = postDetail,
-                            contentBlocks = mapToUiState(postDetail),
-                            onMoreClick = { isPostMenuExpanded = true },
-                            onImageClick = { selectedImageUrl = it },
-                            onVideoClick = {}
-                        )
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(
+                                top = innerPadding.calculateTopPadding(),
+                                bottom = innerPadding.calculateBottomPadding()
+                            )
+                            .padding(horizontal = 16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        item {
+                            ReadPost(
+                                postDetail = postDetail,
+                                contentBlocks = mapToUiState(postDetail),
+                                onMoreClick = { isPostMenuExpanded = true },
+                                onImageClick = { selectedImageUrl = it },
+                                onVideoClick = {}
+                            )
+                        }
+                        items(postDetail.commentList.size) { index ->
+                            val comment = postDetail.commentList[index]
+                            ReadComment(
+                                comment = comment,
+                                onMoreClick = { selectedComment = comment },
+                                onClick = {
+                                    replyingTo = comment
+                                }
+                            )
+                            Spacer(Modifier.height(8.dp))
+                        }
+                        item { Spacer(Modifier.height(12.dp)) }
                     }
-                    items(postDetail.commentList.size) { index ->
-                        val comment = postDetail.commentList[index]
-                        ReadComment(
-                            comment =comment,
-                            onMoreClick = { selectedComment = comment },
-                            onClick = {replyingTo = comment}
-                        )
-                        Spacer(Modifier.height(8.dp))
-                    }
-                    item{Spacer(Modifier.height(12.dp))}
                 }
             }
-        }
-        if (isPostMenuExpanded) {
-            PostMenu(
-                isMine = state.isMine,
-                onDismiss = { isPostMenuExpanded = false },
-                onDelete = { onIntent(CommunityIntent.DeletePost(postId)) },
-                onReport = { onIntent(CommunityIntent.ReportPost(postId)) }
-            )
-        }
+            if (isPostMenuExpanded) {
+                PostMenu(
+                    isMine = state.isMine,
+                    onDismiss = { isPostMenuExpanded = false },
+                    onDelete = { onIntent(CommunityIntent.DeletePost(postId)) },
+                    onReport = { onIntent(CommunityIntent.ReportPost(postId)) }
+                )
+            }
 
-        selectedComment?.let { comment ->
-            CommentMenu(
-                isMine = comment.isWriter,
-                onDismiss = { selectedComment = null },
-                onDelete = {
-                    onIntent(CommunityIntent.DeleteComment( comment.commentId))
-                },
-                onReport = {
-                    onIntent(CommunityIntent.ReportComment( comment.commentId))
-                }
-            )
-        }
+            selectedComment?.let { comment ->
+                CommentMenu(
+                    isMine = comment.isWriter,
+                    onDismiss = { selectedComment = null },
+                    onDelete = {
+                        onIntent(CommunityIntent.DeleteComment(comment.commentId))
+                    },
+                    onReport = {
+                        onIntent(CommunityIntent.ReportComment(comment.commentId))
+                    }
+                )
+            }
 
-        selectedImageUrl?.let { url ->
-            FullScreenImageViewer(
-                imageUrl = url,
-                onDismiss = { selectedImageUrl = null }
-            )
+            selectedImageUrl?.let { url ->
+                FullScreenImageViewer(
+                    imageUrl = url,
+                    onDismiss = { selectedImageUrl = null }
+                )
+            }
         }
     }
 }

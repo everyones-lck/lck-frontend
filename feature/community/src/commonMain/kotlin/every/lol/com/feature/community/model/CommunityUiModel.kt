@@ -60,7 +60,7 @@ sealed interface CommunityIntent{
     data object LoadNextPage : CommunityIntent
     data class ClickWriteTab(val tab: CommunityUiState.WriteTab) : CommunityIntent
     data object FetchPosts : CommunityIntent
-    data class DetailPost(val postId: Int) : CommunityIntent
+    data class DetailPost(val postId: Int, val isRefresh: Boolean = false) : CommunityIntent
     data class DeletePost(val postId: Int) : CommunityIntent
     data class DeleteComment(val commentId: Int) : CommunityIntent
     data class ReportComment(val commentId: Int) : CommunityIntent
