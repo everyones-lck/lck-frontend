@@ -200,17 +200,26 @@ class CommunityViewModel(
 
 
     private fun loadReadPost(postId: Int, isRefresh: Boolean = false) {
+        // 이 로그가 찍히는지 Logcat에서 EveryLoL_Debug로 검색하세요.
+        println("EveryLoL_Debug: loadReadPost 진입! postId=$postId, isRefresh=$isRefresh")
+
         val currentState = _uiState.value
 
-        if (!isRefresh && currentState is CommunityUiState.Read && currentState.postId == postId) return
-
-        if (currentState is CommunityUiState.Read) {
-            _uiState.value = currentState.copy(isLoading = true)
-        } else {
-            _uiState.value = CommunityUiState.Read(postId = postId, isLoading = true)
+        // 이 조건문 때문에 튕겨 나가는지 확인하기 위해 step 로그 추가
+        if (!isRefresh && currentState is CommunityUiState.Read && currentState.postId == postId) {
+            println("EveryLoL_Debug: loadReadPost 중복 호출이라 중단됨")
+            return
         }
-
+         println("step1")
+        _uiState.update { state ->
+            if (state is CommunityUiState.Read) {
+                state.copy(isLoading = true)
+            } else {
+                CommunityUiState.Read(postId = postId, isLoading = true)
+            }
+        }
         viewModelScope.launch {
+            println("step2")
             getReadPostUseCase(postId).onSuccess { post ->
                 _uiState.update { current ->
                     if (current is CommunityUiState.Read) {
@@ -384,10 +393,14 @@ class CommunityViewModel(
         _uiState.update { state ->
             if (state is CommunityUiState.Read) state.copy(isLoading = true) else state
         }
+
         viewModelScope.launch {
             postCommunityCommentUseCase(postId, content, parentCommentId).onSuccess {
+                println("EveryLoL_Debug: 댓글 작성 성공! 이제 loadReadPost($postId) 호출합니다.")
                 loadReadPost(postId, isRefresh = true)
+                _event.emit(CommunityEvent.ShowToast("댓글이 등록되었습니다."))
             }.onFailure {
+                println("EveryLoL_Debug: 댓글 작성 실패! $it")
                 _uiState.update { state ->
                     if (state is CommunityUiState.Read) state.copy(isLoading = false) else state
                 }
