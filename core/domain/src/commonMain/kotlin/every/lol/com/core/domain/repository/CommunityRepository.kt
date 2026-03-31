@@ -1,6 +1,7 @@
 package every.lol.com.core.domain.repository
 
 import every.lol.com.core.model.PostDetail
+import every.lol.com.core.model.PostLike
 import every.lol.com.core.model.PostList
 
 interface CommunityRepository {
@@ -13,4 +14,6 @@ interface CommunityRepository {
     suspend fun deleteComment(commentId: Int): Result<Unit?>
     suspend fun reportPost(postId: Int, reportDetail: String): Result<Unit?>
     suspend fun reportComment(commentId: Int, reportDetail: String): Result<Unit?>
+
+    suspend fun postLike(postId:Int): Result<PostLike>
 }

@@ -9,6 +9,7 @@ import every.lol.com.core.network.model.request.ReportCommentRequest
 import every.lol.com.core.network.model.request.ReportPostRequest
 import every.lol.com.core.network.model.response.PostDetailResponse
 import every.lol.com.core.network.model.response.PostIdResponse
+import every.lol.com.core.network.model.response.PostLikeResponse
 import every.lol.com.core.network.model.response.PostListResponse
 import every.lol.com.core.network.util.asApiResponse
 import io.ktor.client.HttpClient
@@ -90,5 +91,9 @@ class CommunityDataSourceImpl(
 
     override suspend fun reportComment(request: ReportCommentRequest): ApiResponse<Unit?> = runCatching {
         httpClient.post("/report/comment")
+    }.asApiResponse()
+
+    override suspend fun postLike(postId: Int): ApiResponse<PostLikeResponse> = runCatching {
+        httpClient.post("/post/$postId/like")
     }.asApiResponse()
 }

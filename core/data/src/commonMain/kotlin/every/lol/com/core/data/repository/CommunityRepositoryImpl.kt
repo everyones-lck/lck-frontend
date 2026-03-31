@@ -6,6 +6,7 @@ import every.lol.com.core.domain.repository.CommunityRepository
 import every.lol.com.core.model.CommentList
 import every.lol.com.core.model.FileList
 import every.lol.com.core.model.PostDetail
+import every.lol.com.core.model.PostLike
 import every.lol.com.core.model.PostList
 import every.lol.com.core.model.PostListDetail
 import every.lol.com.core.network.datasource.CommunityDataSource
@@ -93,5 +94,13 @@ class CommunityRepositoryImpl(
     override suspend fun reportComment(commentId: Int, reportDetail: String): Result<Unit?> =
         remote.reportComment(ReportCommentRequest(commentId, reportDetail)).toResult().map {
             Unit
+        }
+
+    override suspend fun postLike(postId: Int): Result<PostLike> =
+        remote.postLike(postId).toResult().map { response ->
+            PostLike(
+                isLiked = response.isLiked,
+                likeCount = response.likeCount
+            )
         }
 }
