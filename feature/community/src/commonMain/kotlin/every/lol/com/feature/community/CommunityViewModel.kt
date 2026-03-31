@@ -66,7 +66,7 @@ class CommunityViewModel(
             CommunityIntent.Loading -> loadCommunityData(tab = CommunityUiState.CommunityTab.ALL)
             is CommunityIntent.ClickTab -> handleTabClick(intent.tab)
             is CommunityIntent.ClickWriteTab -> handleWriteTabClick(intent.tab)
-            is CommunityIntent.DetailPost -> loadReadPost(intent.postId, isRefresh = true)
+            is CommunityIntent.DetailPost -> loadReadPost(intent.postId, intent.isRefresh)
             is CommunityIntent.ChangeTitle -> {
                 val currentState = uiState.value
                 if (currentState is CommunityUiState.Write) {
@@ -76,7 +76,6 @@ class CommunityViewModel(
             is CommunityIntent.UpdateMediaOrder -> {
                 handleUpdateMediaOrder(intent.mediaId, intent.newOrder)
             }
-
             is CommunityIntent.ChangeContent -> {
                 val currentState = uiState.value
                 if (currentState is CommunityUiState.Write) {
@@ -98,9 +97,9 @@ class CommunityViewModel(
                 }
             }
             is CommunityIntent.DeletePost -> handleDeletePost(intent.postId)
-            is CommunityIntent.ReportPost -> handleReportPost(intent.postId)
+            is CommunityIntent.ReportPost -> handleReportPost(intent.postId, intent.reportDetail)
             is CommunityIntent.DeleteComment -> handleDeleteComment(intent.commentId)
-            is CommunityIntent.ReportComment -> handleReportComment(intent.commentId)
+            is CommunityIntent.ReportComment -> handleReportComment(intent.commentId, intent.reportDetail)
             is CommunityIntent.WriteComment -> handleWriteComment(intent.postId, intent.content)
             is CommunityIntent.WriteReply -> handleWriteComment(intent.postId, intent.content, intent.parentCommentId)
             else -> {}
@@ -206,7 +205,7 @@ class CommunityViewModel(
         }
 
         _uiState.update { state ->
-            if (state is CommunityUiState.Read) {
+            if (state is CommunityUiState.Read && state.postId == postId) {
                 state.copy(isLoading = true)
             } else {
                 CommunityUiState.Read(postId = postId, isLoading = true)
@@ -215,20 +214,13 @@ class CommunityViewModel(
         viewModelScope.launch {
             getReadPostUseCase(postId).onSuccess { post ->
                 _uiState.update { current ->
-                    if (current is CommunityUiState.Read) {
+                    if (current is CommunityUiState.Read && current.postId == postId) {
                         current.copy(
                             post = post,
                             isLoading = false,
                             isMine = post.isWriter
                         )
-                    } else {
-                        CommunityUiState.Read(
-                            postId = postId,
-                            post = post,
-                            isLoading = false,
-                            isMine = post.isWriter
-                        )
-                    }
+                    } else current
                 }
             }.onFailure {
                 _uiState.update { current ->
@@ -349,9 +341,9 @@ class CommunityViewModel(
         }
     }
 
-    private fun handleReportPost(postId: Int) {
+    private fun handleReportPost(postId: Int, reportDetail: String) {
         viewModelScope.launch {
-            reportPostUseCase(postId).onSuccess {
+            reportPostUseCase(postId, reportDetail).onSuccess {
 
             }.onFailure {
                 _event.emit(CommunityEvent.ShowToast("신고에 실패하였습니다."))
@@ -376,9 +368,9 @@ class CommunityViewModel(
         }
     }
 
-    private fun handleReportComment(commentId: Int) {
+    private fun handleReportComment(commentId: Int, reportDetail: String) {
         viewModelScope.launch {
-            reportCommentUseCase(commentId).onSuccess {
+            reportCommentUseCase(commentId,reportDetail).onSuccess {
 
             }.onFailure {
                 _event.emit(CommunityEvent.ShowToast("신고에 실패하였습니다."))

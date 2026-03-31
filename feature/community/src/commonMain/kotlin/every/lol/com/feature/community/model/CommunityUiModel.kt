@@ -63,8 +63,8 @@ sealed interface CommunityIntent{
     data class DetailPost(val postId: Int, val isRefresh: Boolean = false) : CommunityIntent
     data class DeletePost(val postId: Int) : CommunityIntent
     data class DeleteComment(val commentId: Int) : CommunityIntent
-    data class ReportComment(val commentId: Int) : CommunityIntent
-    data class ReportPost(val postId: Int) : CommunityIntent
+    data class ReportComment(val commentId: Int, val reportDetail: String) : CommunityIntent
+    data class ReportPost(val postId: Int, val reportDetail: String) : CommunityIntent
     data class ChangeTitle(val title: String) : CommunityIntent
     data class ChangeContent(val content: String) : CommunityIntent
     data class WritePost(

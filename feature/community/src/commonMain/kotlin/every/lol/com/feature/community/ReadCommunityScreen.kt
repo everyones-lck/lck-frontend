@@ -153,10 +153,6 @@ fun ReadCommunityScreen(
         }
     }
 
-    LaunchedEffect(isRefreshing) {
-    }
-
-
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             modifier = Modifier
@@ -293,7 +289,7 @@ fun ReadCommunityScreen(
                     isMine = state.isMine,
                     onDismiss = { isPostMenuExpanded = false },
                     onDelete = { onIntent(CommunityIntent.DeletePost(postId)) },
-                    onReport = { onIntent(CommunityIntent.ReportPost(postId)) }
+                    onReport = { onIntent(CommunityIntent.ReportPost(postId,"신고")) }
                 )
             }
 
@@ -305,7 +301,7 @@ fun ReadCommunityScreen(
                         onIntent(CommunityIntent.DeleteComment(comment.commentId))
                     },
                     onReport = {
-                        onIntent(CommunityIntent.ReportComment(comment.commentId))
+                        onIntent(CommunityIntent.ReportComment(comment.commentId, "신고"))
                     }
                 )
             }
