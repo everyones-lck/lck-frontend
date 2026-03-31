@@ -23,6 +23,7 @@ import every.lol.com.feature.aboutlck.AboutLCKScreen
 import every.lol.com.feature.community.CommunityScreen
 import every.lol.com.feature.home.HomeScreen
 import every.lol.com.feature.intro.navigation.introNavGraph
+import every.lol.com.feature.matches.MatchesRoute
 import every.lol.com.feature.matches.MatchesScreen
 import every.lol.com.feature.mypage.navigation.mypageNavGraph
 import moe.tlaster.precompose.PreComposeApp
@@ -97,7 +98,11 @@ fun App() {
                             }
                         )
                     }
-                    composable<Route.Matches> { MatchesScreen() }
+                    composable<Route.Matches> {
+                        MatchesRoute(
+                            innerPadding = innerPadding
+                        )
+                    }
                     composable<Route.AboutLCK> { AboutLCKScreen() }
                     composable<Route.Community> { CommunityScreen() }
 
