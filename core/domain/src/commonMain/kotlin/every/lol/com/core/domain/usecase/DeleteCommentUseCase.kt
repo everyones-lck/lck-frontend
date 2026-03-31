@@ -3,9 +3,9 @@ package every.lol.com.core.domain.usecase
 import every.lol.com.core.domain.repository.CommunityRepository
 
 
-class ReportPostUseCase(
+class DeleteCommentUseCase(
     private val communityRepository: CommunityRepository
 ) {
-    suspend operator fun invoke(postId: Int, reportDetail: String): Result<Unit?> =
-        communityRepository.reportPost(postId, reportDetail)
+    suspend operator fun invoke(commentId: Int): Result<Unit?> =
+        communityRepository.deleteComment(commentId)
 }

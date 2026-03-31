@@ -63,7 +63,6 @@ fun CommunityRoute(
     LaunchedEffect(viewModel.event) {
         viewModel.event.collect { event ->
             when (event) {
-                is CommunityEvent.NavigateCommunityHome -> onBackClick
                 is CommunityEvent.NavigateWrite -> {  }
                 else -> {}
             }

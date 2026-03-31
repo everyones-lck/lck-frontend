@@ -6,7 +6,7 @@ import every.lol.com.core.domain.repository.CommunityRepository
 class PostCommunityCommentUseCase(
     private val communityRepository: CommunityRepository
 ) {
-    suspend operator fun invoke(postId: Int, content: String): Result<Unit?> {
-        return communityRepository.postComment(postId, content)
+    suspend operator fun invoke(postId: Int, content: String, parentCommentId: Long? = null): Result<Unit?> {
+        return communityRepository.postComment(postId, content, parentCommentId)
     }
 }

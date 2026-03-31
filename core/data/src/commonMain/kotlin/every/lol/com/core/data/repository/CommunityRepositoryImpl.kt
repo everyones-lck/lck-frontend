@@ -76,8 +76,8 @@ class CommunityRepositoryImpl(
             Unit
         }
 
-    override suspend fun postComment(postId: Int, content: String): Result<Unit?> =
-        remote.postComment(postId, PostCommentRequest(content)).toResult().map {
+    override suspend fun postComment(postId: Int, content: String, parentCommentId: Long?): Result<Unit?> =
+        remote.postComment(postId, PostCommentRequest(content, parentCommentId)).toResult().map {
             Unit
         }
 

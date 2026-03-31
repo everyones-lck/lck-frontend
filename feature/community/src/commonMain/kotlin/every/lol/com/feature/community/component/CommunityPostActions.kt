@@ -28,7 +28,10 @@ fun CommunityPostActions(
     type: CommunityUiState.CommunityTab?=null,
     commentCount: Int,
     likeCount: Int,
-    viewCount: Int
+    viewCount: Int,
+    isCommented: Boolean = false,
+    isLiked: Boolean = false,
+    onLikeClick: () -> Unit = {},
 ){
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -36,11 +39,11 @@ fun CommunityPostActions(
         verticalAlignment = Alignment.CenterVertically
     ){
         if(type == CommunityUiState.CommunityTab.ALL){
-            CategoryBox(category = type.toString()) //Todo: 카테고리 반영
+            //CategoryBox(category = type.toString()) //Todo: 카테고리 반영
         }
-        CountBox(type = 0, count = likeCount, onCountClick = {}) //Todo: 좋아요 개수
-        CountBox(type = 1, count = viewCount, onCountClick = {}) //Todo: 조회수 개수
-        CountBox(type = 2, count = commentCount, onCountClick = {})
+        //CountBox(type = 0, count = likeCount, isActive = isLiked, onCountClick = {onLikeClick()}) //Todo: 좋아요 개수
+        //CountBox(type = 1, count = viewCount, isActive = false, onCountClick = {}) //Todo: 조회수 개수
+        CountBox(type = 2, count = commentCount, isActive = isCommented, onCountClick = {})
     }
 }
 
@@ -49,6 +52,7 @@ fun CommunityPostActions(
 fun CountBox(
     type: Int, //0: 좋아요, 1: 조회수, 2: 댓글
     count: Int,
+    isActive:Boolean,
     onCountClick: (type: Int) -> Unit
 ){
     val icon = when (type) {
@@ -58,12 +62,24 @@ fun CountBox(
         else -> painterResource(Res.drawable.ic_community_like)
     }
 
+    val borderColor = if (isActive) {
+        EveryLoLTheme.color.grayScale600
+    } else {
+        EveryLoLTheme.color.grayScale900
+    }
+
+    val itemColor = if (isActive) {
+        EveryLoLTheme.color.community600
+    } else {
+        EveryLoLTheme.color.gray800
+    }
+
     Row(
         modifier = Modifier
             .clip(RoundedCornerShape(7.dp))
             .border(
                 width = 1.dp,
-                color = EveryLoLTheme.color.grayScale900,
+                color = borderColor,
                 shape = RoundedCornerShape(7.dp)
             )
             .padding(8.dp, 4.dp)
@@ -74,13 +90,13 @@ fun CountBox(
         Icon(
             painter = icon,
             contentDescription = null,
-            tint = EveryLoLTheme.color.gray800,
+            tint = itemColor,
             modifier = Modifier.size(12.dp)
         )
         Text(
             text = count.toString(),
             style = EveryLoLTheme.typography.subtitle04,
-            color = EveryLoLTheme.color.gray800
+            color = itemColor
         )
     }
 }
