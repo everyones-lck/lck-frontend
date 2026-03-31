@@ -35,6 +35,8 @@ sealed interface CommunityUiState {
         val post: PostDetail? = null,
         val isMine: Boolean = false,
         val comments: List<CommentList> = emptyList(),
+        val isLiked: Boolean = false,
+        val likeCount: Int = 0
     ): CommunityUiState
 
     data class Write(
@@ -79,4 +81,6 @@ sealed interface CommunityIntent{
     data class UpdateMediaOrder(val mediaId: String, val newOrder: Int) : CommunityIntent
     data class WriteComment(val postId: Int, val content: String) : CommunityIntent
     data class WriteReply(val postId: Int, val parentCommentId: Long, val content: String) : CommunityIntent
-    data class ShowMessage(val message: String) : CommunityIntent}
+    data class ShowMessage(val message: String) : CommunityIntent
+    data class LikePost(val postId: Int) : CommunityIntent
+}

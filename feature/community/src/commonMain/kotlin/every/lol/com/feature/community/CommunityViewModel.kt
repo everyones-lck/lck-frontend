@@ -6,6 +6,7 @@ import every.lol.com.core.domain.usecase.DeletePostUseCase
 import every.lol.com.core.domain.usecase.GetCommunityPostsUseCase
 import every.lol.com.core.domain.usecase.GetReadPostUseCase
 import every.lol.com.core.domain.usecase.PostCommunityCommentUseCase
+import every.lol.com.core.domain.usecase.PostCommunityPostLikeUseCase
 import every.lol.com.core.domain.usecase.PostCommunityPostUseCase
 import every.lol.com.core.domain.usecase.ReportCommentUseCase
 import every.lol.com.core.domain.usecase.ReportPostUseCase
@@ -40,6 +41,7 @@ class CommunityViewModel(
     private val deletePostUseCase: DeletePostUseCase,
     private val reportPostUseCase: ReportPostUseCase,
     private val postCommunityCommentUseCase: PostCommunityCommentUseCase,
+    private val postCommunityPostLikeUseCase: PostCommunityPostLikeUseCase,
     private val deleteCommentUseCase: DeleteCommentUseCase,
     private val reportCommentUseCase: ReportCommentUseCase
 ) : ViewModel() {
@@ -86,9 +88,7 @@ class CommunityViewModel(
                 handleWritePost(intent.title, intent.content)
             }
             is CommunityIntent.AddMedias -> handleAddMedias(intent.medias)
-
             is CommunityIntent.RemoveMedia -> handleRemoveMedia(intent.index)
-
             is CommunityIntent.MoveMedia -> handleMoveMedia(intent.from, intent.to)
             is CommunityIntent.LoadNextPage -> {
                 val currentState = uiState.value as? CommunityUiState.Community
@@ -102,6 +102,7 @@ class CommunityViewModel(
             is CommunityIntent.ReportComment -> handleReportComment(intent.commentId, intent.reportDetail)
             is CommunityIntent.WriteComment -> handleWriteComment(intent.postId, intent.content)
             is CommunityIntent.WriteReply -> handleWriteComment(intent.postId, intent.content, intent.parentCommentId)
+            is CommunityIntent.LikePost -> handleLikePost(intent.postId)
             else -> {}
         }
     }
@@ -390,6 +391,18 @@ class CommunityViewModel(
                     if (state is CommunityUiState.Read) state.copy(isLoading = false) else state
                 }
                 _event.emit(CommunityEvent.ShowToast("댓글 작성에 실패하였습니다."))
+            }
+        }
+    }
+
+    private fun handleLikePost(postId: Int){
+        viewModelScope.launch {
+            postCommunityPostLikeUseCase(postId).onSuccess { response ->
+                _uiState.update {
+                    if (it is CommunityUiState.Read) it.copy(isLiked = !response.isLiked, likeCount = response.likeCount) else it
+                }
+            }.onFailure {
+                _event.emit(CommunityEvent.ShowToast("좋아요에 실패하였습니다."))
             }
         }
     }

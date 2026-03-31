@@ -266,7 +266,10 @@ fun ReadCommunityScreen(
                                 onMoreClick = { isPostMenuExpanded = true },
                                 onImageClick = { selectedImageUrl = it },
                                 onVideoClick = {},
-                                isCommented = isCommented
+                                onLikeClick = { onIntent(CommunityIntent.LikePost(postId)) },
+                                isCommented = isCommented,
+                                isLiked = state.isLiked,
+                                likeCount = state.likeCount
                             )
                         }
                         items(postDetail.commentList.size) { index ->

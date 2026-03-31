@@ -8,6 +8,7 @@ import every.lol.com.core.network.model.request.ReportCommentRequest
 import every.lol.com.core.network.model.request.ReportPostRequest
 import every.lol.com.core.network.model.response.PostDetailResponse
 import every.lol.com.core.network.model.response.PostIdResponse
+import every.lol.com.core.network.model.response.PostLikeResponse
 import every.lol.com.core.network.model.response.PostListResponse
 
 interface CommunityDataSource {
@@ -20,4 +21,6 @@ interface CommunityDataSource {
     suspend fun deleteComment(commentId: Int): ApiResponse<Unit?>
     suspend fun reportPost(request: ReportPostRequest): ApiResponse<Unit?>
     suspend fun reportComment(request: ReportCommentRequest): ApiResponse<Unit?>
+
+    suspend fun postLike(postId: Int): ApiResponse<PostLikeResponse>
 }

@@ -39,10 +39,10 @@ fun CommunityPostActions(
         verticalAlignment = Alignment.CenterVertically
     ){
         if(type == CommunityUiState.CommunityTab.ALL){
-            CategoryBox(category = type.toString()) //Todo: 카테고리 반영
+            //CategoryBox(category = type.toString()) //Todo: 카테고리 반영
         }
-        CountBox(type = 0, count = likeCount, isActive = isLiked, onCountClick = {onLikeClick()}) //Todo: 좋아요 개수
-        CountBox(type = 1, count = viewCount, isActive = false, onCountClick = {}) //Todo: 조회수 개수
+        //CountBox(type = 0, count = likeCount, isActive = isLiked, onCountClick = {onLikeClick()}) //Todo: 좋아요 개수
+        //CountBox(type = 1, count = viewCount, isActive = false, onCountClick = {}) //Todo: 조회수 개수
         CountBox(type = 2, count = commentCount, isActive = isCommented, onCountClick = {})
     }
 }

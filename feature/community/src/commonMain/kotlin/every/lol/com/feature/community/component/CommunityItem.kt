@@ -75,7 +75,7 @@ fun CommunityItem(
         CommunityPostActions(
             type = type,
             commentCount = post.commentCounts,
-            likeCount = 10,
+            likeCount = 0,
             viewCount = 0
         )
     }
