@@ -367,15 +367,17 @@ class MypageViewModel(
 
     private fun handleLogout() {
         viewModelScope.launch {
-            logoutUseCase().getOrNull()
-            _event.emit(MypageEvent.Logout)
+            logoutUseCase().onSuccess {
+                _event.emit(MypageEvent.Logout)
+            }
         }
     }
 
     private fun handleWithdrawal() {
         viewModelScope.launch {
-            withdrawalUseCase()
-            _event.emit(MypageEvent.Withdrawal)
+            withdrawalUseCase().onSuccess {
+                _event.emit(MypageEvent.Withdrawal)
+            }
         }
     }
 
