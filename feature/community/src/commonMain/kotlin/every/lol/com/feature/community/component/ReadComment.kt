@@ -25,9 +25,10 @@ import org.jetbrains.compose.resources.painterResource
 fun ReadComment(
     comment: CommentList,
     isReply: Boolean = false,
-    onMoreClick: () -> Unit
+    onMoreClick: () -> Unit,
+    onClick:() -> Unit
 ) {
-    Row(modifier = Modifier.fillMaxWidth()) {
+    Row(modifier = Modifier.clickable(onClick = onClick).fillMaxWidth()) {
         if (isReply) {
             Spacer(Modifier.width(20.dp))
         }

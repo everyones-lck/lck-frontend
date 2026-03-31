@@ -1,11 +1,13 @@
 package every.lol.com.feature.community
 
 import every.lol.com.core.common.compressImage
+import every.lol.com.core.domain.usecase.DeleteCommentUseCase
 import every.lol.com.core.domain.usecase.DeletePostUseCase
 import every.lol.com.core.domain.usecase.GetCommunityPostsUseCase
 import every.lol.com.core.domain.usecase.GetReadPostUseCase
 import every.lol.com.core.domain.usecase.PostCommunityCommentUseCase
 import every.lol.com.core.domain.usecase.PostCommunityPostUseCase
+import every.lol.com.core.domain.usecase.ReportCommentUseCase
 import every.lol.com.core.domain.usecase.ReportPostUseCase
 import every.lol.com.core.model.CommentList
 import every.lol.com.feature.community.model.CommunityIntent
@@ -38,7 +40,9 @@ class CommunityViewModel(
     private val postCommunityPostUseCase: PostCommunityPostUseCase,
     private val deletePostUseCase: DeletePostUseCase,
     private val reportPostUseCase: ReportPostUseCase,
-    private val postCommunityCommentUseCase: PostCommunityCommentUseCase
+    private val postCommunityCommentUseCase: PostCommunityCommentUseCase,
+    private val deleteCommentUseCase: DeleteCommentUseCase,
+    private val reportCommentUseCase: ReportCommentUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<CommunityUiState>(CommunityUiState.Loading)
@@ -97,7 +101,10 @@ class CommunityViewModel(
             }
             is CommunityIntent.DeletePost -> handleDeletePost(intent.postId)
             is CommunityIntent.ReportPost -> handleReportPost(intent.postId)
+            is CommunityIntent.DeleteComment -> handleDeleteComment(intent.commentId)
+            is CommunityIntent.ReportComment -> handleReportComment(intent.commentId)
             is CommunityIntent.WriteComment -> handleWriteComment(intent.postId, intent.content)
+            is CommunityIntent.WriteReply -> handleWriteComment(intent.postId, intent.content, intent.parentCommentId)
             else -> {}
         }
     }
@@ -338,7 +345,27 @@ class CommunityViewModel(
         }
     }
 
-    private fun handleWriteComment(postId: Int, content: String) {
+    private fun handleDeleteComment(commentId: Int) {
+        viewModelScope.launch {
+            deleteCommentUseCase(commentId).onSuccess {
+
+            }.onFailure {
+                _event.emit(CommunityEvent.ShowToast("삭제에 실패하였습니다."))
+            }
+        }
+    }
+
+    private fun handleReportComment(commentId: Int) {
+        viewModelScope.launch {
+            reportCommentUseCase(commentId).onSuccess {
+
+            }.onFailure {
+                _event.emit(CommunityEvent.ShowToast("신고에 실패하였습니다."))
+            }
+        }
+    }
+
+    private fun handleWriteComment(postId: Int, content: String,parentCommentId: Long? = null) {
         val currentState = uiState.value as? CommunityUiState.Read ?: return
         val currentPost = currentState.post ?: return
 
@@ -362,7 +389,7 @@ class CommunityViewModel(
                 } else state
             }
 
-            postCommunityCommentUseCase(postId, content).onSuccess {
+            postCommunityCommentUseCase(postId, content, parentCommentId).onSuccess {
                 loadReadPost(postId, isRefresh = true)
             }.onFailure {
                 _uiState.update { state ->
