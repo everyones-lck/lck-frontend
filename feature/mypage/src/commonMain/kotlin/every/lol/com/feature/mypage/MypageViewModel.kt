@@ -1,5 +1,6 @@
 package every.lol.com.feature.mypage
 
+import every.lol.com.core.common.compressImage
 import every.lol.com.core.domain.usecase.GetMyCommentsUseCase
 import every.lol.com.core.domain.usecase.GetMyPostsUseCase
 import every.lol.com.core.domain.usecase.GetProfileUseCase
@@ -11,12 +12,15 @@ import every.lol.com.core.domain.usecase.WithdrawalUseCase
 import every.lol.com.core.model.Team
 import every.lol.com.feature.mypage.model.MypageIntent
 import every.lol.com.feature.mypage.model.MypageUiState
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import moe.tlaster.precompose.viewmodel.ViewModel
 import moe.tlaster.precompose.viewmodel.viewModelScope
 
@@ -220,12 +224,11 @@ class MypageViewModel(
             current.profileImage is ByteArray -> true
             current.profileImage is String && !(current.profileImage as String).startsWith("http") -> true
             current.profileImage == null && current.originalProfileImage != null -> true
-
             else -> false
         }
 
         val isTeamChanged = current.teamId != current.originalTeamId
-        println("isNicknameChanged: $isNicknameChanged, isImageChanged: $isImageChanged, isTeamChanged: $isTeamChanged")
+
         if (!isNicknameChanged && !isImageChanged && !isTeamChanged) {
             loadMypageData()
             return
@@ -240,9 +243,13 @@ class MypageViewModel(
                 }
 
                 if (isNicknameChanged || isImageChanged) {
+                    val compressedImage = withContext(Dispatchers.IO) {
+                        (current.profileImage as? ByteArray)?.compressImage(30)
+                    }
+
                     patchProfileUseCase(
-                        nickname = if (current.nickName.isEmpty()) current.originalNickname else current.nickName,
-                        profileImage = current.profileImage as? ByteArray
+                        nickname = if (isNicknameChanged) current.nickName else null,
+                        profileImage = compressedImage
                     ).getOrThrow()
                 }
 
@@ -367,15 +374,17 @@ class MypageViewModel(
 
     private fun handleLogout() {
         viewModelScope.launch {
-            logoutUseCase().getOrNull()
-            _event.emit(MypageEvent.Logout)
+            logoutUseCase().onSuccess {
+                _event.emit(MypageEvent.Logout)
+            }
         }
     }
 
     private fun handleWithdrawal() {
         viewModelScope.launch {
-            withdrawalUseCase()
-            _event.emit(MypageEvent.Withdrawal)
+            withdrawalUseCase().onSuccess {
+                _event.emit(MypageEvent.Withdrawal)
+            }
         }
     }
 

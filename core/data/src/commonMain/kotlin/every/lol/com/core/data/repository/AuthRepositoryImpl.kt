@@ -44,8 +44,7 @@ class AuthRepositoryImpl(
             )
         )
 
-        return remote.signup(request = signupRequest)
-            .toResult()
+        return remote.signup(signupRequest).toResult()
             .mapCatching { dto ->
                 local.saveUserId(request.kakaoUserId)
                 local.saveToken(dto.accessToken, dto.refreshToken, dto.accessTokenExpirationTime, dto.refreshTokenExpirationTime)

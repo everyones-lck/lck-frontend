@@ -53,7 +53,9 @@ fun Scope.createHttpClient(
         socketTimeoutMillis = 30_000L
     }
 
-    install(ContentNegotiation) { json(json) }
+    install(ContentNegotiation) {
+        json(json)
+    }
 
     install(Logging) {
         level = if (BuildConfig.DEBUG) LogLevel.BODY else LogLevel.INFO

@@ -31,7 +31,7 @@ class MyPageRepositoryImpl(
             )
         }
 
-    override suspend fun patchProfile(nickname: String, profileImage: ByteArray?): Result<Unit> {
+    override suspend fun patchProfile(nickname: String?, profileImage: ByteArray?): Result<Unit> {
         val isDefaultImage = if (profileImage == null) true else false
 
         return remote.patchProfile(
@@ -82,15 +82,19 @@ class MyPageRepositoryImpl(
 
     override suspend fun withdrawal(): Result<Unit?> {
         val result = remote.withdrawal().toResult()
-        local.clearAuthData()
-        return result.map { Unit }
+        return result.map {
+            local.clearAuthData()
+            Unit
+        }
     }
 
     override suspend fun logout(): Result<Unit?> {
         val authData = local.getAuthData() ?: return Result.success(Unit)
         val refreshToken = authData.refreshToken
         val result = remote.logout(refreshToken).toResult()
-        local.clearAuthData()
-        return result.map { Unit }
+        return result.map {
+            local.clearAuthData()
+            Unit
+        }
     }
 }

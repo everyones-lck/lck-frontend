@@ -20,7 +20,6 @@ import io.ktor.client.request.setBody
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod.Companion.Patch
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 class MyPagesDataSourceImpl(
@@ -35,14 +34,19 @@ class MyPagesDataSourceImpl(
         httpClient.submitFormWithBinaryData(
             url = "/my-pages/profiles",
             formData = formData {
-                request.profileImage?.let { imageBytes ->
-                    append("profileImage", imageBytes, Headers.build {
-                        append(HttpHeaders.ContentType, "image/png")
-                        append(HttpHeaders.ContentDisposition, "filename=\"profile.png\"")
+                if (request.profileImage != null) {
+                    append("profileImage", request.profileImage, Headers.build {
+                        append(HttpHeaders.ContentType, "image/jpeg")
+                        append(HttpHeaders.ContentDisposition, "filename=\"profile.jpg\"")
                     })
                 }
-                val jsonRequest = Json.encodeToString(request.request)
-                append("updateProfileRequest", jsonRequest, Headers.build {
+                else {
+                    append("profileImage", byteArrayOf(), Headers.build {
+                        append(HttpHeaders.ContentType, "application/octet-stream")
+                        append(HttpHeaders.ContentDisposition, "filename=\"\"")
+                    })
+                }
+                append("updateProfileRequest",  Json.encodeToString(request.request), Headers.build {
                     append(HttpHeaders.ContentType, "application/json")
                 })
             }
