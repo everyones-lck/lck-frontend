@@ -31,7 +31,7 @@ class MyPageRepositoryImpl(
             )
         }
 
-    override suspend fun patchProfile(nickname: String, profileImage: ByteArray?): Result<Unit> {
+    override suspend fun patchProfile(nickname: String?, profileImage: ByteArray?): Result<Unit> {
         val isDefaultImage = if (profileImage == null) true else false
 
         return remote.patchProfile(
