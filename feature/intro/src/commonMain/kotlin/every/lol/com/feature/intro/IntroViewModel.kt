@@ -64,6 +64,7 @@ class IntroViewModel(
 
 
     private fun checkInitialState() {
+        _uiState.value = IntroUiState.Loading
         viewModelScope.launch {
             delay(1500)
 
