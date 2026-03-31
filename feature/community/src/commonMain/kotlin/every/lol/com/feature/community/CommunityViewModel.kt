@@ -1,11 +1,13 @@
 package every.lol.com.feature.community
 
 import every.lol.com.core.common.compressImage
+import every.lol.com.core.domain.usecase.DeleteCommentUseCase
 import every.lol.com.core.domain.usecase.DeletePostUseCase
 import every.lol.com.core.domain.usecase.GetCommunityPostsUseCase
 import every.lol.com.core.domain.usecase.GetReadPostUseCase
 import every.lol.com.core.domain.usecase.PostCommunityCommentUseCase
 import every.lol.com.core.domain.usecase.PostCommunityPostUseCase
+import every.lol.com.core.domain.usecase.ReportCommentUseCase
 import every.lol.com.core.domain.usecase.ReportPostUseCase
 import every.lol.com.feature.community.model.CommunityIntent
 import every.lol.com.feature.community.model.CommunityUiState
@@ -26,8 +28,8 @@ import moe.tlaster.precompose.viewmodel.viewModelScope
 
 sealed interface CommunityEvent{
     data object NavigateWrite: CommunityEvent
-    data object NavigateCommunityHome: CommunityEvent
     data object WriteSuccess: CommunityEvent
+    data object DeletePostSuccess: CommunityEvent
     data class ShowToast(val message: String): CommunityEvent
 }
 
@@ -37,7 +39,9 @@ class CommunityViewModel(
     private val postCommunityPostUseCase: PostCommunityPostUseCase,
     private val deletePostUseCase: DeletePostUseCase,
     private val reportPostUseCase: ReportPostUseCase,
-    private val postCommunityCommentUseCase: PostCommunityCommentUseCase
+    private val postCommunityCommentUseCase: PostCommunityCommentUseCase,
+    private val deleteCommentUseCase: DeleteCommentUseCase,
+    private val reportCommentUseCase: ReportCommentUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<CommunityUiState>(CommunityUiState.Loading)
@@ -62,7 +66,7 @@ class CommunityViewModel(
             CommunityIntent.Loading -> loadCommunityData(tab = CommunityUiState.CommunityTab.ALL)
             is CommunityIntent.ClickTab -> handleTabClick(intent.tab)
             is CommunityIntent.ClickWriteTab -> handleWriteTabClick(intent.tab)
-            is CommunityIntent.DetailPost -> loadReadPost(intent.postId)
+            is CommunityIntent.DetailPost -> loadReadPost(intent.postId, intent.isRefresh)
             is CommunityIntent.ChangeTitle -> {
                 val currentState = uiState.value
                 if (currentState is CommunityUiState.Write) {
@@ -72,7 +76,6 @@ class CommunityViewModel(
             is CommunityIntent.UpdateMediaOrder -> {
                 handleUpdateMediaOrder(intent.mediaId, intent.newOrder)
             }
-
             is CommunityIntent.ChangeContent -> {
                 val currentState = uiState.value
                 if (currentState is CommunityUiState.Write) {
@@ -88,15 +91,17 @@ class CommunityViewModel(
 
             is CommunityIntent.MoveMedia -> handleMoveMedia(intent.from, intent.to)
             is CommunityIntent.LoadNextPage -> {
-                println("Ktor Debug: LoadNextPage 이벤트 수신함 : ${uiState.value}")
                 val currentState = uiState.value as? CommunityUiState.Community
                 if (currentState != null) {
                     loadCommunityData(tab = currentState.selectedTab, isNextPage = true)
                 }
             }
             is CommunityIntent.DeletePost -> handleDeletePost(intent.postId)
-            is CommunityIntent.ReportPost -> handleReportPost(intent.postId)
+            is CommunityIntent.ReportPost -> handleReportPost(intent.postId, intent.reportDetail)
+            is CommunityIntent.DeleteComment -> handleDeleteComment(intent.commentId)
+            is CommunityIntent.ReportComment -> handleReportComment(intent.commentId, intent.reportDetail)
             is CommunityIntent.WriteComment -> handleWriteComment(intent.postId, intent.content)
+            is CommunityIntent.WriteReply -> handleWriteComment(intent.postId, intent.content, intent.parentCommentId)
             else -> {}
         }
     }
@@ -192,18 +197,29 @@ class CommunityViewModel(
     }
 
 
-    private fun loadReadPost(postId: Int){
+    private fun loadReadPost(postId: Int, isRefresh: Boolean = false) {
+        val currentState = _uiState.value
 
-        val state = _uiState.value
-        if (state is CommunityUiState.Read && state.postId == postId) return
+        if (!isRefresh && currentState is CommunityUiState.Read && currentState.postId == postId) {
+            return
+        }
 
-        _uiState.value = CommunityUiState.Read(postId = postId, isLoading = true)
-
+        _uiState.update { state ->
+            if (state is CommunityUiState.Read && state.postId == postId) {
+                state.copy(isLoading = true)
+            } else {
+                CommunityUiState.Read(postId = postId, isLoading = true)
+            }
+        }
         viewModelScope.launch {
             getReadPostUseCase(postId).onSuccess { post ->
                 _uiState.update { current ->
                     if (current is CommunityUiState.Read && current.postId == postId) {
-                        current.copy(post = post, isLoading = false, isMine = post.isWriter)
+                        current.copy(
+                            post = post,
+                            isLoading = false,
+                            isMine = post.isWriter
+                        )
                     } else current
                 }
             }.onFailure {
@@ -318,28 +334,61 @@ class CommunityViewModel(
     private fun handleDeletePost(postId: Int) {
         viewModelScope.launch {
             deletePostUseCase(postId).onSuccess {
-                _event.emit(CommunityEvent.NavigateCommunityHome)
+                _event.emit(CommunityEvent.DeletePostSuccess)
             }.onFailure {
                 _event.emit(CommunityEvent.ShowToast("삭제에 실패하였습니다."))
             }
         }
     }
 
-    private fun handleReportPost(postId: Int) {
+    private fun handleReportPost(postId: Int, reportDetail: String) {
         viewModelScope.launch {
-            reportPostUseCase(postId).onSuccess {
-                _event.emit(CommunityEvent.NavigateCommunityHome)
+            reportPostUseCase(postId, reportDetail).onSuccess {
+
             }.onFailure {
                 _event.emit(CommunityEvent.ShowToast("신고에 실패하였습니다."))
             }
         }
     }
 
-    private fun handleWriteComment(postId: Int, content: String) {
+    //Todo: 댓글 삭제 서버 수정 후 재확인
+    private fun handleDeleteComment(commentId: Int) {
+        _uiState.update { state ->
+            if (state is CommunityUiState.Read) state.copy(isLoading = true) else state
+        }
         viewModelScope.launch {
-            postCommunityCommentUseCase(postId, content).onSuccess {
-                _event.emit(CommunityEvent.NavigateCommunityHome)
+            deleteCommentUseCase(commentId).onSuccess {
+                val currentPostId = (uiState.value as? CommunityUiState.Read)?.postId
+                if (currentPostId != null) {
+                    loadReadPost(currentPostId, isRefresh = true)
+                }
             }.onFailure {
+                _event.emit(CommunityEvent.ShowToast("삭제에 실패하였습니다."))
+            }
+        }
+    }
+
+    private fun handleReportComment(commentId: Int, reportDetail: String) {
+        viewModelScope.launch {
+            reportCommentUseCase(commentId,reportDetail).onSuccess {
+
+            }.onFailure {
+                _event.emit(CommunityEvent.ShowToast("신고에 실패하였습니다."))
+            }
+        }
+    }
+
+    private fun handleWriteComment(postId: Int, content: String,parentCommentId: Long? = null) {
+        _uiState.update { state ->
+            if (state is CommunityUiState.Read) state.copy(isLoading = true) else state
+        }
+        viewModelScope.launch {
+            postCommunityCommentUseCase(postId, content, parentCommentId).onSuccess {
+                loadReadPost(postId, isRefresh = true)
+            }.onFailure {
+                _uiState.update { state ->
+                    if (state is CommunityUiState.Read) state.copy(isLoading = false) else state
+                }
                 _event.emit(CommunityEvent.ShowToast("댓글 작성에 실패하였습니다."))
             }
         }
