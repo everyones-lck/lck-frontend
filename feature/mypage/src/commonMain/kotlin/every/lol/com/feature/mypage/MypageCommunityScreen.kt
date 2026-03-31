@@ -159,7 +159,8 @@ fun MypageCommunityScreen(
                                         type = MypageUiState.CommunityTab.POST,
                                         title = post.title,
                                         content = null, //Todo: API 수정 후 반영
-                                        postType = post.postType
+                                        postType = post.postType,
+                                        onClick = { onIntent(MypageIntent.NavigateToPostDetail(post.id)) }
                                     )
                                 }
                             }
@@ -177,7 +178,8 @@ fun MypageCommunityScreen(
                                         type = MypageUiState.CommunityTab.COMMENT,
                                         title = null, // TODO: API 수정 후 반영
                                         content = comment.content,
-                                        postType = comment.postType
+                                        postType = comment.postType,
+                                        onClick = { onIntent(MypageIntent.NavigateToCommentDetail(comment.postId, comment.commentId)) }
                                     )
                                 }
                             }

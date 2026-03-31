@@ -76,7 +76,6 @@ fun ReadRoute(
     innerPadding : PaddingValues,
     viewModel: CommunityViewModel = koinViewModel(CommunityViewModel::class),
     onBackClick: () -> Unit,
-    onDeleteSuccess: () -> Unit
 ){
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -91,7 +90,7 @@ fun ReadRoute(
     }
 
     val currentState = uiState
-    if (currentState is CommunityUiState.Read) {
+    if (currentState is CommunityUiState.Read && currentState.postId == postId) {
         ReadCommunityScreen(
             postId = postId,
             state = currentState,

@@ -96,5 +96,6 @@ sealed interface MypageIntent{
     data class InputNickName(val nickName: String) : MypageIntent
     data class ClickCheckDuplicateNickname(val nickName: String) : MypageIntent
     data object Withdrawal : MypageIntent
-
+    data class NavigateToCommentDetail(val postId: Int, val commentId: Int) : MypageIntent
+    data class NavigateToPostDetail(val postId: Int) : MypageIntent
 }

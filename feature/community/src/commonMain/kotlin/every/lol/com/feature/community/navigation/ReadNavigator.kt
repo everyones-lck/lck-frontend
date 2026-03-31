@@ -16,16 +16,14 @@ fun NavController.navigateRead(postId: Int, navOptions: NavOptions? = null) {
 
 fun NavGraphBuilder.readNavGraph(
     innerPadding: PaddingValues,
-    onBackClick: () -> Unit,
-    onDeleteSuccess: () -> Unit
+    onBackClick: () -> Unit
 ) {
     composable<Route.Read> { backStackEntry ->
         val readRoute: Route.Read = backStackEntry.toRoute()
         ReadRoute(
             postId = readRoute.postId,
             innerPadding = innerPadding,
-            onBackClick = onBackClick,
-            onDeleteSuccess = onDeleteSuccess
+            onBackClick = onBackClick
         )
     }
 }

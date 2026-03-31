@@ -32,6 +32,8 @@ sealed class MypageEvent {
     data object NavigateWithdrawal: MypageEvent()
     data object NavigateTos1: MypageEvent()
     data object NavigateTos2: MypageEvent()
+    data class NavigateToCommentDetail(val postId: Int) : MypageEvent()
+    data class NavigateToPostDetail(val postId: Int): MypageEvent()
     //data object NavigateOpenSourceLicense: MypageEvent()
     data class ShowErrorSnackbar(val throwable: Throwable) : MypageEvent()
 }
@@ -77,6 +79,8 @@ class MypageViewModel(
             is MypageIntent.InputNickName -> handleInputNickName(intent.nickName)
             is MypageIntent.ClickCheckDuplicateNickname -> checkNicknameDuplicate(intent.nickName)
             is MypageIntent.Withdrawal -> handleWithdrawal()
+            is MypageIntent.NavigateToCommentDetail -> navToCommentDetail(intent.postId, intent.commentId)
+            is MypageIntent.NavigateToPostDetail -> navToPostDetail(intent.postId)
             else -> {}
         }
     }
@@ -372,6 +376,18 @@ class MypageViewModel(
         viewModelScope.launch {
             withdrawalUseCase()
             _event.emit(MypageEvent.Withdrawal)
+        }
+    }
+
+    private fun navToCommentDetail(postId: Int, commentId: Int) {
+        viewModelScope.launch {
+            _event.emit(MypageEvent.NavigateToCommentDetail(postId))
+        }
+    }
+
+    private fun navToPostDetail(postId: Int) {
+        viewModelScope.launch {
+            _event.emit(MypageEvent.NavigateToPostDetail(postId))
         }
     }
 

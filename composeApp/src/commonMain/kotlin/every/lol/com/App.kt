@@ -165,9 +165,6 @@ fun App() {
                         innerPadding = innerPadding,
                         onBackClick = {
                             navController.popBackStack()
-                        },
-                        onDeleteSuccess = {
-
                         }
                     )
 
@@ -195,6 +192,9 @@ fun App() {
                                     inclusive = true
                                 }
                             }
+                        },
+                        navToCommunityRead = { postId ->
+                            navController.navigate(Route.Read(postId))
                         }
                     )
                 }
