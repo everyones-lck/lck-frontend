@@ -28,8 +28,8 @@ import moe.tlaster.precompose.viewmodel.viewModelScope
 
 sealed interface CommunityEvent{
     data object NavigateWrite: CommunityEvent
-    data object NavigateCommunityHome: CommunityEvent
     data object WriteSuccess: CommunityEvent
+    data object DeletePostSuccess: CommunityEvent
     data class ShowToast(val message: String): CommunityEvent
 }
 
@@ -92,7 +92,6 @@ class CommunityViewModel(
 
             is CommunityIntent.MoveMedia -> handleMoveMedia(intent.from, intent.to)
             is CommunityIntent.LoadNextPage -> {
-                println("Ktor Debug: LoadNextPage 이벤트 수신함 : ${uiState.value}")
                 val currentState = uiState.value as? CommunityUiState.Community
                 if (currentState != null) {
                     loadCommunityData(tab = currentState.selectedTab, isNextPage = true)
@@ -200,17 +199,12 @@ class CommunityViewModel(
 
 
     private fun loadReadPost(postId: Int, isRefresh: Boolean = false) {
-        // 이 로그가 찍히는지 Logcat에서 EveryLoL_Debug로 검색하세요.
-        println("EveryLoL_Debug: loadReadPost 진입! postId=$postId, isRefresh=$isRefresh")
-
         val currentState = _uiState.value
 
-        // 이 조건문 때문에 튕겨 나가는지 확인하기 위해 step 로그 추가
         if (!isRefresh && currentState is CommunityUiState.Read && currentState.postId == postId) {
-            println("EveryLoL_Debug: loadReadPost 중복 호출이라 중단됨")
             return
         }
-         println("step1")
+
         _uiState.update { state ->
             if (state is CommunityUiState.Read) {
                 state.copy(isLoading = true)
@@ -219,7 +213,6 @@ class CommunityViewModel(
             }
         }
         viewModelScope.launch {
-            println("step2")
             getReadPostUseCase(postId).onSuccess { post ->
                 _uiState.update { current ->
                     if (current is CommunityUiState.Read) {
@@ -349,7 +342,7 @@ class CommunityViewModel(
     private fun handleDeletePost(postId: Int) {
         viewModelScope.launch {
             deletePostUseCase(postId).onSuccess {
-                _event.emit(CommunityEvent.NavigateCommunityHome)
+                _event.emit(CommunityEvent.DeletePostSuccess)
             }.onFailure {
                 _event.emit(CommunityEvent.ShowToast("삭제에 실패하였습니다."))
             }
@@ -359,14 +352,18 @@ class CommunityViewModel(
     private fun handleReportPost(postId: Int) {
         viewModelScope.launch {
             reportPostUseCase(postId).onSuccess {
-                _event.emit(CommunityEvent.NavigateCommunityHome)
+
             }.onFailure {
                 _event.emit(CommunityEvent.ShowToast("신고에 실패하였습니다."))
             }
         }
     }
 
+    //Todo: 댓글 삭제 서버 수정 후 재확인
     private fun handleDeleteComment(commentId: Int) {
+        _uiState.update { state ->
+            if (state is CommunityUiState.Read) state.copy(isLoading = true) else state
+        }
         viewModelScope.launch {
             deleteCommentUseCase(commentId).onSuccess {
                 val currentPostId = (uiState.value as? CommunityUiState.Read)?.postId
@@ -393,14 +390,10 @@ class CommunityViewModel(
         _uiState.update { state ->
             if (state is CommunityUiState.Read) state.copy(isLoading = true) else state
         }
-
         viewModelScope.launch {
             postCommunityCommentUseCase(postId, content, parentCommentId).onSuccess {
-                println("EveryLoL_Debug: 댓글 작성 성공! 이제 loadReadPost($postId) 호출합니다.")
                 loadReadPost(postId, isRefresh = true)
-                _event.emit(CommunityEvent.ShowToast("댓글이 등록되었습니다."))
             }.onFailure {
-                println("EveryLoL_Debug: 댓글 작성 실패! $it")
                 _uiState.update { state ->
                     if (state is CommunityUiState.Read) state.copy(isLoading = false) else state
                 }

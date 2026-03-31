@@ -109,7 +109,7 @@ fun ReadRoute(
     LaunchedEffect(viewModel.event) {
         viewModel.event.collect { event ->
             when (event) {
-                is CommunityEvent.NavigateCommunityHome -> onBackClick
+                is CommunityEvent.DeletePostSuccess -> onBackClick()
                 else -> {}
             }
         }
@@ -138,7 +138,6 @@ fun ReadCommunityScreen(
 
     var isRefreshing by remember { mutableStateOf(false) }
     val pullToRefreshState = rememberPullToRefreshState()
-
     val focusRequester = remember { FocusRequester() }
 
     LaunchedEffect(replyingTo) {
@@ -149,15 +148,12 @@ fun ReadCommunityScreen(
     }
 
     LaunchedEffect(state.isLoading) {
-        println("EveryLoL_Debug: state.isLoading = ${state.isLoading}")
         if (!state.isLoading) {
             isRefreshing = false
-            println("EveryLoL_Debug: isRefreshing set to FALSE (Indicator should hide)")
         }
     }
 
     LaunchedEffect(isRefreshing) {
-        println("EveryLoL_Debug: isRefreshing = $isRefreshing")
     }
 
 
@@ -238,6 +234,7 @@ fun ReadCommunityScreen(
             }
         ) { innerPadding ->
             state.post?.let { postDetail ->
+                val isCommented = postDetail.commentList.any { it.isWriter }
                 PullToRefreshBox(
                     state = pullToRefreshState,
                     isRefreshing = isRefreshing,
@@ -272,7 +269,8 @@ fun ReadCommunityScreen(
                                 contentBlocks = mapToUiState(postDetail),
                                 onMoreClick = { isPostMenuExpanded = true },
                                 onImageClick = { selectedImageUrl = it },
-                                onVideoClick = {}
+                                onVideoClick = {},
+                                isCommented = isCommented
                             )
                         }
                         items(postDetail.commentList.size) { index ->

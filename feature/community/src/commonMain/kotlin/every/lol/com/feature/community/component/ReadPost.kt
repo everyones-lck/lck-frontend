@@ -31,7 +31,8 @@ fun ReadPost(
     contentBlocks: List<PostBlock>,
     onMoreClick: () -> Unit,
     onImageClick: (String) -> Unit,
-    onVideoClick: (String) -> Unit
+    onVideoClick: (String) -> Unit,
+    isCommented: Boolean = false
 ) {
     Column(
         modifier = Modifier
@@ -98,9 +99,10 @@ fun ReadPost(
         }
 
         CommunityPostActions(
+            isCommented = isCommented,
             commentCount = postDetail.commentList.size,
-            likeCount = 30,
-            viewCount = 30
+            likeCount = 0,
+            viewCount = 0
         )
     }
 }
