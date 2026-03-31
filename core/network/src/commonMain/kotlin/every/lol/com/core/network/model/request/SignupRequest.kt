@@ -15,5 +15,5 @@ data class SignupUserData(
     val nickName: String,
     val role: String,
     val tier: String,
-    val teamId: Int
+    val teamIds: List<Int>
 )

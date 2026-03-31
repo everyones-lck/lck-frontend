@@ -40,13 +40,11 @@ class AuthRepositoryImpl(
                 nickName = request.nickname,
                 role = "ROLE_USER",
                 tier = "bronze",
-                // Todo: 서버 수정시 teamId List로 넘겨주기
-                teamId = request.teamId.firstOrNull() ?: 0
+                teamIds = request.teamIds
             )
         )
 
-        return remote.signup(request = signupRequest)
-            .toResult()
+        return remote.signup(signupRequest).toResult()
             .mapCatching { dto ->
                 local.saveUserId(request.kakaoUserId)
                 local.saveToken(dto.accessToken, dto.refreshToken, dto.accessTokenExpirationTime, dto.refreshTokenExpirationTime)

@@ -49,7 +49,7 @@ fun TeamChip(
                 color = teamChipColor,
                 shape = RoundedCornerShape(52.dp)
             )
-            .padding(horizontal = 12.dp, vertical = 8.dp),
+            .padding(horizontal = 10.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ){
@@ -72,16 +72,16 @@ fun TeamChip(
 @Composable
 fun Team.getTeamBrush(): Brush {
     return when (this.id) {
-        1 -> SolidColor(EveryLoLTheme.color.teamHLE) // HLE
-        2 -> SolidColor(EveryLoLTheme.color.teamGen) // GEN
-        3 -> SolidColor(EveryLoLTheme.color.teamT1KT) // T1
-        4 -> SolidColor(EveryLoLTheme.color.teamDRXDNF) // DNS
-        5 -> SolidColor(EveryLoLTheme.color.teamBFX) // BFX
-        6 -> EveryLoLTheme.color.teamNS // NS
-        7 -> SolidColor(EveryLoLTheme.color.teamDK) // DK
-        8 -> SolidColor(EveryLoLTheme.color.teamDRXDNF) // DRX
-        9 -> SolidColor(EveryLoLTheme.color.teamBrion) // BRO
-        10 -> SolidColor(EveryLoLTheme.color.teamT1KT) // Kt
+        1 -> SolidColor(EveryLoLTheme.color.teamGen)
+        2 -> SolidColor(EveryLoLTheme.color.teamT1)
+        3 -> SolidColor(EveryLoLTheme.color.teamNS)
+        4 -> SolidColor(EveryLoLTheme.color.teamDNS)
+        5 -> SolidColor(EveryLoLTheme.color.teamBRO)
+        6 -> SolidColor(EveryLoLTheme.color.teamBFX)
+        7 -> SolidColor(EveryLoLTheme.color.teamDK)
+        8 -> SolidColor(EveryLoLTheme.color.teamKRX)
+        9 -> SolidColor(EveryLoLTheme.color.teamKT)
+        10 -> SolidColor(EveryLoLTheme.color.teamHLE)
         else -> SolidColor(Color.Transparent)
     }
 }

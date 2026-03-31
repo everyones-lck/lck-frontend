@@ -57,7 +57,7 @@ sealed interface MypageUiState {
     data class MyInform(
         val profileImage: String? = null,
         val nickName: String = "",
-        val teamId: Set<Team> = emptySet()
+        val teamIds: Set<Team> = emptySet()
     )
     data class ProfileEdit(
         val originalNickname: String,
@@ -96,5 +96,6 @@ sealed interface MypageIntent{
     data class InputNickName(val nickName: String) : MypageIntent
     data class ClickCheckDuplicateNickname(val nickName: String) : MypageIntent
     data object Withdrawal : MypageIntent
-
+    data class NavigateToCommentDetail(val postId: Int, val commentId: Int) : MypageIntent
+    data class NavigateToPostDetail(val postId: Int) : MypageIntent
 }

@@ -1,7 +1,6 @@
 package every.lol.com.core.designsystem.theme
 
 import androidx.compose.runtime.Stable
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 
 interface EveryLoLColor{
@@ -19,10 +18,12 @@ interface EveryLoLColor{
     val teamBFX: Color
     val teamHLE: Color
     val teamGen: Color
-    val teamT1KT: Color
-    val teamBrion: Color
-    val teamDRXDNF: Color
-    val teamNS: Brush
+    val teamT1: Color
+    val teamKT: Color
+    val teamBRO: Color
+    val teamKRX: Color
+    val teamDNS: Color
+    val teamNS: Color
     val semanticWarning: Color
     val semanticCheck: Color
     val newBg: Color
@@ -44,14 +45,16 @@ object EveryLoLDarkColor :EveryLoLColor{
     override val grayScale800 = Color(0xFF575757)
     override val grayScale900 = Color(0xFF2B2B2B)
     override val grayScale1000 = Color(0xFF0C0C0C)
-    override val teamDK = Color(0xFFFFFFFF)
-    override val teamBFX = Color(0xFFF8E52F)
-    override val teamHLE = Color(0xFFF3741B)
-    override val teamGen = Color(0xFFAA8B30)
-    override val teamT1KT = Color(0xFFE91B3B)
-    override val teamBrion = Color(0xFF02694C)
-    override val teamDRXDNF = Color(0xFF0017E7)
-    override val teamNS = Brush.linearGradient(colors = listOf(Color(0xFF2B2B2B), Color(0xFFE91C20)))
+    override val teamDK = Color(0xFF92E1E6)
+    override val teamBFX = Color(0xFFFBE400)
+    override val teamHLE = Color(0xFFF37321)
+    override val teamGen = Color(0xFFCFB887)
+    override val teamT1 = Color(0xFFE2012D)
+    override val teamKT = Color(0xFFFF0A07)
+    override val teamDNS = Color(0xFF1102A3)
+    override val teamBRO = Color(0xFF02694C)
+    override val teamKRX = Color(0xFFE5007F)
+    override val teamNS = Color(0xFFE81B3B)
     override val semanticWarning = Color(0xFFF26E6E)
     override val semanticCheck = Color(0xFFC5E3BA)
     override val newBg = Color(0xFF131313)

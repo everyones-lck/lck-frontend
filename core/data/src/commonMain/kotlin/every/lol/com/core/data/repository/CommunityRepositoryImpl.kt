@@ -6,6 +6,7 @@ import every.lol.com.core.domain.repository.CommunityRepository
 import every.lol.com.core.model.CommentList
 import every.lol.com.core.model.FileList
 import every.lol.com.core.model.PostDetail
+import every.lol.com.core.model.PostLike
 import every.lol.com.core.model.PostList
 import every.lol.com.core.model.PostListDetail
 import every.lol.com.core.network.datasource.CommunityDataSource
@@ -20,7 +21,7 @@ class CommunityRepositoryImpl(
     private val local: AuthLocalDataSource
 ): CommunityRepository {
 
-    override suspend fun postPost(files: List<String>, type: String, title: String, content: String): Result<Unit> =
+    override suspend fun postPost(files: List<ByteArray>?, type: String, title: String, content: String): Result<Unit> =
         remote.postPost( PostPostRequest(files, PostPostDetailRequest(type, title, content))).toResult().map {it.postId}
 
     override suspend fun editPost(postId: Int, type: String, title: String, content: String): Result<Unit> =
@@ -31,8 +32,7 @@ class CommunityRepositoryImpl(
             PostDetail(
                 postType = response.postType,
                 writerProfileUrl = response.writerProfileUrl,
-                writerNickName = response.writerNickName,
-                writerTeam = response.writerTeam,
+                writerNickName = response.writerNickname,
                 postTitle = response.postTitle,
                 postCreatedAt = response.postCreatedAt,
                 content = response.content,
@@ -44,7 +44,6 @@ class CommunityRepositoryImpl(
                     CommentList(
                         profileImageUrl = it.profileImageUrl,
                         nickname = it.nickname,
-                        supportTeam = it.supportTeam,
                         content = it.content,
                         createdAt = it.createdAt,
                         commentId = it.commentId,
@@ -63,7 +62,6 @@ class CommunityRepositoryImpl(
                         postTitle = it.postTitle,
                         postCreatedAt = it.postCreatedAt,
                         userNickname = it.userNickname,
-                        supportTeamName = it.supportTeamName,
                         userProfilePicture = it.userProfilePicture,
                         thumbnailFileUrl = it.thumbnailFileUrl,
                         commentCounts = it.commentCounts
@@ -78,8 +76,8 @@ class CommunityRepositoryImpl(
             Unit
         }
 
-    override suspend fun postComment(postId: Int, content: String): Result<Unit?> =
-        remote.postComment(postId, PostCommentRequest(content)).toResult().map {
+    override suspend fun postComment(postId: Int, content: String, parentCommentId: Long?): Result<Unit?> =
+        remote.postComment(postId, PostCommentRequest(content, parentCommentId)).toResult().map {
             Unit
         }
 
@@ -96,5 +94,13 @@ class CommunityRepositoryImpl(
     override suspend fun reportComment(commentId: Int, reportDetail: String): Result<Unit?> =
         remote.reportComment(ReportCommentRequest(commentId, reportDetail)).toResult().map {
             Unit
+        }
+
+    override suspend fun postLike(postId: Int): Result<PostLike> =
+        remote.postLike(postId).toResult().map { response ->
+            PostLike(
+                isLiked = response.isLiked,
+                likeCount = response.likeCount
+            )
         }
 }

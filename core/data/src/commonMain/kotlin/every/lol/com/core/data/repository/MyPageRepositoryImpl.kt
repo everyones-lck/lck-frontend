@@ -25,14 +25,13 @@ class MyPageRepositoryImpl(
     override suspend fun getProfile(): Result<UserInform> =
         remote.getProfile().toResult().mapCatching { response ->
             UserInform(
-                kakaoUserId = "ex",
                 nickname = response.nickname,
                 profileImage = response.profileImageUrl,
-                teamId = listOf(response.teamId),
+                teamIds = response.teamIds,
             )
         }
 
-    override suspend fun patchProfile(nickname: String, profileImage: ByteArray?): Result<Unit> {
+    override suspend fun patchProfile(nickname: String?, profileImage: ByteArray?): Result<Unit> {
         val isDefaultImage = if (profileImage == null) true else false
 
         return remote.patchProfile(
@@ -45,9 +44,8 @@ class MyPageRepositoryImpl(
         }
     }
 
-    override suspend fun patchMyTeam(teamId: List<Int>): Result<Unit> {
-        val selectedId = teamId.first()
-        return remote.patchMyTeam(PatchMyTeamRequest(teamId = selectedId)).toResult().map {
+    override suspend fun patchMyTeam(teamIds: List<Int>): Result<Unit> {
+        return remote.patchMyTeam(PatchMyTeamRequest(teamIds)).toResult().map {
             Unit
         }
     }
@@ -83,16 +81,19 @@ class MyPageRepositoryImpl(
         }
 
     override suspend fun withdrawal(): Result<Unit?> {
-        local.clearAuthData()
-        return remote.withdrawal().toResult().map {
+        val result = remote.withdrawal().toResult()
+        return result.map {
+            local.clearAuthData()
             Unit
         }
     }
 
     override suspend fun logout(): Result<Unit?> {
-        val refreshToken = local.getAuthData()!!.refreshToken
-        local.clearAuthData()
-        return remote.logout(refreshToken).toResult().map {
+        val authData = local.getAuthData() ?: return Result.success(Unit)
+        val refreshToken = authData.refreshToken
+        val result = remote.logout(refreshToken).toResult()
+        return result.map {
+            local.clearAuthData()
             Unit
         }
     }

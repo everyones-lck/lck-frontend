@@ -10,6 +10,6 @@ data class PatchProfileRequest(
 
 @Serializable
 data class PatchProfileData(
-    val nickname: String,
+    val nickname: String?=null,
     val isDefaultImage: Boolean
 )

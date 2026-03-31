@@ -1,6 +1,7 @@
 package every.lol.com.feature.mypage.component
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,17 +25,19 @@ import everylol.feature.mypage.generated.resources.ic_comment
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
-fun CommunityItem(
+fun MypageCommunityItem(
     type: MypageUiState.CommunityTab,
     title: String?= null,
     content: String?= null,
     date: String = "YY.MM.DD",
-    postType: String = "게시판"
+    postType: String = "게시판",
+    onClick: () -> Unit = {}
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(12.dp, 14.dp),
+            .padding(12.dp, 14.dp)
+            .clickable(onClick = onClick),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ){
         Row(

@@ -306,10 +306,12 @@ private fun getTeamColor(teamName: String): Color {
         "BFX", "BNK FEARX", "FEARX" -> EveryLoLTheme.color.teamBFX
         "HLE", "HANWHA LIFE ESPORTS" -> EveryLoLTheme.color.teamHLE
         "GEN", "GEN.G", "GENG" -> EveryLoLTheme.color.teamGen
-        "T1", "KT" -> EveryLoLTheme.color.teamT1KT
-        "BRO", "BRION" -> EveryLoLTheme.color.teamBrion
-        "DRX", "DNF" -> EveryLoLTheme.color.teamDRXDNF
-        "NS", "NONGSHIM" -> Color(0xFFE91C20)
+        "T1" -> EveryLoLTheme.color.teamT1
+        "KT", "KT Rolster" -> EveryLoLTheme.color.teamKT
+        "BRO", "BRION" -> EveryLoLTheme.color.teamBRO
+        "DRX", "KRX" -> EveryLoLTheme.color.teamKRX
+        "DN", "DNF", "DNS" -> EveryLoLTheme.color.teamDNS
+        "NS", "NONGSHIM" -> EveryLoLTheme.color.teamNS
         else -> EveryLoLTheme.color.gray800
     }
 }

@@ -17,6 +17,12 @@ sealed interface Route {
     data object Community : Route
 
     @Serializable
+    data object Write : Route
+
+    @Serializable
+    data class Read(val postId: Int) : Route
+
+    @Serializable
     data object Intro : Route
 
     @Serializable

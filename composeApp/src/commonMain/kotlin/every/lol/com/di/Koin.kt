@@ -14,13 +14,22 @@ import every.lol.com.core.domain.repository.AuthRepository
 import every.lol.com.core.domain.repository.CommunityRepository
 import every.lol.com.core.domain.repository.MyPagesRepository
 import every.lol.com.core.domain.usecase.CheckAuthUseCase
+import every.lol.com.core.domain.usecase.DeleteCommentUseCase
+import every.lol.com.core.domain.usecase.DeletePostUseCase
+import every.lol.com.core.domain.usecase.GetCommunityPostsUseCase
 import every.lol.com.core.domain.usecase.GetMyCommentsUseCase
 import every.lol.com.core.domain.usecase.GetMyPostsUseCase
 import every.lol.com.core.domain.usecase.GetProfileUseCase
+import every.lol.com.core.domain.usecase.GetReadPostUseCase
 import every.lol.com.core.domain.usecase.LogoutUseCase
 import every.lol.com.core.domain.usecase.NicknameUseCase
 import every.lol.com.core.domain.usecase.PatchMyTeamUseCase
 import every.lol.com.core.domain.usecase.PatchProfileUseCase
+import every.lol.com.core.domain.usecase.PostCommunityCommentUseCase
+import every.lol.com.core.domain.usecase.PostCommunityPostLikeUseCase
+import every.lol.com.core.domain.usecase.PostCommunityPostUseCase
+import every.lol.com.core.domain.usecase.ReportCommentUseCase
+import every.lol.com.core.domain.usecase.ReportPostUseCase
 import every.lol.com.core.domain.usecase.SignupUseCase
 import every.lol.com.core.domain.usecase.SocialLoginUseCase
 import every.lol.com.core.domain.usecase.WithdrawalUseCase
@@ -34,6 +43,7 @@ import every.lol.com.core.network.remote.AboutLCKDataSourceImpl
 import every.lol.com.core.network.remote.AuthDataSourceImpl
 import every.lol.com.core.network.remote.CommunityDataSourceImpl
 import every.lol.com.core.network.remote.MyPagesDataSourceImpl
+import every.lol.com.feature.community.CommunityViewModel
 import every.lol.com.feature.intro.IntroViewModel
 import every.lol.com.feature.matches.MatchesViewModel
 import every.lol.com.feature.mypage.MypageViewModel
@@ -44,7 +54,6 @@ import org.koin.core.module.dsl.factoryOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.module
-import org.koin.mp.KoinPlatformTools
 
 val appDependenciesModule = module {
 
@@ -74,9 +83,20 @@ val appDependenciesModule = module {
     factory { GetMyCommentsUseCase(get()) }
     factory { LogoutUseCase(get()) }
     factory { WithdrawalUseCase(get()) }
+    factory { GetCommunityPostsUseCase(get()) }
+    factory { GetReadPostUseCase(get())}
+    factory { PostCommunityPostUseCase(get()) }
+    factory { DeletePostUseCase(get()) }
+    factory { ReportPostUseCase(get()) }
+    factory { PostCommunityCommentUseCase(get()) }
+    factory { PostCommunityPostLikeUseCase(get()) }
+    factory { DeleteCommentUseCase(get()) }
+    factory { ReportCommentUseCase(get()) }
+
 
     factoryOf(::IntroViewModel)
     factoryOf(::MypageViewModel)
+    factoryOf(::CommunityViewModel)
     factoryOf(::MatchesViewModel)
 }
 

@@ -15,7 +15,6 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 class AuthDataSourceImpl(
@@ -33,21 +32,23 @@ class AuthDataSourceImpl(
             setBody(
                 MultiPartFormDataContent(
                     formData {
-
-                        append(
-                            "signupUserData",
-                            Json.encodeToString(request.signupUserData),
-                            Headers.build {
-                                append(HttpHeaders.ContentType, "application/json")
-                            }
-                        )
-
-                        request.profileImage?.let { imageBytes ->
-                            append("profileImage", imageBytes, Headers.build {
+                        if (request.profileImage != null) {
+                            append("profileImage", request.profileImage, Headers.build {
                                 append(HttpHeaders.ContentType, "image/jpeg")
                                 append(HttpHeaders.ContentDisposition, "filename=\"profile.jpg\"")
                             })
                         }
+                        else {
+                            append("profileImage", byteArrayOf(), Headers.build {
+                                append(HttpHeaders.ContentType, "application/octet-stream")
+                                append(HttpHeaders.ContentDisposition, "filename=\"\"")
+                            })
+                        }
+                        append(
+                            "signupUserData", Json.encodeToString(request.signupUserData), Headers.build {
+                                append(HttpHeaders.ContentType, "application/json")
+                            }
+                        )
                     }
                 )
             )

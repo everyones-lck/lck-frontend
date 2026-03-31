@@ -1,5 +1,6 @@
 package every.lol.com.feature.intro
 
+import every.lol.com.core.common.compressImage
 import every.lol.com.core.common.toImageByteArray
 import every.lol.com.core.domain.usecase.CheckAuthUseCase
 import every.lol.com.core.domain.usecase.NicknameUseCase
@@ -10,6 +11,8 @@ import every.lol.com.core.model.Signup
 import every.lol.com.core.model.Team
 import every.lol.com.feature.intro.model.IntroIntent
 import every.lol.com.feature.intro.model.IntroUiState
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,6 +20,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import moe.tlaster.precompose.viewmodel.ViewModel
 import moe.tlaster.precompose.viewmodel.viewModelScope
 
@@ -60,6 +64,7 @@ class IntroViewModel(
 
 
     private fun checkInitialState() {
+        _uiState.value = IntroUiState.Loading
         viewModelScope.launch {
             delay(1500)
 
@@ -96,6 +101,7 @@ class IntroViewModel(
                         }
                     } else {
                         _uiState.update { IntroUiState.Login }
+                        println(error)
                         _event.emit(IntroEvent.ShowErrorSnackbar(error))
                     }
                 }
@@ -134,11 +140,15 @@ class IntroViewModel(
         viewModelScope.launch {
             _uiState.value = state.copy(isLoading = true)
 
+            val profileImage = withContext(Dispatchers.IO) {
+                state.profileImage?.let { it.compressImage(30) }
+            }
+
             val param = Signup(
                 kakaoUserId = state.kakaoUserId,
                 nickname = state.nickName,
-                profileImage = state.profileImage,
-                teamId = state.teamId.map { it.id }
+                profileImage = profileImage,
+                teamIds = state.teamId.map { it.id }
             )
 
             signupUseCase(param).fold(
@@ -147,6 +157,7 @@ class IntroViewModel(
                 },
                 onFailure = { error ->
                     _uiState.value = state.copy(isLoading = false)
+                    println(error)
                     _event.emit(IntroEvent.ShowErrorSnackbar(error))
                 }
             )

@@ -119,7 +119,7 @@ private fun FavoriteRankCard(
         colors = CardDefaults.cardColors(
             containerColor = EveryLoLTheme.color.grayScale1000
         ),
-        border = BorderStroke(1.dp, EveryLoLTheme.color.teamT1KT)
+        border = BorderStroke(1.dp, EveryLoLTheme.color.teamT1)
     ) {
         Box(
             modifier = Modifier.fillMaxWidth()

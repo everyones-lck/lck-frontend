@@ -53,6 +53,17 @@ fun EverylolTopAppBar(
             }
         }
 
+        if(onBackClick == null){
+            title?.let{
+                Text(
+                    text = title,
+                    style = EveryLoLTheme.typography.heading01,
+                    color = EveryLoLTheme.color.grayScale200,
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
+        }
+
         if (isLogo) {
             Box(
                 modifier = Modifier.align(Alignment.CenterStart),

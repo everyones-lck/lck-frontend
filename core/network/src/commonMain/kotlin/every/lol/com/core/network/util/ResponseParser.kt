@@ -30,8 +30,8 @@ internal suspend inline fun <reified T> Result<HttpResponse>.asApiResponse(): Ap
 
         val baseResponse: BaseResponse<T> = response.body()
         if (baseResponse.isSuccess) {
-            ApiResponse.Success(baseResponse.data ?: throw Exception("Response data is null"))
-        } else {
+            ApiResponse.Success(baseResponse.data as T)
+        }else {
             ApiResponse.Failure.HttpError(
                 code = response.status.value,
                 message = baseResponse.message

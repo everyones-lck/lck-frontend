@@ -11,8 +11,7 @@ data class PostListDetail(
     val postTitle: String,
     val postCreatedAt: String,
     val userNickname: String,
-    val supportTeamName: String,
     val userProfilePicture: String,
-    val thumbnailFileUrl: String,
+    val thumbnailFileUrl: String?=null,
     val commentCounts: Int
 )
