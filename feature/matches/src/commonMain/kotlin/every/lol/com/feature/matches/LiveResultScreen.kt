@@ -58,8 +58,6 @@ fun LiveResultScreen(
     onTabSelected: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var selectedTabIndex by remember { mutableIntStateOf(0) }
-
     val tabs = listOf(
         ResultTabItem("1세트"),
         ResultTabItem("2세트"),

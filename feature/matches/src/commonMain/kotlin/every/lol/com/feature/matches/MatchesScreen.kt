@@ -48,6 +48,7 @@ fun MatchesRoute(
 
         is MatchUiState.Prediction -> {
             PredictionScreen(
+                innerPadding = innerPadding,
                 matchId = state.matchId,
                 onBackClick = {
                     viewModel.onIntent(MatchIntent.BackToMatches)
