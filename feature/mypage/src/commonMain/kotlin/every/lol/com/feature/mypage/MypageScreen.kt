@@ -44,7 +44,8 @@ fun MypageRoute(
     viewModel: MypageViewModel = koinViewModel(MypageViewModel::class),
     onBackClick: () -> Unit,
     onLogoutSuccess:() -> Unit,
-    onWithdrawalSuccess:() -> Unit
+    onWithdrawalSuccess:() -> Unit,
+    navToCommunityRead: (Int) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -61,6 +62,8 @@ fun MypageRoute(
                 MypageEvent.NavigateHome -> onBackClick()
                 MypageEvent.Logout -> onLogoutSuccess()
                 MypageEvent.Withdrawal -> onWithdrawalSuccess()
+                is MypageEvent.NavigateToCommentDetail -> navToCommunityRead(event.postId)
+                is MypageEvent.NavigateToPostDetail -> navToCommunityRead(event.postId)
                 is MypageEvent.ShowErrorSnackbar -> {
                     snackbarHostState.showSnackbar(event.throwable.message ?: "에러 발생")
                 }

@@ -15,13 +15,15 @@ fun NavController.navigateMypage(navOptions: NavOptions) {
 fun NavGraphBuilder.mypageNavGraph(
     onBackClick: () -> Unit,
     onLogoutSuccess: () -> Unit,
-    onWithdrawalSuccess: () -> Unit
+    onWithdrawalSuccess: () -> Unit,
+    navToCommunityRead: (Int) -> Unit
 ) {
     composable<Route.Mypage> {
         MypageRoute(
             onBackClick = onBackClick,
             onLogoutSuccess = onLogoutSuccess,
-            onWithdrawalSuccess = onWithdrawalSuccess
+            onWithdrawalSuccess = onWithdrawalSuccess,
+            navToCommunityRead = navToCommunityRead
         )
     }
 }

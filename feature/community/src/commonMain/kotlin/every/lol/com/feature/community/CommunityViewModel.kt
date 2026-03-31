@@ -201,7 +201,7 @@ class CommunityViewModel(
     private fun loadReadPost(postId: Int, isRefresh: Boolean = false) {
         val currentState = _uiState.value
 
-        if (!isRefresh && currentState is CommunityUiState.Read && currentState.postId == postId) {
+        if (!isRefresh && currentState is CommunityUiState.Read && currentState.postId == postId && currentState.post != null) {
             return
         }
 
@@ -215,17 +215,25 @@ class CommunityViewModel(
         viewModelScope.launch {
             getReadPostUseCase(postId).onSuccess { post ->
                 _uiState.update { current ->
-                    if (current is CommunityUiState.Read && current.postId == postId) {
+                    if (current is CommunityUiState.Read) {
                         current.copy(
                             post = post,
                             isLoading = false,
                             isMine = post.isWriter
                         )
-                    } else current
+                    } else {
+                        //마이페이지에서 넘어오면 이걸로 로드
+                        CommunityUiState.Read(
+                            postId = postId,
+                            post = post,
+                            isLoading = false,
+                            isMine = post.isWriter
+                        )
+                    }
                 }
             }.onFailure {
                 _uiState.update { current ->
-                    if (current is CommunityUiState.Read && current.postId == postId) {
+                    if (current is CommunityUiState.Read ) {
                         current.copy(isLoading = false)
                     } else current
                 }
