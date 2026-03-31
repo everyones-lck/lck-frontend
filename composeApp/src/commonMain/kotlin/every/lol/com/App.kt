@@ -54,6 +54,7 @@ fun App() {
             val currentDestination = navBackStackEntry?.destination
 
             Scaffold(
+                containerColor = EveryLoLTheme.color.newBg,
                 contentWindowInsets = WindowInsets(0, 0, 0, 0),
                 bottomBar = {
                     val isIntro = currentDestination?.hasRoute<Route.Intro>() == true
