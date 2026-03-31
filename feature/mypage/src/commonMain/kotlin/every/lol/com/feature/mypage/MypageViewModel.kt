@@ -106,7 +106,7 @@ class MypageViewModel(
                 val myInform = MypageUiState.MyInform(
                     nickName = userInform.nickname,
                     teamIds = userInform.teamIds.mapNotNull { id ->
-                        Team.fromTeamName(id) //Todo: TeamName -> TeamId로 추후 변경
+                        Team.fromId(id)
                     }.toSet(),
                     profileImage = userInform.profileImage
                 )

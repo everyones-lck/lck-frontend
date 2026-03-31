@@ -25,10 +25,9 @@ class MyPageRepositoryImpl(
     override suspend fun getProfile(): Result<UserInform> =
         remote.getProfile().toResult().mapCatching { response ->
             UserInform(
-                kakaoUserId = "1234",
                 nickname = response.nickname,
                 profileImage = response.profileImageUrl,
-                teamIds = response.teamNames,
+                teamIds = response.teamIds,
             )
         }
 
