@@ -45,6 +45,7 @@ import every.lol.com.core.network.remote.CommunityDataSourceImpl
 import every.lol.com.core.network.remote.MyPagesDataSourceImpl
 import every.lol.com.feature.community.CommunityViewModel
 import every.lol.com.feature.intro.IntroViewModel
+import every.lol.com.feature.matches.MatchesViewModel
 import every.lol.com.feature.mypage.MypageViewModel
 import org.koin.core.context.startKoin
 import org.koin.core.logger.Level
@@ -96,6 +97,7 @@ val appDependenciesModule = module {
     factoryOf(::IntroViewModel)
     factoryOf(::MypageViewModel)
     factoryOf(::CommunityViewModel)
+    factoryOf(::MatchesViewModel)
 }
 
 fun initKoin(

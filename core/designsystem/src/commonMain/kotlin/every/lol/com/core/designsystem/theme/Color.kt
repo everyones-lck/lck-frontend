@@ -61,5 +61,5 @@ object EveryLoLDarkColor :EveryLoLColor{
     override val community600 = Color(0xFFAEAEAE)
     override val white200 = Color(0xFFF0F0F0)
     override val gray800 = Color(0xFF767373)
-    override val black900= Color(0xFF2B2B2B)
+    override val black900 = Color(0xFF2B2B2B)
 }
