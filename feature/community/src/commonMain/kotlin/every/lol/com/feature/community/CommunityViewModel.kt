@@ -397,9 +397,9 @@ class CommunityViewModel(
 
     private fun handleLikePost(postId: Int){
         viewModelScope.launch {
-            postCommunityPostLikeUseCase(postId).onSuccess {
+            postCommunityPostLikeUseCase(postId).onSuccess { response ->
                 _uiState.update {
-                    if (it is CommunityUiState.Read) it.copy(isLiked = !it.isLiked, likeCount = it.likeCount) else it
+                    if (it is CommunityUiState.Read) it.copy(isLiked = !response.isLiked, likeCount = response.likeCount) else it
                 }
             }.onFailure {
                 _event.emit(CommunityEvent.ShowToast("좋아요에 실패하였습니다."))
