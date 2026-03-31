@@ -35,6 +35,8 @@ sealed interface CommunityUiState {
         val post: PostDetail? = null,
         val isMine: Boolean = false,
         val comments: List<CommentList> = emptyList(),
+        val isLiked: Boolean = false,
+        val likeCount: Int = 0
     ): CommunityUiState
 
     data class Write(
@@ -60,9 +62,11 @@ sealed interface CommunityIntent{
     data object LoadNextPage : CommunityIntent
     data class ClickWriteTab(val tab: CommunityUiState.WriteTab) : CommunityIntent
     data object FetchPosts : CommunityIntent
-    data class DetailPost(val postId: Int) : CommunityIntent
+    data class DetailPost(val postId: Int, val isRefresh: Boolean = false) : CommunityIntent
     data class DeletePost(val postId: Int) : CommunityIntent
-    data class ReportPost(val postId: Int) : CommunityIntent
+    data class DeleteComment(val commentId: Int) : CommunityIntent
+    data class ReportComment(val commentId: Int, val reportDetail: String) : CommunityIntent
+    data class ReportPost(val postId: Int, val reportDetail: String) : CommunityIntent
     data class ChangeTitle(val title: String) : CommunityIntent
     data class ChangeContent(val content: String) : CommunityIntent
     data class WritePost(
@@ -76,4 +80,7 @@ sealed interface CommunityIntent{
     data class MoveMedia(val from: Int, val to: Int) : CommunityIntent
     data class UpdateMediaOrder(val mediaId: String, val newOrder: Int) : CommunityIntent
     data class WriteComment(val postId: Int, val content: String) : CommunityIntent
-    data class ShowMessage(val message: String) : CommunityIntent}
+    data class WriteReply(val postId: Int, val parentCommentId: Long, val content: String) : CommunityIntent
+    data class ShowMessage(val message: String) : CommunityIntent
+    data class LikePost(val postId: Int) : CommunityIntent
+}

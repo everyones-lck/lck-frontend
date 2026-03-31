@@ -14,6 +14,7 @@ import every.lol.com.core.domain.repository.AuthRepository
 import every.lol.com.core.domain.repository.CommunityRepository
 import every.lol.com.core.domain.repository.MyPagesRepository
 import every.lol.com.core.domain.usecase.CheckAuthUseCase
+import every.lol.com.core.domain.usecase.DeleteCommentUseCase
 import every.lol.com.core.domain.usecase.DeletePostUseCase
 import every.lol.com.core.domain.usecase.GetCommunityPostsUseCase
 import every.lol.com.core.domain.usecase.GetMyCommentsUseCase
@@ -27,6 +28,7 @@ import every.lol.com.core.domain.usecase.PatchProfileUseCase
 import every.lol.com.core.domain.usecase.PostCommunityCommentUseCase
 import every.lol.com.core.domain.usecase.PostCommunityPostLikeUseCase
 import every.lol.com.core.domain.usecase.PostCommunityPostUseCase
+import every.lol.com.core.domain.usecase.ReportCommentUseCase
 import every.lol.com.core.domain.usecase.ReportPostUseCase
 import every.lol.com.core.domain.usecase.SignupUseCase
 import every.lol.com.core.domain.usecase.SocialLoginUseCase
@@ -87,6 +89,9 @@ val appDependenciesModule = module {
     factory { ReportPostUseCase(get()) }
     factory { PostCommunityCommentUseCase(get()) }
     factory { PostCommunityPostLikeUseCase(get()) }
+    factory { DeleteCommentUseCase(get()) }
+    factory { ReportCommentUseCase(get()) }
+
 
     factoryOf(::IntroViewModel)
     factoryOf(::MypageViewModel)
