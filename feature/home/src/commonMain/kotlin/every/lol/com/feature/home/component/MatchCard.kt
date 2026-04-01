@@ -48,7 +48,7 @@ fun MatchCardRow(
         state = lazyListState,
         flingBehavior = snapFlingBehavior,
         modifier = modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(horizontal = 0.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(32.dp)
     ) {
         if (matches.isEmpty()) {
