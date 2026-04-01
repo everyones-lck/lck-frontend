@@ -12,9 +12,11 @@ fun NavController.navigateMatches(navOptions: NavOptions) {
 }
 
 fun NavGraphBuilder.matchesNavGraph(
-
+    onPredictionClick: (Long) -> Unit
 ) {
     composable<Route.Matches> {
-        MatchesRoute()
+        MatchesRoute(
+            onPredictionClick = onPredictionClick
+        )
     }
 }

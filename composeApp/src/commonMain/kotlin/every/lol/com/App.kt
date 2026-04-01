@@ -38,6 +38,7 @@ import every.lol.com.feature.community.navigation.writeNavGraph
 import every.lol.com.feature.home.navigation.homeNavGraph
 import every.lol.com.feature.intro.navigation.introNavGraph
 import every.lol.com.feature.matches.navigation.matchesNavGraph
+import every.lol.com.feature.matches.navigation.predictionNavGraph
 import every.lol.com.feature.mypage.navigation.mypageNavGraph
 import moe.tlaster.precompose.PreComposeApp
 import org.jetbrains.compose.resources.painterResource
@@ -143,7 +144,21 @@ fun App() {
                             navController.navigate(Route.Mypage)
                         }
                     )
-                    matchesNavGraph()
+                    matchesNavGraph(
+                        onPredictionClick = { matchId ->
+                            navController.navigate(Route.Prediction(matchId))
+                        }
+                    )
+
+                    predictionNavGraph(
+                        onBackClick = {
+                            navController.popBackStack()
+                        },
+                        onResultClick = {
+                            //Todo: 구현
+                        }
+                    )
+
                     composable<Route.AboutLCK> { AboutLCKScreen() }
 
                     communityNavGraph(
