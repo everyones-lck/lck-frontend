@@ -27,6 +27,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.core.model.MatchCardModel
+import every.lol.com.core.model.MatchStatus
 
 @Composable
 fun MatchCard(
@@ -65,7 +66,7 @@ fun MatchCard(
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(
-                        text = matchCard.title,
+                        text = matchCard.seasonName,
                         color = EveryLoLTheme.color.grayScale100,
                         style = EveryLoLTheme.typography.title01
                     )
@@ -75,7 +76,11 @@ fun MatchCard(
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        MatchCardTag(text = matchCard.matchName)
+                       matchCard.groupName
+                            ?.takeIf { it.isNotBlank() }
+                            ?.let { groupName ->
+                                MatchCardTag(text = groupName)
+                            }
                         MatchCardTag(text = matchCard.roundName)
                     }
                 }
@@ -168,11 +173,19 @@ private fun MatchCardBarRow(
 private fun PreviewMatchCard(){
     val dummyMatchCard = MatchCardModel(
         matchId = 1L,
-        title = "2026 Road to MSI",
+        seasonName = "2026 Road to MSI",
         team1Name = "HLE",
         team2Name = "Gen",
-        matchName = "Baron Elder",
-        roundName = "플레이오프 1라운드"
+        groupName = "Baron Elder",
+        roundName = "플레이오프 1라운드",
+        matchDate = "",
+        matchStatus = MatchStatus.LIVE,
+        team1Id = 1,
+        team2Id = 2,
+        team1VoteRate = 0.0,
+        team2VoteRate = 0.0,
+        totalVoteCount = 0,
+        predictedWinnerTeamName = "",
     )
     MatchCard(
         matchCard = dummyMatchCard,

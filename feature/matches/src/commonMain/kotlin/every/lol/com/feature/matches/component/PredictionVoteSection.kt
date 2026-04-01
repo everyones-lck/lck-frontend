@@ -41,9 +41,9 @@ fun PredictionVoteSection(
     modifier: Modifier = Modifier
 ) {
     val statusText = when (matchStatus) {
-        MatchStatus.BEFORE -> null
+        MatchStatus.SCHEDULED -> null
         MatchStatus.LIVE -> "경기중"
-        MatchStatus.AFTER -> when (predictionResult) {
+        MatchStatus.FINISHED -> when (predictionResult) {
             PredictionResult.SUCCESS -> "예측 성공"
             PredictionResult.FAIL -> "예측 실패"
             null -> null
@@ -51,9 +51,9 @@ fun PredictionVoteSection(
     }
 
     val statusTextColor = when (matchStatus) {
-        MatchStatus.BEFORE -> EveryLoLTheme.color.grayScale200
+        MatchStatus.SCHEDULED -> EveryLoLTheme.color.grayScale200
         MatchStatus.LIVE -> EveryLoLTheme.color.grayScale200
-        MatchStatus.AFTER -> when (predictionResult) {
+        MatchStatus.FINISHED -> when (predictionResult) {
             PredictionResult.SUCCESS -> EveryLoLTheme.color.semanticCheck
             PredictionResult.FAIL -> EveryLoLTheme.color.semanticWarning
             null -> EveryLoLTheme.color.grayScale200
@@ -128,7 +128,7 @@ private fun PredictionTeamButton(
     val teamColor = getTeamColor(text)
 
     val backgroundColor = when (matchStatus) {
-        MatchStatus.BEFORE -> {
+        MatchStatus.SCHEDULED -> {
             if (isSelected) EveryLoLTheme.color.grayScale400
             else EveryLoLTheme.color.grayScale900
         }
@@ -138,7 +138,7 @@ private fun PredictionTeamButton(
             else EveryLoLTheme.color.grayScale900
         }
 
-        MatchStatus.AFTER -> {
+        MatchStatus.FINISHED -> {
             if (isSelected) {
                 when (predictionResult) {
                     PredictionResult.SUCCESS -> teamColor
@@ -152,7 +152,7 @@ private fun PredictionTeamButton(
     }
 
     val textColor = when (matchStatus) {
-        MatchStatus.BEFORE -> {
+        MatchStatus.SCHEDULED -> {
             if (isSelected) EveryLoLTheme.color.black900
             else EveryLoLTheme.color.grayScale700
         }
@@ -162,13 +162,13 @@ private fun PredictionTeamButton(
             else EveryLoLTheme.color.grayScale700
         }
 
-        MatchStatus.AFTER -> {
+        MatchStatus.FINISHED -> {
             if (isSelected) EveryLoLTheme.color.black900
             else EveryLoLTheme.color.grayScale700
         }
     }
 
-    val enabled = matchStatus == MatchStatus.BEFORE
+    val enabled = matchStatus == MatchStatus.SCHEDULED
 
     Box(
         modifier = modifier

@@ -1,9 +1,9 @@
 package every.lol.com.core.model
 
 enum class MatchStatus {
-    BEFORE,
+    SCHEDULED,
     LIVE,
-    AFTER
+    FINISHED
 }
 
 data class TodayMatchCard(

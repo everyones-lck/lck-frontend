@@ -18,6 +18,7 @@ import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.core.model.HomeBannerModel
 import every.lol.com.core.model.LckStandingTeamModel
 import every.lol.com.core.model.MatchCardModel
+import every.lol.com.core.model.MatchStatus
 import every.lol.com.feature.home.component.LckRankingSection
 import every.lol.com.feature.home.component.MatchCard
 import every.lol.com.feature.home.component.MatchNoticeBanner
@@ -34,11 +35,19 @@ fun HomeScreen(
 
     val dummyMatchCard = MatchCardModel(
         matchId = 1L,
-        title = "2026 Road to MSI",
+        seasonName = "2026 Road to MSI",
         team1Name = "HLE",
         team2Name = "Gen",
-        matchName = "Baron Elder",
-        roundName = "플레이오프 1라운드"
+        groupName = "Baron Elder",
+        roundName = "플레이오프 1라운드",
+        matchDate = "",
+        matchStatus = MatchStatus.LIVE,
+        team1Id = 1,
+        team2Id = 2,
+        team1VoteRate = 0.0,
+        team2VoteRate = 0.0,
+        totalVoteCount = 0,
+        predictedWinnerTeamName = "",
     )
     val newsBanners = listOf(
         HomeBannerModel(id = 1L, imageUrl = "", title = " "),

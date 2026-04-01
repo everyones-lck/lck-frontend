@@ -1,10 +1,10 @@
 package every.lol.com.feature.matches.model
 
-import every.lol.com.core.model.TodayMatchCard
+import every.lol.com.core.model.MatchCardModel
 
 sealed interface MatchUiState {
     data class Matches(
-        val matches: List<TodayMatchCard>,
+        val matches: List<MatchCardModel>,
         val expandedIndex: Int = 0
     ) : MatchUiState
 
