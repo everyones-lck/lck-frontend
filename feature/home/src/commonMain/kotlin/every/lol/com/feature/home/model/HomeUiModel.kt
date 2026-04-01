@@ -1,26 +1,21 @@
 package every.lol.com.feature.home.model
 
 import androidx.compose.runtime.Immutable
-import every.lol.com.core.model.HomeTodayMatchDetail
-import every.lol.com.core.model.MatchCardModel
+import every.lol.com.core.model.HomeTodayMatch
 
 @Immutable
 sealed interface HomeUiState {
     data object Loading : HomeUiState
 
     data class Home(
-        val matchCard: MatchCardModel? = null,
+        val isLoading: Boolean = false,
+        val matches: HomeTodayMatch ?= null,
         val isRefreshing: Boolean = false
     ) : HomeUiState
 
     data class Error(
         val message: String = ""
     ) : HomeUiState
-
-    data class HomeTodayMatch(
-        val isLoading: Boolean = false,
-        val matches: List<HomeTodayMatchDetail> = emptyList()
-    ): HomeUiState
 }
 
 sealed interface HomeIntent {

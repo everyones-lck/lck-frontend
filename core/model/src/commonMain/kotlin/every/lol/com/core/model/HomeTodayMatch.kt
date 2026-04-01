@@ -9,7 +9,7 @@ data class HomeTodayMatchDetail(
     val matchDate: String,
     val matchStatus: String,
     val seasonName: String,
-    val groupName: String,
+    val groupName: String?,
     val roundName: String,
     val team1: HomeTeam,
     val team2: HomeTeam

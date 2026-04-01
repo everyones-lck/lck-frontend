@@ -44,7 +44,8 @@ class HomeViewModel(
     }
 
     private fun loadInitial() {
-
+        println("loadInitial")
+        loadTodayMatchHome()
     }
 
     private fun refreshHome() {
@@ -53,24 +54,26 @@ class HomeViewModel(
 
     private fun loadTodayMatchHome() {
         _uiState.update { state ->
-            (state as? HomeUiState.HomeTodayMatch ?: HomeUiState.HomeTodayMatch()).copy(
-                isLoading = true
-            )
+            when (state) {
+                is HomeUiState.Home -> state.copy(isLoading = true)
+                else -> HomeUiState.Home(isLoading = true)
+            }
         }
 
         viewModelScope.launch {
-            getHomeTodayMatchUseCase().onSuccess {
+            getHomeTodayMatchUseCase().onSuccess { result ->
                 _uiState.update { state ->
-                    val currentState = state as? HomeUiState.HomeTodayMatch ?: HomeUiState.HomeTodayMatch()
+                    val currentState = state as? HomeUiState.Home ?: HomeUiState.Home()
 
                     currentState.copy(
                         isLoading = false,
-                        matches = it.matches
+                        matches = result,
+                        isRefreshing = false
                     )
                 }
             }.onFailure { error ->
                 _uiState.update { state ->
-                    val currentState = state as? HomeUiState.HomeTodayMatch ?: HomeUiState.HomeTodayMatch()
+                    val currentState = state as? HomeUiState.Home ?: HomeUiState.Home()
                     currentState.copy(isLoading = false)
                 }
                 println(error)
