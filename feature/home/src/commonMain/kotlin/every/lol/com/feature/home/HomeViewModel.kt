@@ -49,6 +49,7 @@ class HomeViewModel(
         println("loadInitial")
         loadTodayMatchHome()
         loadRanking()
+        loadNews()
     }
 
     private fun refreshHome() {
@@ -107,4 +108,28 @@ class HomeViewModel(
         }
 
     }
+
+    private fun loadNews() {
+        viewModelScope.launch {
+            getHomeNewsUseCase().onSuccess { result ->
+                _uiState.update { state ->
+                    val currentState = state as? HomeUiState.Home ?: HomeUiState.Home()
+                    currentState.copy(
+                        isLoading = false,
+                        news = result,
+                        isRefreshing = false
+                    )
+                }
+            }.onFailure { error ->
+                _uiState.update { state ->
+                    val currentState = state as? HomeUiState.Home ?: HomeUiState.Home()
+                    currentState.copy(isLoading = false)
+                }
+                println(error)
+                _event.emit(HomeEvent.ShowToast(error.message ?: "데이터를 불러오지 못했습니다."))
+            }
+        }
+    }
+
+
 }

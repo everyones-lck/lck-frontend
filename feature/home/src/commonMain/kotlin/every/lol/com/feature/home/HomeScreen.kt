@@ -16,15 +16,15 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
-import every.lol.com.core.model.HomeBannerModel
 import every.lol.com.core.model.LckStandingTeamModel
 import every.lol.com.feature.home.component.LckRankingSection
 import every.lol.com.feature.home.component.MatchCardRow
 import every.lol.com.feature.home.component.MatchNoticeBanner
-import every.lol.com.feature.home.component.NewsBanner
+import every.lol.com.feature.home.component.NewsBannerRow
 import every.lol.com.feature.home.component.TopBar
 import every.lol.com.feature.home.model.HomeIntent
 import every.lol.com.feature.home.model.HomeUiState
@@ -78,16 +78,12 @@ fun HomeScreen(
     onNavigateToMypage: () -> Unit,
     onIntent: (HomeIntent) -> Unit
 ) {
-
+    val uriHandler = LocalUriHandler.current
     val homeState = state as? HomeUiState.Home
     var showMatchBanner by rememberSaveable { mutableStateOf(true) }
     val matchData = homeState?.matches
+    val newsBanners = homeState?.news
 
-    val newsBanners = listOf(
-        HomeBannerModel(id = 1L, imageUrl = "", title = " "),
-        HomeBannerModel(id = 2L, imageUrl = "", title = ""),
-        HomeBannerModel(id = 3L, imageUrl = "", title = "")
-    )
     val standings = listOf(
         LckStandingTeamModel(teamId = 6, rank = 6, teamName = "T1", rightText = "-"),
         LckStandingTeamModel(teamId = 1, rank = 1, teamName = "GEN", rightText = "-"),
@@ -139,18 +135,24 @@ fun HomeScreen(
                 matchCards = matchData,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 24.dp)
+                    .padding(vertical = 24.dp)
             )
         }
+        if(newsBanners!=null){
+            item {
+                NewsBannerRow(
+                    newsList = newsBanners,
+                    onClick = { url ->
+                        if (url.isNotBlank()) {
+                            try {
+                                uriHandler.openUri(url)
+                            } catch (e: Exception) {
 
-        item {
-            NewsBanner(
-                banners = newsBanners,
-                modifier = Modifier.padding(top = 24.dp),
-                onBannerClick = { bannerId ->
-                    // Todo: 배너 클릭 처리
-                }
-            )
+                            }
+                        }
+                    }
+                )
+            }
         }
 
         item {
