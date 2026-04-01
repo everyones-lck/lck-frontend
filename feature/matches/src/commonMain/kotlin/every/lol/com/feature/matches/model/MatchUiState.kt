@@ -13,6 +13,7 @@ sealed interface MatchUiState {
     ) : MatchUiState
 
     data class Prediction(
+        val match: MatchCardModel? = null,
         val isLoading: Boolean = false,
         val matchId: Long = 0,
         val setId: List<SetPogCandidateDetail>? = null
