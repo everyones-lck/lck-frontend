@@ -39,7 +39,11 @@ class MatchesViewModel(
                 loadMatches()
             }
 
-            is MatchIntent.ClickPrediction -> getMatchCandidate(intent.matchId)
+            is MatchIntent.ClickPrediction -> {
+                getMatchCandidate(intent.matchId)
+                getMatchPogCandidate(intent.matchId)
+                getSetPogCandidate(intent.matchId)
+            }
 
             is MatchIntent.ClickLiveResult -> {
                 _uiState.value = MatchUiState.LiveResult(
@@ -82,6 +86,7 @@ class MatchesViewModel(
             }
         }
     }
+
     private fun loadMatches() {
         viewModelScope.launch {
             _uiState.value = MatchUiState.Loading
@@ -141,13 +146,13 @@ class MatchesViewModel(
     }
 
 
-
     //승혁 코드
-    private fun getMatchCandidate(matchId: Long){
+    private fun getMatchCandidate(matchId: Long) {
         viewModelScope.launch {
             getMatchCandidateUseCase(matchId).onSuccess {
                 _uiState.update { state ->
-                    val currentState = state as? MatchUiState.Prediction ?: MatchUiState.Prediction()
+                    val currentState =
+                        state as? MatchUiState.Prediction ?: MatchUiState.Prediction()
                     currentState.copy(
                         isLoading = false,
                         matchId = it.matchId
@@ -155,12 +160,59 @@ class MatchesViewModel(
                 }
             }.onFailure { error ->
                 _uiState.update { state ->
-                    val currentState = state as? MatchUiState.Prediction ?: MatchUiState.Prediction()
+                    val currentState =
+                        state as? MatchUiState.Prediction ?: MatchUiState.Prediction()
                     currentState.copy(isLoading = false)
-                    }
+                }
                 println(error)
                 //_event.emit(MatchEvent.ShowToast(error.message ?: "데이터를 불러오지 못했습니다."))
             }
         }
     }
+
+    private fun getMatchPogCandidate(matchId: Long) {
+        viewModelScope.launch {
+            getMatchPogCandidateUseCase(matchId).onSuccess {
+                _uiState.update { state ->
+                    val currentState =
+                        state as? MatchUiState.Prediction ?: MatchUiState.Prediction()
+                    currentState.copy(
+                        isLoading = false,
+                        matchId = it.matchId
+                    )
+                }
+            }.onFailure { error ->
+                _uiState.update { state ->
+                    val currentState =
+                        state as? MatchUiState.Prediction ?: MatchUiState.Prediction()
+                    currentState.copy(isLoading = false)
+                }
+                println(error)
+            }
+        }
+    }
+
+    private fun getSetPogCandidate(matchId: Long) {
+        viewModelScope.launch {
+            getSetPogCandidateUseCase(matchId).onSuccess {
+                _uiState.update { state ->
+                    val currentState =
+                        state as? MatchUiState.Prediction ?: MatchUiState.Prediction()
+                    currentState.copy(
+                        isLoading = false,
+                        setId = it.sets
+                    )
+                }
+            }.onFailure { error ->
+                _uiState.update { state ->
+                    val currentState =
+                        state as? MatchUiState.Prediction ?: MatchUiState.Prediction()
+                    currentState.copy(isLoading = false)
+                }
+                println(error)
+            }
+        }
+    }
+
+
 }

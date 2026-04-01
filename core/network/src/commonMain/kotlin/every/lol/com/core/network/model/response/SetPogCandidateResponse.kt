@@ -12,7 +12,7 @@ data class SetPogCandidateDetailResponse(
     val setIndex: Int,
     val winnerTeamName: String,
     val candidates: List<PogCandidateCandidateResponse>,
-    val myVotedPlayerId: Int
+    val myVotedPlayerId: Long ? = null
 )
 
 @Serializable

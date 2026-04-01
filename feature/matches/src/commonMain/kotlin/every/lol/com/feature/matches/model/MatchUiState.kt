@@ -1,6 +1,7 @@
 package every.lol.com.feature.matches.model
 
 import every.lol.com.core.model.MatchCardModel
+import every.lol.com.core.model.SetPogCandidateDetail
 
 sealed interface MatchUiState {
     data class Matches(
@@ -10,7 +11,8 @@ sealed interface MatchUiState {
 
     data class Prediction(
         val isLoading: Boolean = false,
-        val matchId: Long = 0
+        val matchId: Long = 0,
+        val setId: List<SetPogCandidateDetail>? = null
     ) : MatchUiState
 
     data class LiveResult(

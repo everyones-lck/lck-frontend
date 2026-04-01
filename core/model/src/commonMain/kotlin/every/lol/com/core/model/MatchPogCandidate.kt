@@ -1,8 +1,8 @@
 package every.lol.com.core.model
 
 data class MatchPogCandidate(
-    val matchId: Int,
+    val matchId: Long,
     val winnerTeamName: String,
     val candidates: List<PogCandidateCandidate>,
-    val myVotedPlayerId: Int
+    val myVotedPlayerId: Long? = null
 )
