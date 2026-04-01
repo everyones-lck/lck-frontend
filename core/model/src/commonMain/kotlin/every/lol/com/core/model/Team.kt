@@ -11,7 +11,7 @@ enum class Team(
     BRO(8, "BRO"),
     BFX(9, "BFX"),
     DK(3, "DK"),
-    KRX(6, "KRX"),
+    DRX(6, "DRX"),
     KT(4, "KT"),
     HLE(5,"HLE"),
     NONE(0, "선택 안함");
