@@ -7,6 +7,9 @@ import every.lol.com.core.model.HomeAlerts
 import every.lol.com.core.model.HomeAlertsDetail
 import every.lol.com.core.model.HomeNews
 import every.lol.com.core.model.HomeNewsDetail
+import every.lol.com.core.model.HomeRanking
+import every.lol.com.core.model.HomeRankingGroup
+import every.lol.com.core.model.HomeRankingTeam
 import every.lol.com.core.model.HomeTeam
 import every.lol.com.core.model.HomeTodayMatch
 import every.lol.com.core.model.HomeTodayMatchDetail
@@ -43,6 +46,23 @@ class HomeRepositoryImpl(
             )
         }
 
+    override suspend fun ranking(): Result<HomeRanking> =
+        remote.ranking().toResult().map { response ->
+            HomeRanking(
+                groups = response.groups.map {
+                    HomeRankingGroup(
+                        groupName = it.groupName,
+                        teams = it.teams.map { team ->
+                            HomeRankingTeam(
+                                rank = team.rank,
+                                teamName = team.teamName
+                            )
+                        }
+                    )
+                }
+            )
+        }
+
     override suspend fun newsHome(): Result<HomeNews> =
         remote.newsHome().toResult().map { response ->
             HomeNews(
@@ -59,18 +79,16 @@ class HomeRepositoryImpl(
         }
 
     override suspend fun alertsHome(): Result<HomeAlerts> =
-        remote.alertsHome().toResult().map {response ->
-            HomeAlerts(
-                alerts = response.alerts.map {
-                    HomeAlertsDetail(
-                        message = it.message,
-                        matchId = it.matchId,
-                        team1Id = it.team1Id,
-                        team1Name = it.team1Name,
-                        team2Id = it.team2Id,
-                        team2Name = it.team2Name
-                    )
-                },
+        remote.alertsHome().toResult().map { response ->
+            HomeAlerts(alerts = response.alerts.map {
+                HomeAlertsDetail(
+                    message = it.message,
+                    matchId = it.matchId,
+                    team1Id = it.team1Id,
+                    team1Name = it.team1Name,
+                    team2Id = it.team2Id,
+                    team2Name = it.team2Name
+                ) },
                 alertCount = response.alertCount
             )
         }
