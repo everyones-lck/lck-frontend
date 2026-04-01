@@ -3,6 +3,9 @@ package every.lol.com.feature.matches.model
 import every.lol.com.core.model.MatchCandidate
 import every.lol.com.core.model.MatchCardModel
 import every.lol.com.core.model.MatchPogCandidate
+import every.lol.com.core.model.MatchPogResult
+import every.lol.com.core.model.SetPogResult
+import every.lol.com.core.model.SetPogVoteItem
 import every.lol.com.core.model.SetPogCandidateDetail
 
 sealed interface MatchUiState {
@@ -21,7 +24,10 @@ sealed interface MatchUiState {
 
     data class LiveResult(
         val matchId: Long,
-        val selectedTabIndex: Int = 0
+        val selectedTabIndex: Int = 0,
+        val setPogResult: SetPogResult? = null,
+        val matchPogResult: MatchPogResult? = null,
+        val isLoading: Boolean = false
     ) : MatchUiState
 
     data object Loading : MatchUiState
@@ -35,4 +41,9 @@ sealed interface MatchIntent {
     data object BackToPrediction : MatchIntent
     data class ToggleMatchCard(val index: Int) : MatchIntent
     data class SelectLiveResultTab(val index: Int) : MatchIntent
+    data class SubmitPredictionVote(val matchId: Long, val teamId: Int) : MatchIntent
+    data class SubmitSetPogVote(val matchId: Long, val setPogVotes: List<SetPogVoteItem>) : MatchIntent
+    data class SubmitMatchPogVote(val matchId: Long, val playerId: Long?) : MatchIntent
+    data class LoadSetPogResult(val matchId: Long) : MatchIntent
+    data class LoadMatchPogResult(val matchId: Long) : MatchIntent
 }
