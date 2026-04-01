@@ -1,53 +1,26 @@
 package every.lol.com.feature.matches
 
+import every.lol.com.core.domain.usecase.GetMatchVoteRateUseCase
+import every.lol.com.core.domain.usecase.GetMatchesUseCase
+import every.lol.com.core.model.MatchCardModel
 import every.lol.com.core.model.MatchStatus
 import every.lol.com.core.model.TodayMatchCard
 import every.lol.com.core.model.WinnerSide
 import every.lol.com.feature.matches.model.MatchIntent
 import every.lol.com.feature.matches.model.MatchUiState
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
 import moe.tlaster.precompose.viewmodel.ViewModel
+import moe.tlaster.precompose.viewmodel.viewModelScope
 
-class MatchesViewModel : ViewModel() {
-    private val dummyMatches = listOf(
-        TodayMatchCard(
-            matchId = 1L,
-            title = "2026 Road to MSI",
-            matchName = "Baron Elder",
-            roundName = "플레이오프 1라운드",
-            status = MatchStatus.BEFORE,
-            team1Name = "HLE",
-            team2Name = "GEN",
-            team1Rate = 0.28f,
-            team2Rate = 0.72f,
-            winner = null
-        ),
-        TodayMatchCard(
-            matchId = 2L,
-            title = "2026 Road to MSI",
-            matchName = "Baron Elder",
-            roundName = "플레이오프 1라운드",
-            status = MatchStatus.LIVE,
-            team1Name = "GEN.G",
-            team2Name = "T1",
-            team1Rate = 0.45f,
-            team2Rate = 0.55f,
-            winner = null
-        ),
-        TodayMatchCard(
-            matchId = 3L,
-            title = "2026 Road to MSI",
-            matchName = "Baron Elder",
-            roundName = "플레이오프 1라운드",
-            status = MatchStatus.AFTER,
-            team1Name = "GEN.G",
-            team2Name = "T1",
-            team1Rate = 0.35f,
-            team2Rate = 0.65f,
-            winner = WinnerSide.TEAM2
-        )
-    )
+class MatchesViewModel(
+    private val getMatchesUseCase: GetMatchesUseCase,
+    private val getMatchVoteRateUseCase: GetMatchVoteRateUseCase
+) : ViewModel() {
     private val _uiState = MutableStateFlow<MatchUiState>(MatchUiState.Loading)
 
     val uiState: StateFlow<MatchUiState> = _uiState
@@ -59,10 +32,7 @@ class MatchesViewModel : ViewModel() {
     fun onIntent(intent: MatchIntent) {
         when (intent) {
             MatchIntent.LoadMatches -> {
-                _uiState.value = MatchUiState.Matches(
-                    matches = dummyMatches,
-                    expandedIndex = 0
-                )
+                loadMatches()
             }
 
             is MatchIntent.ClickPrediction -> {
@@ -79,11 +49,13 @@ class MatchesViewModel : ViewModel() {
             }
 
             MatchIntent.BackToMatches -> {
+                val currentMatches = (_uiState.value as? MatchUiState.Matches)?.matches.orEmpty()
                 _uiState.value = MatchUiState.Matches(
-                    matches = dummyMatches,
+                    matches = currentMatches,
                     expandedIndex = 0
                 )
             }
+
 
             MatchIntent.BackToPrediction -> {
                 val current = _uiState.value as? MatchUiState.LiveResult ?: return
@@ -108,6 +80,63 @@ class MatchesViewModel : ViewModel() {
                     selectedTabIndex = intent.index
                 )
             }
+        }
+    }
+    private fun loadMatches() {
+        viewModelScope.launch {
+            _uiState.value = MatchUiState.Loading
+
+            val result = getMatchesUseCase()
+
+            result.fold(
+                onSuccess = { matchInfoResult ->
+                    val matchCards = supervisorScope {
+                        matchInfoResult.matchInfo.map { match ->
+                            async {
+                                val voteRate = getMatchVoteRateUseCase(match.matchId).getOrNull()
+
+                                MatchCardModel(
+                                    matchId = match.matchId,
+                                    matchDate = match.matchDate,
+                                    matchStatus = match.matchStatus,
+                                    seasonName = match.seasonName,
+                                    groupName = match.groupName,
+                                    roundName = match.roundName,
+                                    team1Id = match.team1.teamId,
+                                    team1Name = match.team1.teamName,
+                                    team2Id = match.team2.teamId,
+                                    team2Name = match.team2.teamName,
+                                    team1VoteRate = voteRate?.team1?.voteRate ?: 0.0,
+                                    team2VoteRate = voteRate?.team2?.voteRate ?: 0.0,
+                                    totalVoteCount = voteRate?.totalVoteCount ?: 0,
+                                    predictedWinnerTeamName = when {
+                                        (voteRate?.team1?.voteRate
+                                            ?: 0.0) > (voteRate?.team2?.voteRate
+                                            ?: 0.0) -> match.team1.teamName
+
+                                        (voteRate?.team2?.voteRate
+                                            ?: 0.0) > (voteRate?.team1?.voteRate
+                                            ?: 0.0) -> match.team2.teamName
+
+                                        else -> null
+                                    }
+                                )
+                            }
+                        }.awaitAll()
+                    }
+
+                    _uiState.value = MatchUiState.Matches(
+                        matches = matchCards,
+                        expandedIndex = if (matchCards.isNotEmpty()) 0 else -1
+                    )
+                },
+                onFailure = {
+                    _uiState.value = MatchUiState.Matches(
+                        matches = emptyList(),
+                        expandedIndex = -1
+                    )
+                }
+            )
         }
     }
 }

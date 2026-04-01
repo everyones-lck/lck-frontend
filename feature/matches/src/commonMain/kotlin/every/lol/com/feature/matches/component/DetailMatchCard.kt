@@ -23,6 +23,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
+import every.lol.com.core.model.MatchCardModel
 import every.lol.com.core.model.MatchStatus
 import every.lol.com.core.model.TodayMatchCard
 import every.lol.com.core.model.WinnerSide
@@ -32,7 +33,7 @@ import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun DetailMatchCard(
-    item: TodayMatchCard,
+    item: MatchCardModel,
     modifier: Modifier = Modifier,
     onWatchClick: () -> Unit = {},
     onOpenTalkClick: () -> Unit = {},
@@ -54,33 +55,28 @@ fun DetailMatchCard(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
-                    text = item.title,
+                    text = item.seasonName,
                     color = EveryLoLTheme.color.grayScale100,
                     style = EveryLoLTheme.typography.heading01
                 )
 
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    MatchCardTag(text = item.matchName)
-                    MatchCardTag(text = item.roundName)
-                    if (item.status == MatchStatus.AFTER) {
-                        val winnerName = when (item.winner) {
-                            WinnerSide.TEAM1 -> item.team1Name
-                            WinnerSide.TEAM2 -> item.team2Name
-                            null -> ""
+                    item.groupName
+                        ?.takeIf { it.isNotBlank() }
+                        ?.let { groupName ->
+                            MatchCardTag(text = groupName)
                         }
+                    MatchCardTag(text = item.roundName)
 
-                        if (winnerName.isNotEmpty()) {
+                    item.predictedWinnerTeamName
+                        ?.takeIf { it.isNotBlank() }
+                        ?.let { predictedWinner ->
                             MatchCardTag(
-                                text = "$winnerName win",
-                                backgroundColor = when (item.winner) {
-                                    WinnerSide.TEAM1 -> getTeamColor(item.team1Name)
-                                    WinnerSide.TEAM2 -> getTeamColor(item.team2Name)
-                                    null -> EveryLoLTheme.color.gray800
-                                },
+                                text = "$predictedWinner win",
+                                backgroundColor = getTeamColor(predictedWinner),
                                 textColor = EveryLoLTheme.color.black900
                             )
                         }
-                    }
                 }
             }
 
@@ -89,7 +85,7 @@ fun DetailMatchCard(
                     .align(Alignment.TopEnd)
                     .size(10.dp)
                     .clip(CircleShape)
-                    .background(matchStatusDotColor(item.status))
+                    .background(matchStatusDotColor(item.matchStatus))
             )
         }
 
@@ -117,19 +113,19 @@ fun DetailMatchCard(
             }
 
             PredictionBarByStatus(
-                status = item.status,
-                team1Rate = item.team1Rate,
-                team2Rate = item.team2Rate,
+                status = item.matchStatus,
+                team1Rate = item.team1VoteRate,
+                team2Rate = item.team2VoteRate,
                 team1Name = item.team1Name,
                 team2Name = item.team2Name,
-                winner = item.winner
+                predictedWinnerTeamName = item.predictedWinnerTeamName
             )
 
             TeamNameRow(
                 team1Name = item.team1Name,
                 team2Name = item.team2Name,
-                winner = item.winner,
-                status = item.status
+                predictedWinnerTeamName = item.predictedWinnerTeamName,
+                status = item.matchStatus
             )
         }
 
@@ -139,7 +135,7 @@ fun DetailMatchCard(
         ) {
             MatchActionButton(
                 text = "경기 보러가기",
-                enabled = item.status != MatchStatus.BEFORE,
+                enabled = item.matchStatus != MatchStatus.SCHEDULED,
                 modifier = Modifier.weight(1f),
                 onClick = onWatchClick
             )
@@ -179,12 +175,12 @@ private fun MatchCardTag(
 private fun TeamNameRow(
     team1Name: String,
     team2Name: String,
-    winner: WinnerSide?,
+    predictedWinnerTeamName: String?,
     status: MatchStatus,
     modifier: Modifier = Modifier
 ) {
-    val team1IsWinner = winner == WinnerSide.TEAM1
-    val team2IsWinner = winner == WinnerSide.TEAM2
+    val team1IsWinner = predictedWinnerTeamName == team1Name
+    val team2IsWinner = predictedWinnerTeamName == team2Name
 
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -198,23 +194,18 @@ private fun TeamNameRow(
                 isWinner = team1IsWinner,
                 teamName = team1Name
             ),
-            style = EveryLoLTheme.typography.body03,
+            style = EveryLoLTheme.typography.body03
         )
 
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(2.dp)
-        ) {
-            Text(
-                text = team2Name,
-                color = getTeamTextColor(
-                    status = status,
-                    isWinner = team2IsWinner,
-                    teamName = team2Name
-                ),
-                style = EveryLoLTheme.typography.body03,
-            )
-        }
+        Text(
+            text = team2Name,
+            color = getTeamTextColor(
+                status = status,
+                isWinner = team2IsWinner,
+                teamName = team2Name
+            ),
+            style = EveryLoLTheme.typography.body03
+        )
     }
 }
 
@@ -245,30 +236,28 @@ private fun MatchActionButton(
 @Composable
 private fun PredictionBarByStatus(
     status: MatchStatus,
-    team1Rate: Float,
-    team2Rate: Float,
+    team1Rate: Double,
+    team2Rate: Double,
     team1Name: String,
     team2Name: String,
-    winner: WinnerSide?,
+    predictedWinnerTeamName: String?,
     modifier: Modifier = Modifier
 ) {
-    val safeLeft = team1Rate.coerceIn(0.001f, 1f)
-    val safeRight = team2Rate.coerceIn(0.001f, 1f)
-
-    val leftIsWinner = winner == WinnerSide.TEAM1
-    val rightIsWinner = winner == WinnerSide.TEAM2
+    val leftWeight = if (team1Rate <= 0.0 && team2Rate <= 0.0) 1f else (team1Rate.coerceAtLeast(0.1) / 100.0).toFloat()
+    val rightWeight = if (team1Rate <= 0.0 && team2Rate <= 0.0) 1f else (team2Rate.coerceAtLeast(0.1) / 100.0).toFloat()
 
     val leftColor = getBarColor(
         status = status,
-        isWinner = leftIsWinner,
+        isWinner = predictedWinnerTeamName == team1Name,
         teamName = team1Name
     )
 
     val rightColor = getBarColor(
         status = status,
-        isWinner = rightIsWinner,
+        isWinner = predictedWinnerTeamName == team2Name,
         teamName = team2Name
     )
+
 
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -276,7 +265,7 @@ private fun PredictionBarByStatus(
     ) {
         Box(
             modifier = Modifier
-                .weight(safeLeft)
+                .weight(leftWeight)
                 .height(4.dp)
                 .clip(RoundedCornerShape(999.dp))
                 .background(leftColor)
@@ -284,7 +273,7 @@ private fun PredictionBarByStatus(
 
         Box(
             modifier = Modifier
-                .weight(safeRight)
+                .weight(rightWeight)
                 .height(4.dp)
                 .clip(RoundedCornerShape(999.dp))
                 .background(rightColor)
@@ -294,9 +283,9 @@ private fun PredictionBarByStatus(
 
 @Composable
 private fun matchStatusDotColor(status: MatchStatus) = when (status) {
-    MatchStatus.BEFORE -> EveryLoLTheme.color.grayScale800
+    MatchStatus.SCHEDULED -> EveryLoLTheme.color.grayScale800
     MatchStatus.LIVE -> EveryLoLTheme.color.semanticWarning
-    MatchStatus.AFTER -> EveryLoLTheme.color.grayScale800
+    MatchStatus.FINISHED -> EveryLoLTheme.color.grayScale800
 }
 
 @Composable
@@ -307,7 +296,7 @@ private fun getTeamColor(teamName: String): Color {
         "HLE", "HANWHA LIFE ESPORTS" -> EveryLoLTheme.color.teamHLE
         "GEN", "GEN.G", "GENG" -> EveryLoLTheme.color.teamGen
         "T1" -> EveryLoLTheme.color.teamT1
-        "KT", "KT Rolster" -> EveryLoLTheme.color.teamKT
+        "KT", "KT Rolster", "KT ROLSTER" -> EveryLoLTheme.color.teamKT
         "BRO", "BRION" -> EveryLoLTheme.color.teamBRO
         "DRX", "KRX" -> EveryLoLTheme.color.teamKRX
         "DN", "DNF", "DNS" -> EveryLoLTheme.color.teamDNS
@@ -323,9 +312,9 @@ private fun getBarColor(
     teamName: String
 ): Color {
     return when (status) {
-        MatchStatus.BEFORE -> getTeamColor(teamName)
+        MatchStatus.SCHEDULED -> getTeamColor(teamName)
         MatchStatus.LIVE -> EveryLoLTheme.color.gray800
-        MatchStatus.AFTER -> {
+        MatchStatus.FINISHED -> {
             if (isWinner) getTeamColor(teamName)
             else EveryLoLTheme.color.gray800
         }
@@ -339,9 +328,9 @@ private fun getTeamTextColor(
     teamName: String
 ): Color {
     return when (status) {
-        MatchStatus.BEFORE -> EveryLoLTheme.color.gray800
+        MatchStatus.SCHEDULED -> EveryLoLTheme.color.gray800
         MatchStatus.LIVE -> EveryLoLTheme.color.gray800
-        MatchStatus.AFTER -> {
+        MatchStatus.FINISHED -> {
             if (isWinner) getTeamColor(teamName)
             else EveryLoLTheme.color.gray800
         }
