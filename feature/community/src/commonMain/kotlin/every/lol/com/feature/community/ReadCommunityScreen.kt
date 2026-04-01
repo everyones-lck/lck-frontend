@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -49,6 +51,8 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
@@ -126,7 +130,6 @@ fun ReadCommunityScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     var selectedImageUrl by remember { mutableStateOf<String?>(null) }
     var isPostMenuExpanded by remember { mutableStateOf(false) }
-    var selectedComment by remember { mutableStateOf<CommentList?>(null) }
     var commentText by remember { mutableStateOf("") }
     val isKeyboardOpen = WindowInsets.ime.asPaddingValues().calculateBottomPadding() > 0.dp
 
@@ -275,7 +278,6 @@ fun ReadCommunityScreen(
                             val comment = postDetail.commentList[index]
                             ReadComment(
                                 comment = comment,
-                                onMoreClick = { selectedComment = comment },
                                 onClick = {
                                     replyingTo = comment
                                 }
@@ -286,34 +288,22 @@ fun ReadCommunityScreen(
                     }
                 }
             }
-            if (isPostMenuExpanded) {
-                PostMenu(
-                    isMine = state.isMine,
-                    onDismiss = { isPostMenuExpanded = false },
-                    onDelete = { onIntent(CommunityIntent.DeletePost(postId)) },
-                    onReport = { onIntent(CommunityIntent.ReportPost(postId,"신고")) }
-                )
-            }
+        }
 
-            selectedComment?.let { comment ->
-                CommentMenu(
-                    isMine = comment.isWriter,
-                    onDismiss = { selectedComment = null },
-                    onDelete = {
-                        onIntent(CommunityIntent.DeleteComment(comment.commentId))
-                    },
-                    onReport = {
-                        onIntent(CommunityIntent.ReportComment(comment.commentId, "신고"))
-                    }
-                )
-            }
+        if (isPostMenuExpanded) {
+            PostMenu(
+                isMine = state.isMine,
+                onDismiss = { isPostMenuExpanded = false },
+                onDelete = { onIntent(CommunityIntent.DeletePost(postId)) },
+                onReport = { onIntent(CommunityIntent.ReportPost(postId, "신고")) }
+            )
+        }
 
-            selectedImageUrl?.let { url ->
-                FullScreenImageViewer(
-                    imageUrl = url,
-                    onDismiss = { selectedImageUrl = null }
-                )
-            }
+        selectedImageUrl?.let { url ->
+            FullScreenImageViewer(
+                imageUrl = url,
+                onDismiss = { selectedImageUrl = null }
+            )
         }
     }
 }
@@ -326,55 +316,63 @@ fun PostMenu(
     onReport: () -> Unit
 ) {
     Box(
-        modifier = Modifier.fillMaxWidth().padding(top = 56.dp, end = 16.dp),
-        contentAlignment = Alignment.TopEnd
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 100.dp, end = 16.dp)
+            .clip(RoundedCornerShape(12.dp)),
     ) {
-        DropdownMenu(
-            expanded = true,
-            onDismissRequest = onDismiss,
-            modifier = Modifier.background(EveryLoLTheme.color.grayScale800)
+        Box(
+            modifier = Modifier.align(Alignment.TopEnd).size(0.dp)
         ) {
-            if (isMine) {
-                DropdownMenuItem(
-                    text = { Text("게시글 삭제하기", color = EveryLoLTheme.color.white200) },
-                    onClick = { onDelete(); onDismiss() }
-                )
-            } else {
-                DropdownMenuItem(
-                    text = { Text("게시글 신고하기", color = EveryLoLTheme.color.white200) },
-                    onClick = { onReport(); onDismiss() }
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun CommentMenu(
-    isMine: Boolean,
-    onDismiss: () -> Unit,
-    onDelete: () -> Unit,
-    onReport: () -> Unit
-) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        DropdownMenu(
-            expanded = true,
-            onDismissRequest = onDismiss,
-            modifier = Modifier.background(EveryLoLTheme.color.grayScale800)
-        ) {
-            if (isMine) {
-                DropdownMenuItem(
-                    text = { Text("댓글 삭제하기", color = EveryLoLTheme.color.white200) },
-                    onClick = { onDelete(); onDismiss() }
-                )
-            } else {
-                DropdownMenuItem(
-                    text = { Text("댓글 신고하기", color = EveryLoLTheme.color.white200) },
-                    onClick = { onReport(); onDismiss() }
-                )
+            DropdownMenu(
+                expanded = true,
+                onDismissRequest = onDismiss,
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier
+                    .background(EveryLoLTheme.color.black900,RoundedCornerShape(12.dp)),
+                offset = DpOffset(x = (0).dp, y = 0.dp)
+            ) {
+                if (isMine) {
+                    DropdownMenuItem(
+                        modifier = Modifier
+                            .width(80.dp)
+                            .height(24.dp),
+                        text = {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    "삭제하기",
+                                    style = EveryLoLTheme.typography.subtitle03,
+                                    color = EveryLoLTheme.color.community600,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        },
+                        onClick = { onDelete(); onDismiss() }
+                    )
+                } else {
+                    DropdownMenuItem(
+                        modifier = Modifier
+                            .width(80.dp)
+                            .height(24.dp),
+                        text = {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    "신고하기",
+                                    style = EveryLoLTheme.typography.subtitle03,
+                                    color = EveryLoLTheme.color.community600,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                               },
+                        onClick = { onReport(); onDismiss() }
+                    )
+                }
             }
         }
     }
@@ -410,7 +408,7 @@ fun FullScreenImageViewer(
             onClick = onDismiss,
             modifier = Modifier
                 .align(Alignment.TopStart)
-                .padding(top = 40.dp, start = 16.dp)
+                .padding(start = 16.dp)
         ) {
             Icon(
                 painter = painterResource(Res.drawable.ic_x),
