@@ -61,11 +61,13 @@ class MatchesViewModel(
             MatchIntent.LoadMatches -> loadMatches()
 
             is MatchIntent.ClickPrediction -> {
+                val baseMatchInfo = cachedMatches.find { it.matchId == intent.matchId }
+
                 _uiState.value = MatchUiState.Prediction(
                     matchId = intent.matchId,
                     isLoading = true
                 )
-                getMatchCandidate(intent.matchId)
+                getMatchCandidate(intent.matchId, baseMatchInfo)
                 getMatchPogCandidate(intent.matchId)
                 getSetPogCandidate(intent.matchId)
             }
@@ -348,7 +350,7 @@ class MatchesViewModel(
     }
 
     //승혁 코드
-    private fun getMatchCandidate(matchId: Long) {
+    private fun getMatchCandidate(matchId: Long, baseInfo: MatchCardModel?) {
         viewModelScope.launch {
             getMatchCandidateUseCase(matchId).onSuccess {
                 _uiState.update { state ->
@@ -357,7 +359,11 @@ class MatchesViewModel(
                     currentState.copy(
                         isLoading = false,
                         matchId = it.matchId,
-                        matchData = it
+                        matchData = it,
+                        seasonName = baseInfo?.seasonName ?: "",
+                        groupName = baseInfo?.groupName ?: "",
+                        roundName = baseInfo?.roundName ?: "",
+                        matchDate = baseInfo?.matchDate ?: ""
                     )
                 }
             }.onFailure { error ->
