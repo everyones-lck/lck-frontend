@@ -14,6 +14,7 @@ import every.lol.com.core.model.MatchCardModel
 import every.lol.com.core.model.SetPogVoteItem
 import every.lol.com.feature.matches.model.MatchIntent
 import every.lol.com.feature.matches.model.MatchUiState
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -73,8 +74,13 @@ class MatchesViewModel(
                 currentMatchId = intent.matchId
                 _uiState.value = MatchUiState.LiveResult(
                     matchId = intent.matchId,
-                    selectedTabIndex = 0
+                    selectedTabIndex = 0,
+                    setPogResult = null,
+                    matchPogResult = null,
+                    isLoading = true
                 )
+
+                handleLoadLiveResults(intent.matchId)
             }
 
             MatchIntent.BackToMatches -> {
@@ -316,6 +322,30 @@ class MatchesViewModel(
         }
     }
 
+    private fun handleLoadLiveResults(matchId: Long) {
+        val currentState = _uiState.value as? MatchUiState.LiveResult ?: return
+
+        _uiState.value = currentState.copy(
+            isLoading = true,
+            setPogResult = null,
+            matchPogResult = null
+        )
+
+        viewModelScope.launch {
+            val setDeferred = async { getSetPogResultUseCase(matchId) }
+            val matchDeferred = async { getMatchPogResultUseCase(matchId) }
+
+            val setResult = setDeferred.await().getOrNull()
+            val matchResult = matchDeferred.await().getOrNull()
+
+            val latestState = _uiState.value as? MatchUiState.LiveResult ?: return@launch
+            _uiState.value = latestState.copy(
+                setPogResult = setResult,
+                matchPogResult = matchResult,
+                isLoading = false
+            )
+        }
+    }
 
     //승혁 코드
     private fun getMatchCandidate(matchId: Long) {

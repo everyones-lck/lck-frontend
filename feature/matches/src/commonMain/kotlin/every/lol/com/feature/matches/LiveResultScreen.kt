@@ -12,11 +12,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,6 +36,7 @@ import every.lol.com.feature.matches.component.MatchesHeaderBar
 import every.lol.com.feature.matches.model.MatchIntent
 import every.lol.com.feature.matches.model.MatchUiState
 import everylol.feature.matches.generated.resources.Res
+import everylol.feature.matches.generated.resources.ic_headset
 import everylol.feature.matches.generated.resources.ic_ranking_five
 import everylol.feature.matches.generated.resources.ic_ranking_four
 import everylol.feature.matches.generated.resources.ic_ranking_one
@@ -67,13 +70,36 @@ fun LiveResultScreen(
         ResultTabItem("POM")
     )
 
-    val dummyRankItems = listOf(
-        ResultRankItem(1, "나예은"),
-        ResultRankItem(2, "나예은"),
-        ResultRankItem(3, "나예은"),
-        ResultRankItem(4, "나예은"),
-        ResultRankItem(5, "나예은")
-    )
+    val isPomTab = state.selectedTabIndex == 5
+    val selectedSetIndex = state.selectedTabIndex + 1
+
+    val currentSet = if (!isPomTab) {
+        state.setPogResult
+            ?.sets
+            ?.firstOrNull { it.setIndex == selectedSetIndex }
+    } else null
+
+    val setRankItems = currentSet
+        ?.results
+        ?.sortedByDescending { it.voteRate }
+        ?.mapIndexed { index, result ->
+            ResultRankItem(
+                rank = index + 1,
+                name = result.playerName
+            )
+        }
+        .orEmpty()
+
+    val pomRankItems = state.matchPogResult
+        ?.results
+        ?.sortedByDescending { it.voteRate }
+        ?.mapIndexed { index, result ->
+            ResultRankItem(
+                rank = index + 1,
+                name = result.playerName
+            )
+        }
+        .orEmpty()
 
     Column(
         modifier = modifier
@@ -92,19 +118,73 @@ fun LiveResultScreen(
             modifier = Modifier.padding(horizontal = 16.dp)
         )
 
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 24.dp),
-            contentPadding = PaddingValues(
-                start = 16.dp,
-                end = 16.dp,
-                bottom = innerPadding.calculateBottomPadding() + 24.dp
-            ),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            items(dummyRankItems) { item ->
-                ResultRankCard(item = item)
+        when {
+            state.isLoading -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = 24.dp),
+                    contentAlignment = Alignment.TopCenter
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+
+            isPomTab -> {
+                if (pomRankItems.isEmpty()) {
+                    NoPomResultPlaceholder(
+                        modifier = Modifier
+                            .padding(top = 24.dp)
+                            .padding(horizontal = 16.dp)
+                    )
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(top = 24.dp),
+                        contentPadding = PaddingValues(
+                            start = 16.dp,
+                            end = 16.dp,
+                            bottom = innerPadding.calculateBottomPadding() + 24.dp
+                        ),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        items(pomRankItems) { item ->
+                            ResultRankCard(item = item)
+                        }
+                    }
+                }
+            }
+
+            currentSet == null -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = 24.dp),
+                    contentAlignment = Alignment.TopCenter
+                ) {
+                    NoSetResultPlaceholder(
+                        setIndex = selectedSetIndex
+                    )
+                }
+            }
+
+            else -> {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = 24.dp),
+                    contentPadding = PaddingValues(
+                        start = 16.dp,
+                        end = 16.dp,
+                        bottom = innerPadding.calculateBottomPadding() + 24.dp
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(setRankItems) { item ->
+                        ResultRankCard(item = item)
+                    }
+                }
             }
         }
     }
@@ -208,5 +288,70 @@ private fun getRankDrawable(rank: Int): DrawableResource {
         4 -> Res.drawable.ic_ranking_four
         5 -> Res.drawable.ic_ranking_five
         else -> Res.drawable.ic_ranking_five
+    }
+}
+
+@Composable
+fun NoSetResultPlaceholder(
+    setIndex: Int,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .width(328.dp)
+            .height(284.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(EveryLoLTheme.color.grayScale1000),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(30.dp)
+        ) {
+            Icon(
+                painter = painterResource(Res.drawable.ic_headset),
+                contentDescription = null,
+                tint = EveryLoLTheme.color.grayScale600,
+                modifier = Modifier.size(45.dp)
+            )
+
+            Text(
+                text = "해당 경기는 ${setIndex}세트가 없어요",
+                color = EveryLoLTheme.color.grayScale600,
+                style = EveryLoLTheme.typography.subtitle03
+            )
+        }
+    }
+}
+
+@Composable
+fun NoPomResultPlaceholder(
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .width(328.dp)
+            .height(284.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(EveryLoLTheme.color.grayScale1000),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(30.dp)
+        ) {
+            Icon(
+                painter = painterResource(Res.drawable.ic_headset),
+                contentDescription = null,
+                tint = EveryLoLTheme.color.grayScale600,
+                modifier = Modifier.size(45.dp)
+            )
+
+            Text(
+                text = "해당 경기의 POM 결과가 없어요",
+                color = EveryLoLTheme.color.grayScale600,
+                style = EveryLoLTheme.typography.subtitle03
+            )
+        }
     }
 }
