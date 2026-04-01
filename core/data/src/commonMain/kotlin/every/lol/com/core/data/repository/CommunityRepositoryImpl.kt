@@ -60,6 +60,7 @@ class CommunityRepositoryImpl(
                     PostListDetail(
                         postId = it.postId,
                         postTitle = it.postTitle,
+                        postContent = it.postContent,
                         postCreatedAt = it.postCreatedAt,
                         userNickname = it.userNickname,
                         userProfilePicture = it.userProfilePicture,

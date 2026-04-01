@@ -48,7 +48,7 @@ fun PopularPost(
                     tint = EveryLoLTheme.color.community600
                 )
                 Text(
-                    text = "인기글이 아직 없습니다",
+                    text = "아직 인기글이 없습니다",
                     style = EveryLoLTheme.typography.subtitle03,
                     color = EveryLoLTheme.color.community600
                 )

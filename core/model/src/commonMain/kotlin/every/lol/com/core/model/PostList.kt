@@ -9,6 +9,7 @@ data class PostList(
 data class PostListDetail(
     val postId: Int,
     val postTitle: String,
+    val postContent: String,
     val postCreatedAt: String,
     val userNickname: String,
     val userProfilePicture: String,

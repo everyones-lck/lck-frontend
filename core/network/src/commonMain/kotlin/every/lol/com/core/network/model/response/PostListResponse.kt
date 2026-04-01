@@ -13,6 +13,7 @@ data class PostListResponse(
 data class PostListDetailResponse(
     val postId: Int,
     val postTitle: String,
+    val postContent: String,
     val postCreatedAt: String,
     val userNickname: String,
     val userProfilePicture: String,
