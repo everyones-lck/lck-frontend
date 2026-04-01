@@ -62,9 +62,9 @@ fun App() {
                     val isMypage = currentDestination?.hasRoute<Route.Mypage>() == true
                     val isWrite = currentDestination?.hasRoute<Route.Write>() == true
                     val isRead = currentDestination?.hasRoute<Route.Read>() == true
+                    val isPrediction = currentDestination?.hasRoute<Route.Prediction>()==true
 
-
-                    if (!isIntro && !isMypage && !isWrite && !isRead) {
+                    if (!isIntro && !isMypage && !isWrite && !isRead && !isPrediction) {
                         Surface(
                             color = EveryLoLTheme.color.newBg,
                             modifier = Modifier
