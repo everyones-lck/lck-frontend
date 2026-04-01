@@ -50,6 +50,7 @@ class HomeViewModel(
         loadTodayMatchHome()
         loadRanking()
         loadNews()
+        loadAlerts()
     }
 
     private fun refreshHome() {
@@ -131,5 +132,26 @@ class HomeViewModel(
         }
     }
 
+    private fun loadAlerts(){
+        viewModelScope.launch {
+            getHomeAlertsUseCase().onSuccess { result ->
+                _uiState.update { state ->
+                    val currentState = state as? HomeUiState.Home ?: HomeUiState.Home()
+                    currentState.copy(
+                        isLoading = false,
+                        alerts = result,
+                        isRefreshing = false,
+                        alertsMessage = result.alerts[0].message //예시 구현
+                    )
+                }
+            }.onFailure {
+                _uiState.update {
+                    val currentState = it as? HomeUiState.Home ?: HomeUiState.Home()
+                    currentState.copy(isLoading = false)
+                }
+                println(it)
+            }
+        }
+    }
 
 }

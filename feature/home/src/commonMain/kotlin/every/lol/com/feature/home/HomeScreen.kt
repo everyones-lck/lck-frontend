@@ -83,6 +83,7 @@ fun HomeScreen(
     var showMatchBanner by rememberSaveable { mutableStateOf(true) }
     val matchData = homeState?.matches
     val newsBanners = homeState?.news
+    val alertsMessage = homeState?.alertsMessage
 
     val standings = listOf(
         LckStandingTeamModel(teamId = 6, rank = 6, teamName = "T1", rightText = "-"),
@@ -122,7 +123,7 @@ fun HomeScreen(
                         .padding(top = 16.dp)
                 ) {
                     MatchNoticeBanner(
-                        message = "오늘은 Gen.G 경기가 있는 날이에요.",
+                        message = alertsMessage.toString(),
                         onCloseClick = { showMatchBanner = false }
                     )
                 }
