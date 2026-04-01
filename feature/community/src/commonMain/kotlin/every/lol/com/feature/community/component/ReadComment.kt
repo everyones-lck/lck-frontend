@@ -1,18 +1,32 @@
 package every.lol.com.feature.community.component
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.core.model.CommentList
@@ -25,62 +39,145 @@ import org.jetbrains.compose.resources.painterResource
 fun ReadComment(
     comment: CommentList,
     isReply: Boolean = false,
-    onMoreClick: () -> Unit,
-    onClick:() -> Unit
+    onClick:() -> Unit,
+    onDelete: () -> Unit,
+    onReport: () -> Unit
 ) {
-    Row(modifier = Modifier.clickable(onClick = onClick).fillMaxWidth()) {
-        if (isReply) {
-            Spacer(Modifier.width(20.dp))
-        }
+    var selectedComment by remember { mutableStateOf<CommentList?>(null) }
 
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    ProfileImage(
-                        modifier = Modifier.size(16.dp),
-                        profile = comment.profileImageUrl
-                    )
-                    Text(
-                        text = comment.nickname,
-                        style = EveryLoLTheme.typography.caption01,
-                        color = EveryLoLTheme.color.grayScale800
-                    )
-                }
-                Icon(
-                    modifier = Modifier
-                        .size(16.dp)
-                        .clickable(onClick = onMoreClick),
-                    painter = painterResource(Res.drawable.ic_more),
-                    contentDescription = null,
-                    tint = EveryLoLTheme.color.community600
-                )
+    Box(modifier = Modifier.fillMaxWidth()) {
+        Row(modifier = Modifier.clickable(onClick = onClick).fillMaxWidth()) {
+            if (isReply) {
+                Spacer(Modifier.width(20.dp))
             }
 
             Column(
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(
+                Row(
                     modifier = Modifier.fillMaxWidth(),
-                    text = comment.content,
-                    style = EveryLoLTheme.typography.pretendardBody02,
-                    color = EveryLoLTheme.color.community600
-                )
-                Text(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = comment.createdAt,
-                    style = EveryLoLTheme.typography.caption02,
-                    color = EveryLoLTheme.color.grayScale800
-                )
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        ProfileImage(
+                            modifier = Modifier.size(16.dp),
+                            profile = comment.profileImageUrl
+                        )
+                        Text(
+                            text = comment.nickname,
+                            style = EveryLoLTheme.typography.caption01,
+                            color = EveryLoLTheme.color.grayScale800
+                        )
+                    }
+                    Icon(
+                        modifier = Modifier
+                            .size(16.dp)
+                            .clickable{ selectedComment = comment },
+                        painter = painterResource(Res.drawable.ic_more),
+                        contentDescription = null,
+                        tint = EveryLoLTheme.color.community600
+                    )
+                }
+
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = comment.content,
+                        style = EveryLoLTheme.typography.pretendardBody02,
+                        color = EveryLoLTheme.color.community600
+                    )
+                    Text(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = comment.createdAt,
+                        style = EveryLoLTheme.typography.caption02,
+                        color = EveryLoLTheme.color.grayScale800
+                    )
+                }
+            }
+        }
+
+        if (selectedComment != null) {
+            CommentMenu(
+                isMine = comment.isWriter,
+                onDismiss = { selectedComment = null },
+                onDelete = onDelete,
+                onReport = onReport
+            )
+        }
+    }
+}
+
+@Composable
+fun CommentMenu(
+    isMine: Boolean,
+    onDismiss: () -> Unit,
+    onDelete: () -> Unit,
+    onReport: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp)),
+    ) {
+        Box(
+            modifier = Modifier.align(Alignment.TopEnd).size(0.dp)
+        ) {
+            DropdownMenu(
+                expanded = true,
+                onDismissRequest = onDismiss,
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier
+                    .background(EveryLoLTheme.color.black900,RoundedCornerShape(12.dp)),
+                offset = DpOffset(x = (0).dp, y = 0.dp)
+            ) {
+                if (isMine) {
+                    DropdownMenuItem(
+                        modifier = Modifier
+                            .width(80.dp)
+                            .height(24.dp),
+                        text = {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    "삭제하기",
+                                    style = EveryLoLTheme.typography.subtitle03,
+                                    color = EveryLoLTheme.color.community600,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        },
+                        onClick = { onDelete(); onDismiss() }
+                    )
+                } else {
+                    DropdownMenuItem(
+                        modifier = Modifier
+                            .width(80.dp)
+                            .height(24.dp),
+                        text = {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    "신고하기",
+                                    style = EveryLoLTheme.typography.subtitle03,
+                                    color = EveryLoLTheme.color.community600,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        },
+                        onClick = { onReport(); onDismiss() }
+                    )
+                }
             }
         }
     }

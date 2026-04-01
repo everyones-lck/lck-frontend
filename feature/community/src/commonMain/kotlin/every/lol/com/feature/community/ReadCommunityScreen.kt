@@ -280,7 +280,9 @@ fun ReadCommunityScreen(
                                 comment = comment,
                                 onClick = {
                                     replyingTo = comment
-                                }
+                                },
+                                onDelete = { onIntent(CommunityIntent.DeleteComment(comment.commentId)) },
+                                onReport = { onIntent(CommunityIntent.ReportComment(comment.commentId, "신고")) }
                             )
                             Spacer(Modifier.height(8.dp))
                         }
