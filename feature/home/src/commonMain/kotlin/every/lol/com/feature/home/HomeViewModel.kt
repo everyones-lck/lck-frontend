@@ -1,20 +1,28 @@
 package every.lol.com.feature.home
 
+import every.lol.com.core.domain.usecase.GetHomeAlertsUseCase
+import every.lol.com.core.domain.usecase.GetHomeNewsUseCase
+import every.lol.com.core.domain.usecase.GetHomeTodayMatchUseCase
 import every.lol.com.feature.home.model.HomeIntent
 import every.lol.com.feature.home.model.HomeUiState
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import moe.tlaster.precompose.viewmodel.ViewModel
+import moe.tlaster.precompose.viewmodel.viewModelScope
 
 sealed interface HomeEvent{
     data class ShowToast(val message: String): HomeEvent
 }
 
 class HomeViewModel(
-
-): ViewModel(){
+    private val getHomeTodayMatchUseCase: GetHomeTodayMatchUseCase,
+    private val getHomeNewsUseCase: GetHomeNewsUseCase,
+    private val getHomeAlertsUseCase: GetHomeAlertsUseCase
+    ): ViewModel() {
 
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
     val uiState = _uiState.asStateFlow()
@@ -26,21 +34,51 @@ class HomeViewModel(
         onIntent(HomeIntent.LoadInitial)
     }
 
-    fun onIntent(intent: HomeIntent){
-        when(intent){
+    fun onIntent(intent: HomeIntent) {
+        when (intent) {
             HomeIntent.LoadInitial -> loadInitial()
             HomeIntent.RefreshHome -> refreshHome()
+            HomeIntent.LoadTodayMatchHome -> loadTodayMatchHome()
             else -> {}
         }
     }
 
-    private fun loadInitial(){
+    private fun loadInitial() {
 
     }
 
-    private fun refreshHome(){
+    private fun refreshHome() {
 
     }
+
+    private fun loadTodayMatchHome() {
+        _uiState.update { state ->
+            (state as? HomeUiState.HomeTodayMatch ?: HomeUiState.HomeTodayMatch()).copy(
+                isLoading = true
+            )
+        }
+
+        viewModelScope.launch {
+            getHomeTodayMatchUseCase().onSuccess {
+                _uiState.update { state ->
+                    val currentState = state as? HomeUiState.HomeTodayMatch ?: HomeUiState.HomeTodayMatch()
+
+                    currentState.copy(
+                        isLoading = false,
+                        matches = it.matches
+                    )
+                }
+            }.onFailure { error ->
+                _uiState.update { state ->
+                    val currentState = state as? HomeUiState.HomeTodayMatch ?: HomeUiState.HomeTodayMatch()
+                    currentState.copy(isLoading = false)
+                }
+                println(error)
+                _event.emit(HomeEvent.ShowToast(error.message ?: "데이터를 불러오지 못했습니다."))
+            }
+        }
+    }
+
 
 
 

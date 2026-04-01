@@ -1,6 +1,7 @@
 package every.lol.com.feature.home.model
 
 import androidx.compose.runtime.Immutable
+import every.lol.com.core.model.HomeTodayMatchDetail
 import every.lol.com.core.model.MatchCardModel
 
 @Immutable
@@ -15,10 +16,16 @@ sealed interface HomeUiState {
     data class Error(
         val message: String = ""
     ) : HomeUiState
+
+    data class HomeTodayMatch(
+        val isLoading: Boolean = false,
+        val matches: List<HomeTodayMatchDetail> = emptyList()
+    ): HomeUiState
 }
 
 sealed interface HomeIntent {
     data object LoadInitial : HomeIntent
     data object RefreshHome : HomeIntent
+    data object LoadTodayMatchHome : HomeIntent
     data class ClickMatchCard(val matchId: Long) : HomeIntent
 }

@@ -19,6 +19,9 @@ import every.lol.com.core.domain.usecase.CheckAuthUseCase
 import every.lol.com.core.domain.usecase.DeleteCommentUseCase
 import every.lol.com.core.domain.usecase.DeletePostUseCase
 import every.lol.com.core.domain.usecase.GetCommunityPostsUseCase
+import every.lol.com.core.domain.usecase.GetHomeAlertsUseCase
+import every.lol.com.core.domain.usecase.GetHomeNewsUseCase
+import every.lol.com.core.domain.usecase.GetHomeTodayMatchUseCase
 import every.lol.com.core.domain.usecase.GetMyCommentsUseCase
 import every.lol.com.core.domain.usecase.GetMyPostsUseCase
 import every.lol.com.core.domain.usecase.GetProfileUseCase
@@ -99,6 +102,9 @@ val appDependenciesModule = module {
     factory { PostCommunityPostLikeUseCase(get()) }
     factory { DeleteCommentUseCase(get()) }
     factory { ReportCommentUseCase(get()) }
+    factory { GetHomeTodayMatchUseCase(get()) }
+    factory { GetHomeNewsUseCase(get()) }
+    factory { GetHomeAlertsUseCase(get()) }
 
 
     factoryOf(::IntroViewModel)
