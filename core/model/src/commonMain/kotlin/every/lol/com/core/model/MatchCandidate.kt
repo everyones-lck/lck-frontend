@@ -1,11 +1,11 @@
 package every.lol.com.core.model
 
 data class MatchCandidate(
-    val matchId: Int,
+    val matchId: Long,
     val votable: Boolean,
     val team1: MatchCandidateTeam,
     val team2: MatchCandidateTeam,
-    val myVotedTeamId: Int
+    val myVotedTeamId: Long?=null
 )
 
 data class MatchCandidateTeam(

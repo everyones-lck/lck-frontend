@@ -22,26 +22,26 @@ class MatchesDataSourceImpl(
         httpClient.get("/matches/$matchId/rate")
     }.asApiResponse()
 
-    override suspend fun getSetPogCandidate(matchId: Int): ApiResponse<SetPogCandidateResponse> = runCatching {
+    override suspend fun getSetPogCandidate(matchId: Long): ApiResponse<SetPogCandidateResponse> = runCatching {
         httpClient.get("/votes/set-pog/candidates"){
             url{
-                parameters.append("matchId", matchId.toString())
+                parameters.append("match-id", matchId.toString())
             }
         }
     }.asApiResponse()
 
-    override suspend fun getMatchPogCandidate(matchId: Int): ApiResponse<MatchPogCandidateResponse> = runCatching {
+    override suspend fun getMatchPogCandidate(matchId: Long): ApiResponse<MatchPogCandidateResponse> = runCatching {
         httpClient.get("/votes/match-pog/candidates"){
             url{
-                parameters.append("matchId", matchId.toString())
+                parameters.append("match-id", matchId.toString())
             }
         }
     }.asApiResponse()
 
-    override suspend fun getMatchCandidate(matchId: Int): ApiResponse<MatchCandidateResponse> = runCatching {
+    override suspend fun getMatchCandidate(matchId: Long): ApiResponse<MatchCandidateResponse> = runCatching {
         httpClient.get("/votes/match/candidates"){
             url {
-                parameters.append("matchId", matchId.toString())
+                parameters.append("match-id", matchId.toString())
             }
         }
     }.asApiResponse()

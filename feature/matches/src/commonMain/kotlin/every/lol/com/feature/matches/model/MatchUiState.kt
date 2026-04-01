@@ -9,7 +9,8 @@ sealed interface MatchUiState {
     ) : MatchUiState
 
     data class Prediction(
-        val matchId: Long
+        val isLoading: Boolean = false,
+        val matchId: Long = 0
     ) : MatchUiState
 
     data class LiveResult(

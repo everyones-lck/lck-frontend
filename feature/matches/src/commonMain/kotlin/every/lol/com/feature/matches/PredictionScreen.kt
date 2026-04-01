@@ -18,8 +18,6 @@ import androidx.compose.ui.unit.dp
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.core.model.MatchCardModel
 import every.lol.com.core.model.MatchStatus
-import every.lol.com.core.model.TodayMatchCard
-import every.lol.com.core.model.WinnerSide
 import every.lol.com.feature.matches.component.CompactMatchCard
 import every.lol.com.feature.matches.component.MatchesHeaderBar
 import every.lol.com.feature.matches.component.PogSection
@@ -38,6 +36,7 @@ fun PredictionScreen(
     modifier: Modifier = Modifier
 ) {
     var pogSectionMode by remember { mutableStateOf(PogSectionMode.VOTING) }
+
 
     var voteItems by remember {
         mutableStateOf(

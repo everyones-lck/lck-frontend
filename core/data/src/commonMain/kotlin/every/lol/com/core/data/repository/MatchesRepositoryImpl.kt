@@ -64,7 +64,7 @@ class MatchesRepositoryImpl(
             )
         }
 
-    override suspend fun getSetPogCandidate(matchId: Int): Result<SetPogCandidate> =
+    override suspend fun getSetPogCandidate(matchId: Long): Result<SetPogCandidate> =
         remote.getSetPogCandidate(matchId).toResult().map { response ->
             SetPogCandidate(
                 sets = response.sets.map { set ->
@@ -83,7 +83,7 @@ class MatchesRepositoryImpl(
             )
         }
 
-    override suspend fun getMatchPogCandidate(matchId: Int): Result<MatchPogCandidate> =
+    override suspend fun getMatchPogCandidate(matchId: Long): Result<MatchPogCandidate> =
         remote.getMatchPogCandidate(matchId).toResult().map { response ->
             MatchPogCandidate(
                 matchId = response.matchId,
@@ -98,7 +98,7 @@ class MatchesRepositoryImpl(
             )
         }
 
-    override suspend fun getMatchCandidate(matchId: Int): Result<MatchCandidate> =
+    override suspend fun getMatchCandidate(matchId: Long): Result<MatchCandidate> =
         remote.getMatchCandidate(matchId).toResult().map { response ->
             MatchCandidate(
                 matchId = response.matchId,

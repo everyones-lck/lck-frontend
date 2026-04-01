@@ -37,7 +37,7 @@ import every.lol.com.feature.community.navigation.readNavGraph
 import every.lol.com.feature.community.navigation.writeNavGraph
 import every.lol.com.feature.home.navigation.homeNavGraph
 import every.lol.com.feature.intro.navigation.introNavGraph
-import every.lol.com.feature.matches.MatchesRoute
+import every.lol.com.feature.matches.navigation.matchesNavGraph
 import every.lol.com.feature.mypage.navigation.mypageNavGraph
 import moe.tlaster.precompose.PreComposeApp
 import org.jetbrains.compose.resources.painterResource
@@ -143,11 +143,7 @@ fun App() {
                             navController.navigate(Route.Mypage)
                         }
                     )
-                    composable<Route.Matches> {
-                        MatchesRoute(
-                            innerPadding = innerPadding
-                        )
-                    }
+                    matchesNavGraph()
                     composable<Route.AboutLCK> { AboutLCKScreen() }
 
                     communityNavGraph(

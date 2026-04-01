@@ -10,7 +10,7 @@ import every.lol.com.core.network.model.response.SetPogCandidateResponse
 interface MatchesDataSource{
     suspend fun getMatches(): ApiResponse<MatchInfoResponse>
     suspend fun getMatchVoteRate(matchId: Long): ApiResponse<MatchVoteRateResponse>
-    suspend fun getSetPogCandidate(matchId: Int): ApiResponse<SetPogCandidateResponse>
-    suspend fun getMatchPogCandidate(matchId: Int): ApiResponse<MatchPogCandidateResponse>
-    suspend fun getMatchCandidate(matchId: Int): ApiResponse<MatchCandidateResponse>
+    suspend fun getSetPogCandidate(matchId: Long): ApiResponse<SetPogCandidateResponse>
+    suspend fun getMatchPogCandidate(matchId: Long): ApiResponse<MatchPogCandidateResponse>
+    suspend fun getMatchCandidate(matchId: Long): ApiResponse<MatchCandidateResponse>
 }

@@ -25,12 +25,15 @@ import every.lol.com.core.domain.usecase.GetHomeAlertsUseCase
 import every.lol.com.core.domain.usecase.GetHomeNewsUseCase
 import every.lol.com.core.domain.usecase.GetHomeRankingUseCase
 import every.lol.com.core.domain.usecase.GetHomeTodayMatchUseCase
+import every.lol.com.core.domain.usecase.GetMatchPogCandidateUseCase
 import every.lol.com.core.domain.usecase.GetMatchVoteRateUseCase
+import every.lol.com.core.domain.usecase.GetMatchesCandidateUseCase
 import every.lol.com.core.domain.usecase.GetMatchesUseCase
 import every.lol.com.core.domain.usecase.GetMyCommentsUseCase
 import every.lol.com.core.domain.usecase.GetMyPostsUseCase
 import every.lol.com.core.domain.usecase.GetProfileUseCase
 import every.lol.com.core.domain.usecase.GetReadPostUseCase
+import every.lol.com.core.domain.usecase.GetSetPogCandidateUseCase
 import every.lol.com.core.domain.usecase.LogoutUseCase
 import every.lol.com.core.domain.usecase.NicknameUseCase
 import every.lol.com.core.domain.usecase.PatchMyTeamUseCase
@@ -118,6 +121,9 @@ val appDependenciesModule = module {
     factory { GetMatchesUseCase(get()) }
     factory { GetMatchVoteRateUseCase(get()) }
 
+    factory { GetMatchPogCandidateUseCase(get()) }
+    factory { GetMatchesCandidateUseCase(get()) }
+    factory { GetSetPogCandidateUseCase(get()) }
 
     factoryOf(::IntroViewModel)
     factoryOf(::HomeViewModel)

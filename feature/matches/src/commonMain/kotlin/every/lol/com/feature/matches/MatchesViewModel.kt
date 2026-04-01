@@ -1,17 +1,18 @@
 package every.lol.com.feature.matches
 
+import every.lol.com.core.domain.usecase.GetMatchPogCandidateUseCase
 import every.lol.com.core.domain.usecase.GetMatchVoteRateUseCase
+import every.lol.com.core.domain.usecase.GetMatchesCandidateUseCase
 import every.lol.com.core.domain.usecase.GetMatchesUseCase
+import every.lol.com.core.domain.usecase.GetSetPogCandidateUseCase
 import every.lol.com.core.model.MatchCardModel
-import every.lol.com.core.model.MatchStatus
-import every.lol.com.core.model.TodayMatchCard
-import every.lol.com.core.model.WinnerSide
 import every.lol.com.feature.matches.model.MatchIntent
 import every.lol.com.feature.matches.model.MatchUiState
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import moe.tlaster.precompose.viewmodel.ViewModel
@@ -19,7 +20,10 @@ import moe.tlaster.precompose.viewmodel.viewModelScope
 
 class MatchesViewModel(
     private val getMatchesUseCase: GetMatchesUseCase,
-    private val getMatchVoteRateUseCase: GetMatchVoteRateUseCase
+    private val getMatchVoteRateUseCase: GetMatchVoteRateUseCase,
+    private val getMatchPogCandidateUseCase: GetMatchPogCandidateUseCase,
+    private val getSetPogCandidateUseCase: GetSetPogCandidateUseCase,
+    private val getMatchCandidateUseCase: GetMatchesCandidateUseCase
 ) : ViewModel() {
     private val _uiState = MutableStateFlow<MatchUiState>(MatchUiState.Loading)
 
@@ -35,11 +39,7 @@ class MatchesViewModel(
                 loadMatches()
             }
 
-            is MatchIntent.ClickPrediction -> {
-                _uiState.value = MatchUiState.Prediction(
-                    matchId = intent.matchId
-                )
-            }
+            is MatchIntent.ClickPrediction -> getMatchCandidate(intent.matchId)
 
             is MatchIntent.ClickLiveResult -> {
                 _uiState.value = MatchUiState.LiveResult(
@@ -137,6 +137,30 @@ class MatchesViewModel(
                     )
                 }
             )
+        }
+    }
+
+
+
+    //승혁 코드
+    private fun getMatchCandidate(matchId: Long){
+        viewModelScope.launch {
+            getMatchCandidateUseCase(matchId).onSuccess {
+                _uiState.update { state ->
+                    val currentState = state as? MatchUiState.Prediction ?: MatchUiState.Prediction()
+                    currentState.copy(
+                        isLoading = false,
+                        matchId = it.matchId
+                    )
+                }
+            }.onFailure { error ->
+                _uiState.update { state ->
+                    val currentState = state as? MatchUiState.Prediction ?: MatchUiState.Prediction()
+                    currentState.copy(isLoading = false)
+                    }
+                println(error)
+                //_event.emit(MatchEvent.ShowToast(error.message ?: "데이터를 불러오지 못했습니다."))
+            }
         }
     }
 }

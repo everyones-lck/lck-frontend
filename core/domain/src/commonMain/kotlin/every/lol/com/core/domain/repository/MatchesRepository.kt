@@ -9,7 +9,7 @@ import every.lol.com.core.model.SetPogCandidate
 interface MatchesRepository {
     suspend fun getMatches(): Result<MatchInfo>
     suspend fun getMatchVoteRate(matchId: Long): Result<MatchVoteRate>
-    suspend fun getSetPogCandidate(matchId: Int): Result<SetPogCandidate>
-    suspend fun getMatchPogCandidate(matchId: Int): Result<MatchPogCandidate>
-    suspend fun getMatchCandidate(matchId: Int): Result<MatchCandidate>
+    suspend fun getSetPogCandidate(matchId: Long): Result<SetPogCandidate>
+    suspend fun getMatchPogCandidate(matchId: Long): Result<MatchPogCandidate>
+    suspend fun getMatchCandidate(matchId: Long): Result<MatchCandidate>
 }

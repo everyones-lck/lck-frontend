@@ -4,11 +4,11 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class MatchCandidateResponse(
-    val matchId: Int,
+    val matchId: Long,
     val votable: Boolean,
     val team1: MatchCandidateTeamResponse,
     val team2: MatchCandidateTeamResponse,
-    val myVotedTeamId: Int
+    val myVotedTeamId: Long?=null
 )
 
 @Serializable
