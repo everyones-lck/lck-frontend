@@ -73,10 +73,8 @@ fun WriteRoute(
 
     LaunchedEffect(viewModel.event) {
         viewModel.event.collect { event ->
-            println("Ktor Debug: UI에서 이벤트 수신함 -> $event") // 👈 로그 추가
             when (event) {
                 is CommunityEvent.WriteSuccess -> {
-                    println("Ktor Debug: 이제 onBackClick 호출함")
                     focusManager.clearFocus()
                     onBackClick()
                 }

@@ -124,10 +124,10 @@ fun PredictionScreen(
                             team1Id = data.team1.teamId,
                             team2Id = data.team2.teamId,
                             matchStatus = MatchStatus.SCHEDULED,
-                            matchDate = "matchDate",
-                            seasonName = "seansonName",
-                            groupName = "groupName",
-                            roundName = "roundName",
+                            matchDate = state.matchDate,
+                            seasonName = state.seasonName,
+                            groupName = state.groupName,
+                            roundName = state.roundName,
                         ),
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )

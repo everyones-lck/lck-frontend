@@ -4,9 +4,9 @@ import every.lol.com.core.model.MatchCandidate
 import every.lol.com.core.model.MatchCardModel
 import every.lol.com.core.model.MatchPogCandidate
 import every.lol.com.core.model.MatchPogResult
+import every.lol.com.core.model.SetPogCandidateDetail
 import every.lol.com.core.model.SetPogResult
 import every.lol.com.core.model.SetPogVoteItem
-import every.lol.com.core.model.SetPogCandidateDetail
 
 sealed interface MatchUiState {
     data class Matches(
@@ -20,7 +20,11 @@ sealed interface MatchUiState {
         val matchId: Long = 0,
         val matchData: MatchCandidate? = null,
         val matchPogData: MatchPogCandidate? = null,
-        val setPogData: List<SetPogCandidateDetail>? = null
+        val setPogData: List<SetPogCandidateDetail>? = null,
+        val seasonName: String ="",
+        val groupName: String ="",
+        val roundName: String ="",
+        val matchDate: String =""
     ) : MatchUiState
 
     data class LiveResult(
