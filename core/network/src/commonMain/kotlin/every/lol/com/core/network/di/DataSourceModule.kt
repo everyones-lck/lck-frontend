@@ -3,11 +3,13 @@ package every.lol.com.core.network.di
 import every.lol.com.core.network.datasource.AboutLCKDataSource
 import every.lol.com.core.network.datasource.AuthDataSource
 import every.lol.com.core.network.datasource.CommunityDataSource
+import every.lol.com.core.network.datasource.HomeDataSource
 import every.lol.com.core.network.datasource.MatchesDataSource
 import every.lol.com.core.network.datasource.MyPagesDataSource
 import every.lol.com.core.network.remote.AboutLCKDataSourceImpl
 import every.lol.com.core.network.remote.AuthDataSourceImpl
 import every.lol.com.core.network.remote.CommunityDataSourceImpl
+import every.lol.com.core.network.remote.HomeDataSourceImpl
 import every.lol.com.core.network.remote.MatchesDataSourceImpl
 import every.lol.com.core.network.remote.MyPagesDataSourceImpl
 import org.koin.core.module.Module
@@ -18,6 +20,7 @@ val dataSourceModule = module {
 
     single<AuthDataSource> { AuthDataSourceImpl(get()) }
     single<MyPagesDataSource> { MyPagesDataSourceImpl(get()) }
+    single<HomeDataSource> { HomeDataSourceImpl(get()) }
     single<CommunityDataSource> { CommunityDataSourceImpl(get()) }
     single<AboutLCKDataSource> { AboutLCKDataSourceImpl(get()) }
     single<MatchesDataSource> { MatchesDataSourceImpl(get()) }

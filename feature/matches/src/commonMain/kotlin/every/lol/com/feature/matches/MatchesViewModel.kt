@@ -1,28 +1,25 @@
 package every.lol.com.feature.matches
 
+import every.lol.com.core.domain.usecase.GetMatchPogCandidateUseCase
 import every.lol.com.core.domain.usecase.GetMatchPogResultUseCase
 import every.lol.com.core.domain.usecase.GetMatchVoteRateUseCase
+import every.lol.com.core.domain.usecase.GetMatchesCandidateUseCase
 import every.lol.com.core.domain.usecase.GetMatchesUseCase
+import every.lol.com.core.domain.usecase.GetSetPogCandidateUseCase
 import every.lol.com.core.domain.usecase.GetSetPogResultUseCase
 import every.lol.com.core.domain.usecase.PostMatchPogVoteUseCase
 import every.lol.com.core.domain.usecase.PostMatchVoteUseCase
 import every.lol.com.core.domain.usecase.PostSetPogVoteUseCase
 import every.lol.com.core.model.MatchCardModel
-import every.lol.com.core.model.MatchStatus
 import every.lol.com.core.model.SetPogVoteItem
-import every.lol.com.core.model.TodayMatchCard
-import every.lol.com.core.model.WinnerSide
 import every.lol.com.feature.matches.model.MatchIntent
 import every.lol.com.feature.matches.model.MatchUiState
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.supervisorScope
 import moe.tlaster.precompose.viewmodel.ViewModel
 import moe.tlaster.precompose.viewmodel.viewModelScope
 
@@ -34,6 +31,9 @@ sealed interface MatchEvent {
 class MatchesViewModel(
     private val getMatchesUseCase: GetMatchesUseCase,
     private val getMatchVoteRateUseCase: GetMatchVoteRateUseCase,
+    private val getMatchPogCandidateUseCase: GetMatchPogCandidateUseCase,
+    private val getSetPogCandidateUseCase: GetSetPogCandidateUseCase,
+    private val getMatchCandidateUseCase: GetMatchesCandidateUseCase,
     private val postMatchVoteUseCase: PostMatchVoteUseCase,
     private val postSetPogVoteUseCase: PostSetPogVoteUseCase,
     private val postMatchPogVoteUseCase: PostMatchPogVoteUseCase,
@@ -60,10 +60,9 @@ class MatchesViewModel(
             MatchIntent.LoadMatches -> loadMatches()
 
             is MatchIntent.ClickPrediction -> {
-                currentMatchId = intent.matchId
-                _uiState.value = MatchUiState.Prediction(
-                    matchId = intent.matchId
-                )
+                getMatchCandidate(intent.matchId)
+                getMatchPogCandidate(intent.matchId)
+                getSetPogCandidate(intent.matchId)
             }
 
             is MatchIntent.ClickLiveResult -> {
@@ -312,4 +311,75 @@ class MatchesViewModel(
                 }
         }
     }
+
+
+    //승혁 코드
+    private fun getMatchCandidate(matchId: Long) {
+        viewModelScope.launch {
+            getMatchCandidateUseCase(matchId).onSuccess {
+                _uiState.update { state ->
+                    val currentState =
+                        state as? MatchUiState.Prediction ?: MatchUiState.Prediction()
+                    currentState.copy(
+                        isLoading = false,
+                        matchId = it.matchId
+                    )
+                }
+            }.onFailure { error ->
+                _uiState.update { state ->
+                    val currentState =
+                        state as? MatchUiState.Prediction ?: MatchUiState.Prediction()
+                    currentState.copy(isLoading = false)
+                }
+                println(error)
+                //_event.emit(MatchEvent.ShowToast(error.message ?: "데이터를 불러오지 못했습니다."))
+            }
+        }
+    }
+
+    private fun getMatchPogCandidate(matchId: Long) {
+        viewModelScope.launch {
+            getMatchPogCandidateUseCase(matchId).onSuccess {
+                _uiState.update { state ->
+                    val currentState =
+                        state as? MatchUiState.Prediction ?: MatchUiState.Prediction()
+                    currentState.copy(
+                        isLoading = false,
+                        matchId = it.matchId
+                    )
+                }
+            }.onFailure { error ->
+                _uiState.update { state ->
+                    val currentState =
+                        state as? MatchUiState.Prediction ?: MatchUiState.Prediction()
+                    currentState.copy(isLoading = false)
+                }
+                println(error)
+            }
+        }
+    }
+
+    private fun getSetPogCandidate(matchId: Long) {
+        viewModelScope.launch {
+            getSetPogCandidateUseCase(matchId).onSuccess {
+                _uiState.update { state ->
+                    val currentState =
+                        state as? MatchUiState.Prediction ?: MatchUiState.Prediction()
+                    currentState.copy(
+                        isLoading = false,
+                        setId = it.sets
+                    )
+                }
+            }.onFailure { error ->
+                _uiState.update { state ->
+                    val currentState =
+                        state as? MatchUiState.Prediction ?: MatchUiState.Prediction()
+                    currentState.copy(isLoading = false)
+                }
+                println(error)
+            }
+        }
+    }
+
+
 }

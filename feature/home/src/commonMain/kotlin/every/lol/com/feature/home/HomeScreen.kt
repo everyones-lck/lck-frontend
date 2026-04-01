@@ -7,53 +7,84 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
-import every.lol.com.core.model.HomeBannerModel
 import every.lol.com.core.model.LckStandingTeamModel
-import every.lol.com.core.model.MatchCardModel
-import every.lol.com.core.model.MatchStatus
 import every.lol.com.feature.home.component.LckRankingSection
-import every.lol.com.feature.home.component.MatchCard
+import every.lol.com.feature.home.component.MatchCardRow
 import every.lol.com.feature.home.component.MatchNoticeBanner
-import every.lol.com.feature.home.component.NewsBanner
+import every.lol.com.feature.home.component.NewsBannerRow
 import every.lol.com.feature.home.component.TopBar
+import every.lol.com.feature.home.model.HomeIntent
+import every.lol.com.feature.home.model.HomeUiState
+import moe.tlaster.precompose.koin.koinViewModel
 
+@Composable
+fun HomeRoute(
+    onNavigateToMypage: () -> Unit,
+    viewModel: HomeViewModel = koinViewModel(HomeViewModel ::class)
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val homeState = uiState as? HomeUiState.Home
+
+    LaunchedEffect(Unit) {
+        viewModel.onIntent(HomeIntent.LoadInitial)
+    }
+
+    LaunchedEffect(viewModel.event) {
+        viewModel.event.collect { event ->
+            when (event) {
+                is HomeEvent.ShowToast -> {  }
+                else -> {}
+            }
+        }
+    }
+
+    println(homeState)
+    if(homeState == null){
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(EveryLoLTheme.color.newBg),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = EveryLoLTheme.color.grayScale200)
+        }
+
+    }else {
+        HomeScreen(
+            state = uiState,
+            onNavigateToMypage = onNavigateToMypage,
+            onIntent = viewModel::onIntent
+        )
+    }
+}
 
 @Composable
 fun HomeScreen(
+    state: HomeUiState,
     innerPadding: PaddingValues = PaddingValues(),
-      onNavigateToMypage: () -> Unit
+    onNavigateToMypage: () -> Unit,
+    onIntent: (HomeIntent) -> Unit
 ) {
+    val uriHandler = LocalUriHandler.current
+    val homeState = state as? HomeUiState.Home
     var showMatchBanner by rememberSaveable { mutableStateOf(true) }
+    val matchData = homeState?.matches
+    val newsBanners = homeState?.news
+    val alertsMessage = homeState?.alertsMessage
 
-    val dummyMatchCard = MatchCardModel(
-        matchId = 1L,
-        seasonName = "2026 Road to MSI",
-        team1Name = "HLE",
-        team2Name = "Gen",
-        groupName = "Baron Elder",
-        roundName = "플레이오프 1라운드",
-        matchDate = "",
-        matchStatus = MatchStatus.LIVE,
-        team1Id = 1,
-        team2Id = 2,
-        team1VoteRate = 0.0,
-        team2VoteRate = 0.0,
-        totalVoteCount = 0,
-        predictedWinnerTeamName = "",
-    )
-    val newsBanners = listOf(
-        HomeBannerModel(id = 1L, imageUrl = "", title = " "),
-        HomeBannerModel(id = 2L, imageUrl = "", title = ""),
-        HomeBannerModel(id = 3L, imageUrl = "", title = "")
-    )
     val standings = listOf(
         LckStandingTeamModel(teamId = 6, rank = 6, teamName = "T1", rightText = "-"),
         LckStandingTeamModel(teamId = 1, rank = 1, teamName = "GEN", rightText = "-"),
@@ -92,7 +123,7 @@ fun HomeScreen(
                         .padding(top = 16.dp)
                 ) {
                     MatchNoticeBanner(
-                        message = "오늘은 Gen.G 경기가 있는 날이에요.",
+                        message = alertsMessage.toString(),
                         onCloseClick = { showMatchBanner = false }
                     )
                 }
@@ -100,25 +131,29 @@ fun HomeScreen(
         }
 
         item {
-            MatchCard(
-                matchCard = dummyMatchCard,
+
+            MatchCardRow(
+                matchCards = matchData,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 24.dp),
-                team1Progress = 0.28f,
-                team2Progress = 0.72f,
-                onClick = { }
+                    .padding(vertical = 24.dp)
             )
         }
+        if(newsBanners!=null){
+            item {
+                NewsBannerRow(
+                    newsList = newsBanners,
+                    onClick = { url ->
+                        if (url.isNotBlank()) {
+                            try {
+                                uriHandler.openUri(url)
+                            } catch (e: Exception) {
 
-        item {
-            NewsBanner(
-                banners = newsBanners,
-                modifier = Modifier.padding(top = 24.dp),
-                onBannerClick = { bannerId ->
-                    // Todo: 배너 클릭 처리
-                }
-            )
+                            }
+                        }
+                    }
+                )
+            }
         }
 
         item {

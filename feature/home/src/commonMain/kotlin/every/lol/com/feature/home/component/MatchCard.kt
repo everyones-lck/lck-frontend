@@ -3,9 +3,11 @@ package every.lol.com.feature.home.component
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,6 +15,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -22,28 +26,69 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.unit.dp
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
-import every.lol.com.core.model.MatchCardModel
-import every.lol.com.core.model.MatchStatus
+import every.lol.com.core.model.HomeTodayMatch
+import every.lol.com.core.model.HomeTodayMatchDetail
+
+@Composable
+fun MatchCardRow(
+    matchCards: HomeTodayMatch?=null,
+    modifier: Modifier = Modifier,
+    onClick: (Long) -> Unit = {}
+){
+    val lazyListState = rememberLazyListState()
+    val snapFlingBehavior = rememberSnapFlingBehavior(lazyListState = lazyListState)
+
+    val matches = matchCards?.matches ?: emptyList()
+    LazyRow(
+        state = lazyListState,
+        flingBehavior = snapFlingBehavior,
+        modifier = modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(32.dp)
+    ) {
+        if (matches.isEmpty()) {
+            item {
+                MatchCard(
+                    matchCard = null,
+                    modifier = Modifier.fillParentMaxWidth(1f),
+                    onClick = {}
+                )
+            }
+        } else {
+            items(matches.size) { index ->
+                MatchCard(
+                    matchCard = matches[index],
+                    modifier = Modifier.fillParentMaxWidth(1f),
+                    onClick = onClick
+                )
+            }
+        }
+    }
+}
 
 @Composable
 fun MatchCard(
-    matchCard: MatchCardModel,
+    matchCard: HomeTodayMatchDetail?,
     modifier: Modifier = Modifier,
-    team1Progress: Float = 0.28f,
-    team2Progress: Float = 0.72f,
-    statusColor: Color = EveryLoLTheme.color.semanticWarning,
-    team1BarColor: Color = EveryLoLTheme.color.teamHLE,
-    team2BarColor: Color = EveryLoLTheme.color.teamGen,
     onClick: (Long) -> Unit = {}
 ) {
+
+    val statusColor = when(matchCard?.matchStatus){
+        "LIVE" -> EveryLoLTheme.color.semanticWarning
+        else -> EveryLoLTheme.color.grayScale800
+    }
+
     Card(
         modifier = modifier
-            .fillMaxWidth()
-            .clickable { onClick(matchCard.matchId) },
+            .then(
+                if (matchCard != null) Modifier.clickable { onClick(matchCard.matchId) }
+                else Modifier
+            ),
         shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(
             containerColor = EveryLoLTheme.color.newBg
@@ -66,7 +111,7 @@ fun MatchCard(
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(
-                        text = matchCard.seasonName,
+                        text = if(matchCard != null)matchCard.seasonName else "No Match",
                         color = EveryLoLTheme.color.grayScale100,
                         style = EveryLoLTheme.typography.title01
                     )
@@ -75,13 +120,16 @@ fun MatchCard(
 
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                       matchCard.groupName
-                            ?.takeIf { it.isNotBlank() }
-                            ?.let { groupName ->
-                                MatchCardTag(text = groupName)
-                            }
+                    ) {if (matchCard != null) {
+                        if(matchCard.groupName != null){
+                            MatchCardTag(text = matchCard.groupName)
+                            MatchCardTag(text = matchCard.roundName)
+                        }
                         MatchCardTag(text = matchCard.roundName)
+                    } else {
+                        MatchCardTag(text = "")
+                        MatchCardTag(text = "")
+                    }
                     }
                 }
 
@@ -99,15 +147,23 @@ fun MatchCard(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 MatchCardBarRow(
-                    teamName = matchCard.team1Name,
-                    progress = team1Progress,
-                    barColor = team1BarColor
+                    teamName = if (matchCard != null) matchCard.team1.teamName else "-",
+                    progress = 0.5f, //Todo: 추후 수정
+                    barColor = if (matchCard == null || (( matchCard.matchStatus == "FINISHED") &&  !matchCard.team1.winner)) {
+                        SolidColor(EveryLoLTheme.color.grayScale800)
+                    } else {
+                        getTeamBrush(matchCard.team1.teamId.toInt())
+                    }
                 )
 
                 MatchCardBarRow(
-                    teamName = matchCard.team2Name,
-                    progress = team2Progress,
-                    barColor = team2BarColor
+                    teamName = if(matchCard != null) matchCard.team2.teamName else ("-"),
+                    progress = 0.5f, //Todo: 추후 수정
+                    barColor = if (matchCard == null || (( matchCard.matchStatus == "FINISHED") && !matchCard.team2.winner)) {
+                        SolidColor(EveryLoLTheme.color.grayScale800)
+                    } else {
+                        getTeamBrush(matchCard.team2.teamId.toInt())
+                    }
                 )
             }
         }
@@ -116,17 +172,20 @@ fun MatchCard(
 
 @Composable
 private fun MatchCardTag(
-    text: String,
+    text: String?=null,
     modifier: Modifier = Modifier
 ) {
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(7.dp))
-            .background(EveryLoLTheme.color.grayScale900)
+            .background(
+                if (text.isNullOrBlank()) Color.Transparent
+                else EveryLoLTheme.color.grayScale900
+            )
             .padding(horizontal = 8.dp, vertical = 4.dp)
     ) {
         Text(
-            text = text,
+            text = text ?:"",
             style = EveryLoLTheme.typography.body03,
             color = EveryLoLTheme.color.grayScale600
         )
@@ -136,8 +195,9 @@ private fun MatchCardTag(
 @Composable
 private fun MatchCardBarRow(
     teamName: String,
+    teamWinner: Boolean ?= true,
     progress: Float,
-    barColor: Color,
+    barColor: Brush,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -168,32 +228,19 @@ private fun MatchCardBarRow(
     }
 }
 
-@Preview
 @Composable
-private fun PreviewMatchCard(){
-    val dummyMatchCard = MatchCardModel(
-        matchId = 1L,
-        seasonName = "2026 Road to MSI",
-        team1Name = "HLE",
-        team2Name = "Gen",
-        groupName = "Baron Elder",
-        roundName = "플레이오프 1라운드",
-        matchDate = "",
-        matchStatus = MatchStatus.LIVE,
-        team1Id = 1,
-        team2Id = 2,
-        team1VoteRate = 0.0,
-        team2VoteRate = 0.0,
-        totalVoteCount = 0,
-        predictedWinnerTeamName = "",
-    )
-    MatchCard(
-        matchCard = dummyMatchCard,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 24.dp),
-        team1Progress = 0.28f,
-        team2Progress = 0.72f,
-        onClick = { }
-    )
+fun getTeamBrush(id : Int): Brush {
+    return when (id) {
+        1 -> SolidColor(EveryLoLTheme.color.teamGen)
+        2 -> SolidColor(EveryLoLTheme.color.teamT1)
+        3 -> SolidColor(EveryLoLTheme.color.teamNS)
+        4 -> SolidColor(EveryLoLTheme.color.teamDNS)
+        5 -> SolidColor(EveryLoLTheme.color.teamBRO)
+        6 -> SolidColor(EveryLoLTheme.color.teamBFX)
+        7 -> SolidColor(EveryLoLTheme.color.teamDK)
+        8 -> SolidColor(EveryLoLTheme.color.teamKRX)
+        9 -> SolidColor(EveryLoLTheme.color.teamKT)
+        10 -> SolidColor(EveryLoLTheme.color.teamHLE)
+        else -> SolidColor(Color.Transparent)
+    }
 }

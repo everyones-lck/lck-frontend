@@ -3,8 +3,6 @@ package every.lol.com.feature.home.component
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -14,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -59,8 +56,15 @@ fun LckRankingSection(
             modifier = Modifier.padding(horizontal = 16.dp)
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
+        Text(
+            text = "경기가 아직 진행되지 않았습니다",
+            style = EveryLoLTheme.typography.subtitle03,
+            color = EveryLoLTheme.color.white200,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
+/*
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -100,7 +104,7 @@ fun LckRankingSection(
                     onClick = onTeamClick
                 )
             }
-        }
+        }*/
     }
 }
 

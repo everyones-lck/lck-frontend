@@ -330,7 +330,8 @@ class CommunityViewModel(
                                 _event.emit(CommunityEvent.WriteSuccess)
                             }
                         }
-                        .onFailure {
+                        .onFailure {error ->
+                            println(error)
                             _uiState.update { if (it is CommunityUiState.Write) it.copy(isLoading = false) else it }
                         }
                 }

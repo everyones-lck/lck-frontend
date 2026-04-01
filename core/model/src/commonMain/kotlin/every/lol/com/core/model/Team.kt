@@ -4,16 +4,16 @@ enum class Team(
     val id: Int,
     val teamName: String
 ) {
-    GEN(1,"GEN"),
-    T1(2, "T1"),
-    NS(3, "NS"),
-    DNS(4,"DNS"),
-    BRO(5, "BRO"),
-    BFX(6, "BFX"),
-    DK(7, "DK"),
-    KRX(8, "KRX"),
-    KT(9, "KT"),
-    HLE(10,"HLE"),
+    GEN(2,"GEN"),
+    T1(1, "T1"),
+    NS(7, "NS"),
+    DNS(10,"DNS"),
+    BRO(8, "BRO"),
+    BFX(9, "BFX"),
+    DK(3, "DK"),
+    DRX(6, "DRX"),
+    KT(4, "KT"),
+    HLE(5,"HLE"),
     NONE(0, "선택 안함");
 
     companion object {

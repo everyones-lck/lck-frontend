@@ -2,13 +2,16 @@ package every.lol.com.core.network.remote
 
 import every.lol.com.core.network.datasource.MatchesDataSource
 import every.lol.com.core.network.model.ApiResponse
+import every.lol.com.core.network.model.response.MatchCandidateResponse
 import every.lol.com.core.network.model.request.MatchPogVoteRequest
 import every.lol.com.core.network.model.request.MatchVoteMakingRequest
 import every.lol.com.core.network.model.request.SetPogVoteRequest
 import every.lol.com.core.network.model.response.MatchInfoResponse
 import every.lol.com.core.network.model.response.MatchPogResultResponse
+import every.lol.com.core.network.model.response.MatchPogCandidateResponse
 import every.lol.com.core.network.model.response.MatchVoteRateResponse
 import every.lol.com.core.network.model.response.SetPogResultResponse
+import every.lol.com.core.network.model.response.SetPogCandidateResponse
 import every.lol.com.core.network.util.asApiResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
@@ -63,4 +66,29 @@ class MatchesDataSourceImpl(
             }
         }
     }.asApiResponse()
+
+    override suspend fun getSetPogCandidate(matchId: Long): ApiResponse<SetPogCandidateResponse> = runCatching {
+        httpClient.get("/votes/set-pog/candidates"){
+            url{
+                parameters.append("match-id", matchId.toString())
+            }
+        }
+    }.asApiResponse()
+
+    override suspend fun getMatchPogCandidate(matchId: Long): ApiResponse<MatchPogCandidateResponse> = runCatching {
+        httpClient.get("/votes/match-pog/candidates"){
+            url{
+                parameters.append("match-id", matchId.toString())
+            }
+        }
+    }.asApiResponse()
+
+    override suspend fun getMatchCandidate(matchId: Long): ApiResponse<MatchCandidateResponse> = runCatching {
+        httpClient.get("/votes/match/candidates"){
+            url {
+                parameters.append("match-id", matchId.toString())
+            }
+        }
+    }.asApiResponse()
+
 }

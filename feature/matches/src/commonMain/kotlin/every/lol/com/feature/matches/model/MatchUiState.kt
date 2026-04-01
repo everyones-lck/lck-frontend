@@ -4,6 +4,7 @@ import every.lol.com.core.model.MatchCardModel
 import every.lol.com.core.model.MatchPogResult
 import every.lol.com.core.model.SetPogResult
 import every.lol.com.core.model.SetPogVoteItem
+import every.lol.com.core.model.SetPogCandidateDetail
 
 sealed interface MatchUiState {
     data class Matches(
@@ -12,7 +13,9 @@ sealed interface MatchUiState {
     ) : MatchUiState
 
     data class Prediction(
-        val matchId: Long
+        val isLoading: Boolean = false,
+        val matchId: Long = 0,
+        val setId: List<SetPogCandidateDetail>? = null
     ) : MatchUiState
 
     data class LiveResult(

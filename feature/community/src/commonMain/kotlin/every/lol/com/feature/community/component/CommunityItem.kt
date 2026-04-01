@@ -13,9 +13,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
@@ -52,7 +52,7 @@ fun CommunityItem(
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                text = "본문을 내놔라본문을 내놔라본문을 내놔라본문을 내놔라본문을 내놔라본문을 내놔라본문을 내놔라본문을 내놔라본문을 내놔라본문을 내놔라본문을 내놔라본문을 내놔라본문을 내놔라본문을 내놔라본문을 내놔라본문을 내놔라본문을 내놔라본문을 내놔라",  //Todo: 본문 반영
+                text = post.postContent,
                 style = EveryLoLTheme.typography.body02,
                 color = EveryLoLTheme.color.community600,
                 maxLines = 2,
@@ -96,9 +96,10 @@ private fun postThumbnail(
         AsyncImage(
             modifier = Modifier.fillMaxSize(),
             model = image,
-            contentDescription = null
+            contentDescription = null,
+            contentScale = ContentScale.Crop
         )
-        Text(
+        /*Text(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(3.dp)
@@ -108,6 +109,6 @@ private fun postThumbnail(
             text = "1/${totalCounts}",
             style = EveryLoLTheme.typography.caption02,
             color = EveryLoLTheme.color.grayScale800,
-        )
+        )*/
     }
 }
