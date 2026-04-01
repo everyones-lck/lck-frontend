@@ -1,6 +1,7 @@
 package every.lol.com.feature.home.model
 
 import androidx.compose.runtime.Immutable
+import every.lol.com.core.model.HomeRanking
 import every.lol.com.core.model.HomeTodayMatch
 
 @Immutable
@@ -10,6 +11,7 @@ sealed interface HomeUiState {
     data class Home(
         val isLoading: Boolean = false,
         val matches: HomeTodayMatch ?= null,
+        val ranking: HomeRanking?= null,
         val isRefreshing: Boolean = false
     ) : HomeUiState
 

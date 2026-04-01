@@ -2,6 +2,7 @@ package every.lol.com.feature.home
 
 import every.lol.com.core.domain.usecase.GetHomeAlertsUseCase
 import every.lol.com.core.domain.usecase.GetHomeNewsUseCase
+import every.lol.com.core.domain.usecase.GetHomeRankingUseCase
 import every.lol.com.core.domain.usecase.GetHomeTodayMatchUseCase
 import every.lol.com.feature.home.model.HomeIntent
 import every.lol.com.feature.home.model.HomeUiState
@@ -20,6 +21,7 @@ sealed interface HomeEvent{
 
 class HomeViewModel(
     private val getHomeTodayMatchUseCase: GetHomeTodayMatchUseCase,
+    private val getHomeRankingUseCase: GetHomeRankingUseCase,
     private val getHomeNewsUseCase: GetHomeNewsUseCase,
     private val getHomeAlertsUseCase: GetHomeAlertsUseCase
     ): ViewModel() {
@@ -46,6 +48,7 @@ class HomeViewModel(
     private fun loadInitial() {
         println("loadInitial")
         loadTodayMatchHome()
+        loadRanking()
     }
 
     private fun refreshHome() {
@@ -82,7 +85,26 @@ class HomeViewModel(
         }
     }
 
+    private fun loadRanking() {
+        viewModelScope.launch {
+            getHomeRankingUseCase().onSuccess { result ->
+                _uiState.update { state ->
+                    val currentState = state as? HomeUiState.Home ?: HomeUiState.Home()
+                    currentState.copy(
+                        isLoading = false,
+                        ranking = result,
+                        isRefreshing = false
+                    )
+                }
+            }.onFailure { error ->
+                _uiState.update { state ->
+                    val currentState = state as? HomeUiState.Home ?: HomeUiState.Home()
+                    currentState.copy(isLoading = false)
+                }
+                println(error)
+                _event.emit(HomeEvent.ShowToast(error.message ?: "데이터를 불러오지 못했습니다."))
+            }
+        }
 
-
-
+    }
 }
