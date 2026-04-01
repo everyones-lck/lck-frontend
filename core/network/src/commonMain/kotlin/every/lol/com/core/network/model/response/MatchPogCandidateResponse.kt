@@ -4,8 +4,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class MatchPogCandidateResponse(
-    val matchId: Int,
+    val matchId: Long,
     val winnerTeamName: String,
     val candidates: List<PogCandidateCandidateResponse>,
-    val myVotedPlayerId: Int
+    val myVotedPlayerId: Long ? = null
 )

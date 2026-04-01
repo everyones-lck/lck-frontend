@@ -8,7 +8,7 @@ data class SetPogCandidateDetail(
     val setIndex: Int,
     val winnerTeamName: String,
     val candidates: List<PogCandidateCandidate>,
-    val myVotedPlayerId: Int
+    val myVotedPlayerId: Long? = null
 )
 
 data class PogCandidateCandidate(
