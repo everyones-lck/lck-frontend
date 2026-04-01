@@ -21,6 +21,7 @@ import every.lol.com.core.domain.usecase.DeletePostUseCase
 import every.lol.com.core.domain.usecase.GetCommunityPostsUseCase
 import every.lol.com.core.domain.usecase.GetHomeAlertsUseCase
 import every.lol.com.core.domain.usecase.GetHomeNewsUseCase
+import every.lol.com.core.domain.usecase.GetHomeRankingUseCase
 import every.lol.com.core.domain.usecase.GetHomeTodayMatchUseCase
 import every.lol.com.core.domain.usecase.GetMyCommentsUseCase
 import every.lol.com.core.domain.usecase.GetMyPostsUseCase
@@ -105,7 +106,7 @@ val appDependenciesModule = module {
     factory { GetHomeTodayMatchUseCase(get()) }
     factory { GetHomeNewsUseCase(get()) }
     factory { GetHomeAlertsUseCase(get()) }
-
+    factory { GetHomeRankingUseCase(get()) }
 
     factoryOf(::IntroViewModel)
     factoryOf(::HomeViewModel)
