@@ -19,12 +19,14 @@ import every.lol.com.core.domain.usecase.CheckAuthUseCase
 import every.lol.com.core.domain.usecase.DeleteCommentUseCase
 import every.lol.com.core.domain.usecase.DeletePostUseCase
 import every.lol.com.core.domain.usecase.GetCommunityPostsUseCase
+import every.lol.com.core.domain.usecase.GetMatchPogResultUseCase
 import every.lol.com.core.domain.usecase.GetMatchVoteRateUseCase
 import every.lol.com.core.domain.usecase.GetMatchesUseCase
 import every.lol.com.core.domain.usecase.GetMyCommentsUseCase
 import every.lol.com.core.domain.usecase.GetMyPostsUseCase
 import every.lol.com.core.domain.usecase.GetProfileUseCase
 import every.lol.com.core.domain.usecase.GetReadPostUseCase
+import every.lol.com.core.domain.usecase.GetSetPogResultUseCase
 import every.lol.com.core.domain.usecase.LogoutUseCase
 import every.lol.com.core.domain.usecase.NicknameUseCase
 import every.lol.com.core.domain.usecase.PatchMyTeamUseCase
@@ -32,6 +34,9 @@ import every.lol.com.core.domain.usecase.PatchProfileUseCase
 import every.lol.com.core.domain.usecase.PostCommunityCommentUseCase
 import every.lol.com.core.domain.usecase.PostCommunityPostLikeUseCase
 import every.lol.com.core.domain.usecase.PostCommunityPostUseCase
+import every.lol.com.core.domain.usecase.PostMatchPogVoteUseCase
+import every.lol.com.core.domain.usecase.PostMatchVoteUseCase
+import every.lol.com.core.domain.usecase.PostSetPogVoteUseCase
 import every.lol.com.core.domain.usecase.ReportCommentUseCase
 import every.lol.com.core.domain.usecase.ReportPostUseCase
 import every.lol.com.core.domain.usecase.SignupUseCase
@@ -102,6 +107,11 @@ val appDependenciesModule = module {
     factory { ReportCommentUseCase(get()) }
     factory { GetMatchesUseCase(get()) }
     factory { GetMatchVoteRateUseCase(get()) }
+    factory { PostMatchVoteUseCase(get()) }
+    factory { PostSetPogVoteUseCase(get()) }
+    factory { PostMatchPogVoteUseCase(get()) }
+    factory { GetSetPogResultUseCase(get()) }
+    factory { GetMatchPogResultUseCase(get()) }
 
 
     factoryOf(::IntroViewModel)

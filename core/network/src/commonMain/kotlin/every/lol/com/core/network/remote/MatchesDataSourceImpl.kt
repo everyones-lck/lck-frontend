@@ -2,11 +2,18 @@ package every.lol.com.core.network.remote
 
 import every.lol.com.core.network.datasource.MatchesDataSource
 import every.lol.com.core.network.model.ApiResponse
+import every.lol.com.core.network.model.request.MatchPogVoteRequest
+import every.lol.com.core.network.model.request.MatchVoteMakingRequest
+import every.lol.com.core.network.model.request.SetPogVoteRequest
 import every.lol.com.core.network.model.response.MatchInfoResponse
+import every.lol.com.core.network.model.response.MatchPogResultResponse
 import every.lol.com.core.network.model.response.MatchVoteRateResponse
+import every.lol.com.core.network.model.response.SetPogResultResponse
 import every.lol.com.core.network.util.asApiResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
 
 class MatchesDataSourceImpl(
     private val httpClient: HttpClient
@@ -23,4 +30,37 @@ class MatchesDataSourceImpl(
         }
     }.asApiResponse()
 
+    override suspend fun postMatchVote(request: MatchVoteMakingRequest): ApiResponse<Unit?> = runCatching {
+        httpClient.post("/votes/match/making") {
+            setBody(request)
+        }
+    }.asApiResponse()
+
+    override suspend fun postSetPogVote(request: SetPogVoteRequest): ApiResponse<Unit?> = runCatching {
+        httpClient.post("/votes/pog/set") {
+            setBody(request)
+        }
+    }.asApiResponse()
+
+    override suspend fun postMatchPogVote(request: MatchPogVoteRequest): ApiResponse<Unit?> = runCatching {
+        httpClient.post("/votes/pog/match") {
+            setBody(request)
+        }
+    }.asApiResponse()
+
+    override suspend fun getSetPogResult(matchId: Long): ApiResponse<SetPogResultResponse> = runCatching {
+        httpClient.get("/votes/set-pog/result") {
+            url {
+                parameters.append("match-id", matchId.toString())
+            }
+        }
+    }.asApiResponse()
+
+    override suspend fun getMatchPogResult(matchId: Long): ApiResponse<MatchPogResultResponse> = runCatching {
+        httpClient.get("/votes/match-pog/result") {
+            url {
+                parameters.append("match-id", matchId.toString())
+            }
+        }
+    }.asApiResponse()
 }

@@ -1,0 +1,17 @@
+package every.lol.com.core.domain.usecase
+
+import every.lol.com.core.domain.repository.MatchesRepository
+import every.lol.com.core.model.SetPogVoteItem
+
+class PostSetPogVoteUseCase(
+    private val matchesRepository: MatchesRepository
+) {
+    suspend operator fun invoke(
+        matchId: Long,
+        setPogVotes: List<SetPogVoteItem>
+    ): Result<Unit?> =
+        matchesRepository.postSetPogVote(
+            matchId = matchId,
+            setPogVotes = setPogVotes
+        )
+}
