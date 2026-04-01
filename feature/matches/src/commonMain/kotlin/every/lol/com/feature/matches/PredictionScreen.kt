@@ -16,9 +16,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
+import every.lol.com.core.model.MatchCardModel
 import every.lol.com.core.model.MatchStatus
-import every.lol.com.core.model.TodayMatchCard
-import every.lol.com.core.model.WinnerSide
 import every.lol.com.feature.matches.component.CompactMatchCard
 import every.lol.com.feature.matches.component.MatchesHeaderBar
 import every.lol.com.feature.matches.component.PogSection
@@ -37,6 +36,7 @@ fun PredictionScreen(
     modifier: Modifier = Modifier
 ) {
     var pogSectionMode by remember { mutableStateOf(PogSectionMode.VOTING) }
+
 
     var voteItems by remember {
         mutableStateOf(
@@ -71,17 +71,21 @@ fun PredictionScreen(
         "$prefix : ${item.selectedOption ?: "선수이름"}"
     }
 
-    val dummyMatch = TodayMatchCard(
+    val dummyMatch = MatchCardModel(
         matchId = matchId,
-        title = "2026 Road to MSI",
-        matchName = "Baron Elder",
+        seasonName = "2026 Road to MSI",
+        team1Name = "HLE",
+        team2Name = "Gen",
+        groupName = "Baron Elder",
         roundName = "플레이오프 1라운드",
-        status = MatchStatus.AFTER,
-        team1Name = "GEN",
-        team2Name = "T1",
-        team1Rate = 0.32f,
-        team2Rate = 0.68f,
-        winner = WinnerSide.TEAM2
+        matchDate = "",
+        matchStatus = MatchStatus.LIVE,
+        team1Id = 1,
+        team2Id = 2,
+        team1VoteRate = 0.0,
+        team2VoteRate = 0.0,
+        totalVoteCount = 0,
+        predictedWinnerTeamName = "",
     )
 
     Column(
@@ -111,7 +115,7 @@ fun PredictionScreen(
             item {
                 PredictionVoteSection(
                     title = "승부예측",
-                    matchStatus = MatchStatus.AFTER,
+                    matchStatus = MatchStatus.FINISHED,
                     team1Name = "GEN",
                     team2Name = "T1",
                     selectedTeam = PredictionTeam.TEAM2,

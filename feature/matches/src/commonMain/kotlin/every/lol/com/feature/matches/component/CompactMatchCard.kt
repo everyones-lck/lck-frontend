@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -23,6 +22,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
+import every.lol.com.core.model.MatchCardModel
 import every.lol.com.core.model.MatchStatus
 import every.lol.com.core.model.TodayMatchCard
 import everylol.feature.matches.generated.resources.Res
@@ -31,7 +31,7 @@ import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun CompactMatchCard (
-    item: TodayMatchCard,
+    item: MatchCardModel,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -47,13 +47,17 @@ fun CompactMatchCard (
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = item.title,
+                text = item.seasonName,
                 color = EveryLoLTheme.color.grayScale100,
                 style = EveryLoLTheme.typography.heading01
             )
 
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                MatchCardTag(text = item.matchName)
+                item.groupName
+                    ?.takeIf { it.isNotBlank() }
+                    ?.let { groupName ->
+                        MatchCardTag(text = groupName)
+                    }
                 MatchCardTag(text = item.roundName)
             }
         }
@@ -63,14 +67,14 @@ fun CompactMatchCard (
                 .align(Alignment.TopEnd)
                 .size(10.dp)
                 .clip(CircleShape)
-                .background(matchStatusDotColor(item.status))
+                .background(matchStatusDotColor(item.matchStatus))
         )
     }
 }
 
 @Composable
 fun CompactMatchDownCard (
-    item: TodayMatchCard,
+    item: MatchCardModel,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -94,7 +98,7 @@ fun CompactMatchDownCard (
                 horizontalAlignment = Alignment.Start
             ) {
                 Text(
-                    text = item.title,
+                    text = item.seasonName,
                     color = EveryLoLTheme.color.grayScale100,
                     style = EveryLoLTheme.typography.heading01
                 )
@@ -102,7 +106,11 @@ fun CompactMatchDownCard (
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    MatchCardTag(text = item.matchName)
+                    item.groupName
+                        ?.takeIf { it.isNotBlank() }
+                        ?.let { groupName ->
+                            MatchCardTag(text = groupName)
+                        }
                     MatchCardTag(text = item.roundName)
                 }
             }
@@ -121,7 +129,7 @@ fun CompactMatchDownCard (
                 .padding(top = 28.dp, end = 20.dp)
                 .size(10.dp)
                 .clip(CircleShape)
-                .background(matchStatusDotColor(item.status))
+                .background(matchStatusDotColor(item.matchStatus))
         )
     }
 }
@@ -148,29 +156,7 @@ private fun MatchCardTag(
 
 @Composable
 private fun matchStatusDotColor(status: MatchStatus) = when (status) {
-    MatchStatus.BEFORE -> EveryLoLTheme.color.grayScale800
+    MatchStatus.SCHEDULED -> EveryLoLTheme.color.grayScale800
     MatchStatus.LIVE -> EveryLoLTheme.color.semanticWarning
-    MatchStatus.AFTER -> EveryLoLTheme.color.grayScale800
-}
-
-@Preview
-@Composable
-fun PreviewCompactMatch() {
-    val dummy = TodayMatchCard(
-        matchId = 1L,
-        title = "2026 Road to MSI",
-        matchName = "Baron Elder",
-        roundName = "플레이오프 1라운드",
-        status = MatchStatus.BEFORE,
-        team1Name = "HLE",
-        team2Name = "Gen",
-        team1Rate = 0.28f,
-        team2Rate = 0.72f
-    )
-    EveryLoLTheme {
-        CompactMatchCard(
-            item = dummy,
-            modifier = Modifier
-        )
-    }
+    MatchStatus.FINISHED -> EveryLoLTheme.color.grayScale800
 }

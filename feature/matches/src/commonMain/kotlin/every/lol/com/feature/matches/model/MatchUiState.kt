@@ -1,15 +1,16 @@
 package every.lol.com.feature.matches.model
 
-import every.lol.com.core.model.TodayMatchCard
+import every.lol.com.core.model.MatchCardModel
 
 sealed interface MatchUiState {
     data class Matches(
-        val matches: List<TodayMatchCard>,
+        val matches: List<MatchCardModel>,
         val expandedIndex: Int = 0
     ) : MatchUiState
 
     data class Prediction(
-        val matchId: Long
+        val isLoading: Boolean = false,
+        val matchId: Long = 0
     ) : MatchUiState
 
     data class LiveResult(
