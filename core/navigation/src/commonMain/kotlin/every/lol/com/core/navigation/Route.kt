@@ -11,6 +11,10 @@ sealed interface Route {
     data object Matches : Route
 
     @Serializable
+    data class Prediction(val matchId: Long) : Route
+
+
+    @Serializable
     data object AboutLCK : Route
 
     @Serializable

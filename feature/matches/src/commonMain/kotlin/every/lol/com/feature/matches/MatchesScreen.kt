@@ -28,7 +28,8 @@ import moe.tlaster.precompose.koin.koinViewModel
 @Composable
 fun MatchesRoute(
     innerPadding: PaddingValues = PaddingValues(),
-    viewModel: MatchesViewModel = koinViewModel(MatchesViewModel::class)
+    viewModel: MatchesViewModel = koinViewModel(MatchesViewModel::class),
+    onPredictionClick: (Long) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -39,22 +40,10 @@ fun MatchesRoute(
                 state = state,
                 onPredictionClick = { matchId ->
                     viewModel.onIntent(MatchIntent.ClickPrediction(matchId))
+                    onPredictionClick(matchId)
                 },
                 onToggleMatchCard = { index ->
                     viewModel.onIntent(MatchIntent.ToggleMatchCard(index))
-                }
-            )
-        }
-
-        is MatchUiState.Prediction -> {
-            PredictionScreen(
-                innerPadding = innerPadding,
-                matchId = state.matchId,
-                onBackClick = {
-                    viewModel.onIntent(MatchIntent.BackToMatches)
-                },
-                onResultClick = {
-                    viewModel.onIntent(MatchIntent.ClickLiveResult(state.matchId))
                 }
             )
         }
@@ -75,6 +64,7 @@ fun MatchesRoute(
         MatchUiState.Loading -> {
 
         }
+        else -> {}
     }
 }
 @Composable

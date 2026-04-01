@@ -40,6 +40,10 @@ class MatchesViewModel(
             }
 
             is MatchIntent.ClickPrediction -> {
+                _uiState.value = MatchUiState.Prediction(
+                    matchId = intent.matchId,
+                    isLoading = true
+                )
                 getMatchCandidate(intent.matchId)
                 getMatchPogCandidate(intent.matchId)
                 getSetPogCandidate(intent.matchId)
@@ -155,7 +159,8 @@ class MatchesViewModel(
                         state as? MatchUiState.Prediction ?: MatchUiState.Prediction()
                     currentState.copy(
                         isLoading = false,
-                        matchId = it.matchId
+                        matchId = it.matchId,
+                        matchData = it
                     )
                 }
             }.onFailure { error ->
@@ -178,7 +183,7 @@ class MatchesViewModel(
                         state as? MatchUiState.Prediction ?: MatchUiState.Prediction()
                     currentState.copy(
                         isLoading = false,
-                        matchId = it.matchId
+                        matchPogData = it
                     )
                 }
             }.onFailure { error ->
@@ -200,7 +205,7 @@ class MatchesViewModel(
                         state as? MatchUiState.Prediction ?: MatchUiState.Prediction()
                     currentState.copy(
                         isLoading = false,
-                        setId = it.sets
+                        setPogData = it.sets
                     )
                 }
             }.onFailure { error ->
