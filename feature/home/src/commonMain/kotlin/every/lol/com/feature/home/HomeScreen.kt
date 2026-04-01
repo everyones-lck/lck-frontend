@@ -7,39 +7,82 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.core.model.HomeBannerModel
 import every.lol.com.core.model.LckStandingTeamModel
-import every.lol.com.core.model.MatchCardModel
 import every.lol.com.feature.home.component.LckRankingSection
-import every.lol.com.feature.home.component.MatchCard
+import every.lol.com.feature.home.component.MatchCardRow
 import every.lol.com.feature.home.component.MatchNoticeBanner
 import every.lol.com.feature.home.component.NewsBanner
 import every.lol.com.feature.home.component.TopBar
+import every.lol.com.feature.home.model.HomeIntent
+import every.lol.com.feature.home.model.HomeUiState
+import moe.tlaster.precompose.koin.koinViewModel
 
+@Composable
+fun HomeRoute(
+    onNavigateToMypage: () -> Unit,
+    viewModel: HomeViewModel = koinViewModel(HomeViewModel ::class)
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val homeState = uiState as? HomeUiState.Home
+
+    LaunchedEffect(Unit) {
+        viewModel.onIntent(HomeIntent.LoadInitial)
+    }
+
+    LaunchedEffect(viewModel.event) {
+        viewModel.event.collect { event ->
+            when (event) {
+                is HomeEvent.ShowToast -> {  }
+                else -> {}
+            }
+        }
+    }
+
+    println(homeState)
+    if(homeState == null){
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(EveryLoLTheme.color.newBg),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = EveryLoLTheme.color.grayScale200)
+        }
+
+    }else {
+        HomeScreen(
+            state = uiState,
+            onNavigateToMypage = onNavigateToMypage,
+            onIntent = viewModel::onIntent
+        )
+    }
+}
 
 @Composable
 fun HomeScreen(
+    state: HomeUiState,
     innerPadding: PaddingValues = PaddingValues(),
-      onNavigateToMypage: () -> Unit
+    onNavigateToMypage: () -> Unit,
+    onIntent: (HomeIntent) -> Unit
 ) {
-    var showMatchBanner by rememberSaveable { mutableStateOf(true) }
 
-    val dummyMatchCard = MatchCardModel(
-        matchId = 1L,
-        title = "2026 Road to MSI",
-        team1Name = "HLE",
-        team2Name = "Gen",
-        matchName = "Baron Elder",
-        roundName = "플레이오프 1라운드"
-    )
+    val homeState = state as? HomeUiState.Home
+    var showMatchBanner by rememberSaveable { mutableStateOf(true) }
+    val matchData = homeState?.matches
+
     val newsBanners = listOf(
         HomeBannerModel(id = 1L, imageUrl = "", title = " "),
         HomeBannerModel(id = 2L, imageUrl = "", title = ""),
@@ -91,14 +134,12 @@ fun HomeScreen(
         }
 
         item {
-            MatchCard(
-                matchCard = dummyMatchCard,
+
+            MatchCardRow(
+                matchCards = matchData,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 24.dp),
-                team1Progress = 0.28f,
-                team2Progress = 0.72f,
-                onClick = { }
+                    .padding(horizontal = 16.dp, vertical = 24.dp)
             )
         }
 
