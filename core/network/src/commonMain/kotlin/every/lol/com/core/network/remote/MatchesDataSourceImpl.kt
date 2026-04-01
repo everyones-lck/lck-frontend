@@ -16,7 +16,11 @@ class MatchesDataSourceImpl(
     }.asApiResponse()
 
     override suspend fun getMatchVoteRate(matchId: Long): ApiResponse<MatchVoteRateResponse> = runCatching {
-        httpClient.get("/matches/$matchId/rate")
+        httpClient.get("/votes/match/rate") {
+            url {
+                parameters.append("match-id", matchId.toString())
+            }
+        }
     }.asApiResponse()
 
 }
