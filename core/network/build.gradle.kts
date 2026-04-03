@@ -11,9 +11,16 @@ plugins {
 setNamespace("core.network")
 
 fun getProperty(key: String): String {
-    return gradleLocalProperties(rootDir, providers).getProperty(key)
-        ?: error("\n\n[에러] local.properties 파일에 '$key' 설정이 누락되었습니다! \nBASE_URL=https://api.example.com/ 형태의 주소를 추가해주세요.\n")
+    val localValue = gradleLocalProperties(rootDir, providers).getProperty(key)
+    if (localValue != null) return localValue
+
+    // CI 환경변수(System Environment) 확인
+    val envValue = System.getenv(key)
+    if (envValue != null) return envValue
+
+    error("\n\n[에러] '$key' 설정이 누락되었습니다! \nlocal.properties 또는 CI 환경변수에 해당 키를 추가해주세요.\n")
 }
+
 
 buildConfig {
     packageName("every.lol.com.core.network")
@@ -31,6 +38,7 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.koin.core)
             implementation(projects.core.domain)
+            implementation(projects.core.common)
             implementation(project(":core:datastore"))
         }
         iosMain.dependencies {

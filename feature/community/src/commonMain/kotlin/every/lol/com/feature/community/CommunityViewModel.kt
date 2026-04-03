@@ -249,7 +249,8 @@ class CommunityViewModel(
 
     private fun handleAddMedias(newMedias: List<CommunityUiState.MediaItem>) {
         val timeLimit = 3 * 60 * 1000L
-
+        println("step1")
+        // 1. 시간 제한 필터링
         val timeFilteredMedias = newMedias.filter {
             if (it.isVideo) it.durationMs <= timeLimit else true
         }
@@ -262,31 +263,46 @@ class CommunityViewModel(
 
         updateWriteState { state ->
             val currentMedias = state.selectedMedias
-
             val currentImages = currentMedias.filter { !it.isVideo }
             val currentVideos = currentMedias.filter { it.isVideo }
 
+            // 2. 새로 추가될 미디어 분류
             val newImages = timeFilteredMedias.filter { !it.isVideo }
             val newVideos = timeFilteredMedias.filter { it.isVideo }
 
-            val finalImages = (currentImages + newImages).take(10)
-            val finalVideos = (currentVideos + newVideos).take(2)
+            // 💡 [수정] 개수 제한을 넘지 않는 '새로운' 미디어만 선별
+            val availableImageSpace = (10 - currentImages.size).coerceAtMost(newImages.size)
+            val availableVideoSpace = (2 - currentVideos.size).coerceAtMost(newVideos.size)
 
-            if (newImages.size + currentImages.size > 10 || newVideos.size + currentVideos.size > 2) {
+            if (newImages.size > availableImageSpace || newVideos.size > availableVideoSpace) {
                 viewModelScope.launch {
                     _event.emit(CommunityEvent.ShowToast("사진은 최대 10장, 영상은 최대 2개까지 가능합니다."))
                 }
             }
+            println("step2")
 
-            val currentLines = state.content.split("\n").toMutableList()
+            val validNewImages = newImages.take(availableImageSpace)
+            val validNewVideos = newVideos.take(availableVideoSpace)
+
+            // 3. 현재 텍스트의 마지막 줄 인덱스 계산
+            val currentLines = state.content.split("\n")
             val lastLineIndex = (currentLines.size - 1).coerceAtLeast(0)
-            currentLines.add("")
-            val newContent = currentLines.joinToString("\n")
-            val processedNewMedias = (newImages + newVideos).map {
+
+            // 4. 새로운 미디어에 order 부여
+            val processedNewMedias = (validNewImages + validNewVideos).map {
                 it.copy(order = lastLineIndex)
             }
+
+            // 💡 [수정] 새로운 내용(엔터) 추가 및 리스트 합치기
+            // content 마지막에 \n을 추가해야 새로운 텍스트 블록이 생기면서 이미지가 그 사이에 박힙니다.
+            val updatedContent = if (processedNewMedias.isNotEmpty()) {
+                if (state.content.isEmpty()) "\n" else state.content + "\n"
+            } else {
+                state.content
+            }
+            println("미디어 추가 로직 실행: 새 미디어 ${processedNewMedias.size}개")
             state.copy(
-                content = newContent,
+                content = updatedContent,
                 selectedMedias = currentMedias + processedNewMedias
             )
         }

@@ -21,7 +21,7 @@ class HomeDataSourceImpl(
     override suspend fun ranking(): ApiResponse<HomeRankingResponse> = runCatching {
         httpClient.get("/home/ranking"){
             url {
-                parameters.append("legueId", "lck_2026_cup")
+                parameters.append("legueId", "lck_2026")
             }
         }
     }.asApiResponse()

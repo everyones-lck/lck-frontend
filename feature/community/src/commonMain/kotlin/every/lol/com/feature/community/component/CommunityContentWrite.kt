@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -83,7 +84,6 @@ fun CommunityContentWriteBlock(
 
     LaunchedEffect(pendingFocusIndex) {
         if (pendingFocusIndex != -1) {
-            // 💡 아주 짧은 딜레이를 주어 리스트가 재구성된 직후 포커스를 잡게 함
             delay(50)
             focusRequesters.getOrNull(pendingFocusIndex)?.requestFocus()
             pendingFocusIndex = -1
@@ -120,7 +120,6 @@ fun CommunityContentWriteBlock(
                         value = currentText,
                         focusRequester = focusRequesters.getOrNull(textIndex) ?: FocusRequester(),
                         onValueChange = { newText ->
-                            // 💡 엔터/수정 로직 통합 호출
                             val mutableLines = textLines.toMutableList()
                             if (textIndex < mutableLines.size) {
                                 mutableLines[textIndex] = newText
@@ -149,7 +148,6 @@ fun CommunityContentWriteBlock(
                         } else null
                     )
                 } else {
-                    // 미디어 아이템 렌더링
                     val media = state.selectedMedias.find { it.id == itemKey }
                     media?.let {
                         ContentMediaItem(
@@ -252,15 +250,31 @@ fun ContentMediaItem(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
+                .height(200.dp)
                 .clip(RoundedCornerShape(8.dp))
                 .background(EveryLoLTheme.color.grayScale900)
         ) {
             AsyncImage(
                 model = media.url,
                 contentDescription = null,
-                modifier = Modifier.fillMaxWidth().height(200.dp),
+                modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
+
+            if (media.isVideo) {
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .background(Color.Black.copy(alpha = 0.3f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "비디오는 글 등록 후 재생이 가능합니다",
+                        style = EveryLoLTheme.typography.pretendardBody02,
+                        color = EveryLoLTheme.color.grayScale100
+                    )
+                }
+            }
 
             if (isDragging) {
                 Box(modifier = Modifier.matchParentSize().background(Color.White.copy(alpha = 0.4f)))

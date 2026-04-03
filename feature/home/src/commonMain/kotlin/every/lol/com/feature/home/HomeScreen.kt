@@ -3,8 +3,10 @@ package every.lol.com.feature.home
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.CircularProgressIndicator
@@ -20,7 +22,6 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
-import every.lol.com.core.model.LckStandingTeamModel
 import every.lol.com.feature.home.component.LckRankingSection
 import every.lol.com.feature.home.component.MatchCardRow
 import every.lol.com.feature.home.component.MatchNoticeBanner
@@ -38,9 +39,9 @@ fun HomeRoute(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val homeState = uiState as? HomeUiState.Home
 
-    LaunchedEffect(Unit) {
+/*    LaunchedEffect(Unit) {
         viewModel.onIntent(HomeIntent.LoadInitial)
-    }
+    }*/
 
     LaunchedEffect(viewModel.event) {
         viewModel.event.collect { event ->
@@ -84,18 +85,7 @@ fun HomeScreen(
     val matchData = homeState?.matches
     val newsBanners = homeState?.news
     val alertsMessage = homeState?.alertsMessage
-
-    val standings = listOf(
-        LckStandingTeamModel(teamId = 6, rank = 6, teamName = "T1", rightText = "-"),
-        LckStandingTeamModel(teamId = 1, rank = 1, teamName = "GEN", rightText = "-"),
-        LckStandingTeamModel(teamId = 2, rank = 2, teamName = "KT", rightText = "-"),
-        LckStandingTeamModel(teamId = 3, rank = 3, teamName = "HLE", rightText = "-"),
-        LckStandingTeamModel(teamId = 4, rank = 4, teamName = "DN", rightText = "-"),
-        LckStandingTeamModel(teamId = 5, rank = 5, teamName = "BFX", rightText = "-"),
-        LckStandingTeamModel(teamId = 7, rank = 7, teamName = "DRX", rightText = "-"),
-        LckStandingTeamModel(teamId = 8, rank = 8, teamName = "BNK", rightText = "-"),
-        LckStandingTeamModel(teamId = 9, rank = 9, teamName = "NS", rightText = "-")
-    )
+    val ranking = homeState?.ranking?.groups?.firstOrNull()?.teams ?: emptyList()
     val myFavoriteTeamId = 6L
 
     LazyColumn(
@@ -114,18 +104,20 @@ fun HomeScreen(
                 }
             )
         }
-        item {
-            if (showMatchBanner) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .padding(top = 16.dp)
-                ) {
-                    MatchNoticeBanner(
-                        message = alertsMessage.toString(),
-                        onCloseClick = { showMatchBanner = false }
-                    )
+        alertsMessage?.let {
+            item {
+                if (showMatchBanner) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                            .padding(top = 16.dp)
+                    ) {
+                        MatchNoticeBanner(
+                            message = alertsMessage.toString(),
+                            onCloseClick = { showMatchBanner = false }
+                        )
+                    }
                 }
             }
         }
@@ -158,13 +150,16 @@ fun HomeScreen(
 
         item {
             LckRankingSection(
-                standings = standings,
-                favoriteTeamId = myFavoriteTeamId,
+                standings = ranking,
+                //favoriteTeamId = myFavoriteTeamId,
                 modifier = Modifier.padding(top = 24.dp),
                 onTeamClick = { teamId ->
                     // TODO
                 }
             )
+        }
+        item {
+            Spacer(modifier = Modifier.height(80.dp))
         }
     }
 }

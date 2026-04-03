@@ -32,7 +32,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import every.lol.com.core.common.rememberImagePickerLauncher
+import every.lol.com.core.common.rememberMultiResourcePickerLauncher
 import every.lol.com.core.common.toImageByteArray
 import every.lol.com.core.designsystem.component.EverylolButton
 import every.lol.com.core.designsystem.component.EverylolModal
@@ -47,6 +47,7 @@ import every.lol.com.feature.community.component.TitleText
 import every.lol.com.feature.community.model.CommunityIntent
 import every.lol.com.feature.community.model.CommunityUiState
 import moe.tlaster.precompose.koin.koinViewModel
+import kotlin.time.Clock
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -106,20 +107,71 @@ fun WriteCommunityScreen(
     val keyboardHeight = WindowInsets.ime.getBottom(LocalDensity.current)
     val isKeyboardVisible = keyboardHeight > 0
 
-    val imagePickerLauncher = rememberImagePickerLauncher { result ->
-        result?.let { uri ->
+    val mediaPickerLauncher = rememberMultiResourcePickerLauncher { results ->
+        println("PICKER_DEBUG: Results received. Count: ${results.size}")
 
-            val imageData = uri.toImageByteArray() ?: return@let
+        val currentImages = state.selectedMedias.filter { !it.isVideo }
+        val currentVideos = state.selectedMedias.filter { it.isVideo }
 
-            val newMedias = listOf(
-                    CommunityUiState.MediaItem(
-                        id = uri.toString(),
-                        url = imageData,
-                        isVideo = uri.toString().contains("video") || uri.toString()
-                            .contains(".mp4")
-                    )
-            )
-            onIntent(CommunityIntent.AddMedias(newMedias))
+        val currentTextLines = state.content.split("\n")
+        val currentOrder = (currentTextLines.size - 1).coerceAtLeast(0)
+
+        val newMediaList = mutableListOf<CommunityUiState.MediaItem>()
+        var imageCountInBatch = 0
+        var videoCountInBatch = 0
+
+        results.forEachIndexed { index, result ->
+            // 💡 핵심: Coil Uri 객체로 변환(toUri)하지 말고 String 상태를 유지합니다.
+            // 그래야 androidMain의 'is String -> Uri.parse(this)' 로직을 탑니다.
+            val uriString = result.toString()
+
+            println("PICKER_DEBUG: Processing Item $index - String Path: $uriString")
+
+            val isVideo = uriString.contains("video", ignoreCase = true) ||
+                    uriString.contains("mp4", ignoreCase = true)
+
+            if (isVideo) {
+                if (currentVideos.size + videoCountInBatch < 2) {
+                    // 💡 String 타입에 대해 직접 확장 함수 호출
+                    val data = uriString.toImageByteArray()
+                    if (data == null) {
+                        println("PICKER_DEBUG: Failed to convert Video to ByteArray (Path: $uriString)")
+                    } else {
+                        newMediaList.add(
+                            CommunityUiState.MediaItem(
+                                id = "vid_${Clock.System.now().toEpochMilliseconds()}_${index}",
+                                url = data,
+                                isVideo = true,
+                                order = currentOrder
+                            )
+                        )
+                        videoCountInBatch++
+                    }
+                }
+            } else {
+                if (currentImages.size + imageCountInBatch < 10) {
+                    // 💡 String 타입에 대해 직접 확장 함수 호출
+                    val data = uriString.toImageByteArray()
+                    if (data == null) {
+                        println("PICKER_DEBUG: Failed to convert Image to ByteArray (Path: $uriString)")
+                    } else {
+                        newMediaList.add(
+                            CommunityUiState.MediaItem(
+                                id = "img_${Clock.System.now().toEpochMilliseconds()}_${index}",
+                                url = data,
+                                isVideo = false,
+                                order = currentOrder
+                            )
+                        )
+                        imageCountInBatch++
+                    }
+                }
+            }
+        }
+
+        println("PICKER_DEBUG: Final newMediaList size: ${newMediaList.size}")
+        if (newMediaList.isNotEmpty()) {
+            onIntent(CommunityIntent.AddMedias(newMediaList))
         }
     }
 
@@ -142,7 +194,7 @@ fun WriteCommunityScreen(
                             .imePadding()
                     ) {
                         CommunityImageAdd(
-                            openGallery = { imagePickerLauncher() }
+                            openGallery = { mediaPickerLauncher() }
                         )
                     }
                 }
