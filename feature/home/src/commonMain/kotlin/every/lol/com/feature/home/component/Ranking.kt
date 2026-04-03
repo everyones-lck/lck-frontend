@@ -1,13 +1,14 @@
 package every.lol.com.feature.home.component
 
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -15,36 +16,43 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
-import every.lol.com.core.model.LckStandingTeamModel
+import every.lol.com.core.model.HomeRankingTeam
+import every.lol.com.core.model.Team.Companion.fromTeamName
+import everylol.feature.home.generated.resources.Res
+import everylol.feature.home.generated.resources.img_ranking_bfx
+import everylol.feature.home.generated.resources.img_ranking_bro
+import everylol.feature.home.generated.resources.img_ranking_dk
+import everylol.feature.home.generated.resources.img_ranking_dns
+import everylol.feature.home.generated.resources.img_ranking_gen
+import everylol.feature.home.generated.resources.img_ranking_hle
+import everylol.feature.home.generated.resources.img_ranking_krx
+import everylol.feature.home.generated.resources.img_ranking_kt
+import everylol.feature.home.generated.resources.img_ranking_ns
+import everylol.feature.home.generated.resources.img_ranking_t1
+import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun LckRankingSection(
-    standings: List<LckStandingTeamModel>,
-    favoriteTeamId: Long,
+    standings: List<HomeRankingTeam>, //추후 Group으로 수정
     modifier: Modifier = Modifier,
     onTeamClick: (Long) -> Unit = {},
-    cardBackground: @Composable BoxScope.(LckStandingTeamModel) -> Unit = {}
+    // cardBackground: @Composable BoxScope.(LckStandingTeamModel) -> Unit = {}
 ) {
     if (standings.isEmpty()) return
 
-    val favoriteTeam = standings.firstOrNull { it.teamId == favoriteTeamId }
-    val top3 = standings
-        .filter { it.rank in 1..3 }
-        .sortedBy { it.rank }
+    //val favoriteTeam = standings.firstOrNull { it.teamId == favoriteTeamId }
 
-    val lowerRanks = standings
-        .filter { it.rank >= 4 }
-        .sortedBy { it.rank }
+    val top3 = standings.take(3)
+    val lowerRanks = standings.drop(3)
 
     Column(
         modifier = modifier.fillMaxWidth()
@@ -57,62 +65,62 @@ fun LckRankingSection(
         )
 
         Spacer(modifier = Modifier.height(20.dp))
-
-        Text(
-            text = "경기가 아직 진행되지 않았습니다",
-            style = EveryLoLTheme.typography.subtitle03,
-            color = EveryLoLTheme.color.white200,
-            modifier = Modifier.padding(horizontal = 16.dp)
-        )
-/*
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            favoriteTeam?.let { team ->
+        if (standings.isEmpty()) {
+            Text(
+                text = "경기가 아직 진행되지 않았습니다",
+                style = EveryLoLTheme.typography.subtitle03,
+                color = EveryLoLTheme.color.white200,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+        } else {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
+            ) {
+                // Todo: 응원팀 로컬에 저장 및 호출 구현
+                /*favoriteTeam?.let { team ->
                 FavoriteRankCard(
                     team = team,
                     onClick = onTeamClick,
                     cardBackground = cardBackground
                 )
+            }*/
+                top3.forEach { team ->
+                    TopRankCard(
+                        team = team,
+                        onClick = onTeamClick,
+                        //cardBackground = cardBackground
+                    )
+                }
             }
 
-            top3.forEach { team ->
-                TopRankCard(
-                    team = team,
-                    onClick = onTeamClick,
-                    cardBackground = cardBackground
-                )
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                lowerRanks.forEach { team ->
+                    RankListRow(
+                        team = team,
+                        isFavorite = false,
+                        onClick = onTeamClick
+                    )
+                }
             }
         }
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            lowerRanks.forEach { team ->
-                RankListRow(
-                    team = team,
-                    isFavorite = team.teamId == favoriteTeamId,
-                    onClick = onTeamClick
-                )
-            }
-        }*/
     }
 }
 
-@Composable
+/*@Composable
 private fun FavoriteRankCard(
-    team: LckStandingTeamModel,
+    team: HomeRankingTeam,
     onClick: (Long) -> Unit,
-    cardBackground: @Composable BoxScope.(LckStandingTeamModel) -> Unit
+    //cardBackground: @Composable BoxScope.(LckStandingTeamModel) -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -147,43 +155,56 @@ private fun FavoriteRankCard(
             )
         }
     }
-}
+}*/
 
 @Composable
 private fun TopRankCard(
-    team: LckStandingTeamModel,
-    onClick: (Long) -> Unit,
-    cardBackground: @Composable BoxScope.(LckStandingTeamModel) -> Unit
+    team: HomeRankingTeam,
+    onClick: (Long) -> Unit
 ) {
+
+    val rankingBgRes = when (team.teamName) {
+        "T1" -> Res.drawable.img_ranking_t1
+        "GEN" -> Res.drawable.img_ranking_gen
+        "HLE" -> Res.drawable.img_ranking_hle
+        "KT" -> Res.drawable.img_ranking_kt
+        "DK" -> Res.drawable.img_ranking_dk
+        "dn" -> Res.drawable.img_ranking_dns
+        "bnk" -> Res.drawable.img_ranking_bfx
+        "NS" -> Res.drawable.img_ranking_ns
+        "BRO" -> Res.drawable.img_ranking_bro
+        "DRX" -> Res.drawable.img_ranking_krx
+        else -> Res.drawable.img_ranking_t1
+    }
+
     Card(
         modifier = Modifier
             .width(76.dp)
             .height(112.dp)
-            .clickable { onClick(team.teamId) },
+            .clickable {
+                val teamId = fromTeamName(team.teamName).id.toLong()
+                onClick(teamId)
+            },
         shape = RoundedCornerShape(4.dp),
         colors = CardDefaults.cardColors(
             containerColor = EveryLoLTheme.color.grayScale1000
         )
     ) {
         Box(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxSize()
         ) {
-            cardBackground(team)
-
+            Image(
+                painter = painterResource(rankingBgRes),
+                contentDescription = null,
+                modifier = Modifier.matchParentSize(),
+                contentScale = ContentScale.FillBounds // 전체를 꽉 채움
+            )
             Text(
                 text = "${team.rank}",
                 style = EveryLoLTheme.typography.subtitle03,
                 color = EveryLoLTheme.color.grayScale600,
                 modifier = Modifier.padding(start = 8.dp, top = 7.dp)
-            )
-
-            Text(
-                text = team.teamName,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(end = 10.dp, bottom = 10.dp)
             )
         }
     }
@@ -191,7 +212,7 @@ private fun TopRankCard(
 
 @Composable
 private fun RankListRow(
-    team: LckStandingTeamModel,
+    team: HomeRankingTeam,
     isFavorite: Boolean,
     onClick: (Long) -> Unit
 ) {
@@ -203,7 +224,10 @@ private fun RankListRow(
             .background(
                 if (isFavorite) EveryLoLTheme.color.grayScale1000 else Color.Transparent
             )
-            .clickable { onClick(team.teamId) }
+            .clickable {
+                val teamId = fromTeamName(team.teamName).id.toLong()
+                onClick(teamId)
+            }
             .padding(horizontal = 8.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -224,7 +248,7 @@ private fun RankListRow(
         )
 
         Text(
-            text = team.rightText,
+            text = "-",
             style = EveryLoLTheme.typography.subtitle03,
             color = EveryLoLTheme.color.white200,
         )

@@ -141,7 +141,7 @@ class HomeViewModel(
                         isLoading = false,
                         alerts = result,
                         isRefreshing = false,
-                        alertsMessage = result.alerts[0].message //예시 구현
+                        alertsMessage = result.alerts[0].message
                     )
                 }
             }.onFailure {
