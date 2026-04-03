@@ -1,5 +1,6 @@
 package every.lol.com.feature.home.component
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
@@ -29,7 +30,10 @@ import coil3.compose.AsyncImage
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.core.model.HomeNews
 import every.lol.com.core.model.HomeNewsDetail
+import everylol.feature.home.generated.resources.Res
+import everylol.feature.home.generated.resources.img_news_default
 import kotlinx.coroutines.delay
+import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun NewsBannerRow(
@@ -53,11 +57,9 @@ fun NewsBannerRow(
             }
         }
     }
-
-
     Column(
         modifier = Modifier.fillMaxWidth()
-    ){
+    ) {
         Text(
             text = "오늘의 LCK 소식",
             style = EveryLoLTheme.typography.subtitle03,
@@ -65,23 +67,31 @@ fun NewsBannerRow(
             modifier = Modifier.padding(horizontal = 16.dp)
         )
         Spacer(modifier = Modifier.height(12.dp))
-        HorizontalPager(
-            state = pagerState,
-            modifier = modifier
-                .fillMaxWidth()
-                .height(112.dp),
-            contentPadding = PaddingValues(horizontal = 16.dp),
-            pageSpacing = 32.dp
-        ) { page ->
-            NewsBanner(
-                banners = news[page],
-                modifier = Modifier.fillMaxWidth(),
-                onBannerClick = onClick
+        if (news.isEmpty()) {
+            Image(
+                painter = painterResource(Res.drawable.img_news_default),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxWidth().height(112.dp).padding(horizontal = 16.dp)
             )
+        } else {
+            HorizontalPager(
+                state = pagerState,
+                modifier = modifier
+                    .fillMaxWidth()
+                    .height(112.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                pageSpacing = 32.dp
+            ) { page ->
+                NewsBanner(
+                    banners = news[page],
+                    modifier = Modifier.fillMaxWidth(),
+                    onBannerClick = onClick
+                )
+            }
         }
     }
 }
-
 
 @Composable
 fun NewsBanner(

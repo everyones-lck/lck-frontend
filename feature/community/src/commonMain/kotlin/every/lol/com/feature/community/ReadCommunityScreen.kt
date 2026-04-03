@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
@@ -400,7 +401,8 @@ fun FullScreenImageViewer(
             modifier = Modifier
                 .padding(20.dp)
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(8.dp)),
+                .clip(RoundedCornerShape(8.dp))
+                .heightIn(max = 616.dp),
             contentDescription = null,
             contentScale = ContentScale.Fit
         )
@@ -410,7 +412,7 @@ fun FullScreenImageViewer(
             onClick = onDismiss,
             modifier = Modifier
                 .align(Alignment.TopStart)
-                .padding(start = 16.dp)
+                .padding(top = 40.dp, start = 16.dp)
         ) {
             Icon(
                 painter = painterResource(Res.drawable.ic_x),
