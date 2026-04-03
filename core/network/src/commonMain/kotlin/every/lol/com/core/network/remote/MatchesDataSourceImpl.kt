@@ -46,13 +46,13 @@ class MatchesDataSourceImpl(
     }.asApiResponse()
 
     override suspend fun postMatchPogVote(request: MatchPogVoteRequest): ApiResponse<Unit?> = runCatching {
-        httpClient.post("/votes/pog/match") {
+        httpClient.post("/votes/pom/match") {
             setBody(request)
         }
     }.asApiResponse()
 
     override suspend fun getSetPogResult(matchId: Long): ApiResponse<SetPogResultResponse> = runCatching {
-        httpClient.get("/votes/set-pog/result") {
+        httpClient.get("/votes/pog/result") {
             url {
                 parameters.append("match-id", matchId.toString())
             }
@@ -60,7 +60,7 @@ class MatchesDataSourceImpl(
     }.asApiResponse()
 
     override suspend fun getMatchPogResult(matchId: Long): ApiResponse<MatchPogResultResponse> = runCatching {
-        httpClient.get("/votes/match-pog/result") {
+        httpClient.get("/votes/pom/result") {
             url {
                 parameters.append("match-id", matchId.toString())
             }

@@ -20,8 +20,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.core.model.MatchCardModel
+import every.lol.com.core.model.MatchPogCandidate
 import every.lol.com.core.model.MatchStatus
+import every.lol.com.core.model.SetPogVoteItem
 import every.lol.com.feature.matches.component.CompactMatchCard
+import every.lol.com.feature.matches.component.IncompletePogVoteDialog
 import every.lol.com.feature.matches.component.MatchesHeaderBar
 import every.lol.com.feature.matches.component.PogSection
 import every.lol.com.feature.matches.component.PogSectionMode
@@ -45,21 +48,26 @@ fun PredictionRoute(
         viewModel.onIntent(MatchIntent.ClickPrediction(matchId))
     }
 
-    DisposableEffect(Unit) {
-        onDispose {
-            viewModel.onIntent(MatchIntent.LoadMatches)
-        }
-    }
-
     PredictionScreen(
         uiState = uiState,
         onBackClick = onBackClick,
         onResultClick = onResultClick,
         onVoteTeam = { teamId ->
-            //
+            viewModel.onIntent(
+                MatchIntent.SubmitPredictionVote(
+                    matchId = matchId,
+                    teamId = teamId
+                )
+            )
         },
-        onSelectPog = { setIndex, playerId ->
-            //
+        onSavePogVotes = { setVotes, pomPlayerId ->
+            viewModel.onIntent(
+                MatchIntent.SubmitPogVotes(
+                    matchId = matchId,
+                    setPogVotes = setVotes,
+                    matchPogPlayerId = pomPlayerId
+                )
+            )
         }
     )
 }
@@ -70,31 +78,46 @@ fun PredictionScreen(
     innerPadding: PaddingValues = PaddingValues(),
     onBackClick: () -> Unit,
     onResultClick: () -> Unit,
-    onVoteTeam: (Long) -> Unit,
-    onSelectPog: (Int, Int) -> Unit,
+    onVoteTeam: (Int) -> Unit,
+    onSavePogVotes: (List<SetPogVoteItem>, Long?) -> Unit,
     modifier: Modifier = Modifier
 ) {
 
     val state = uiState as? MatchUiState.Prediction ?: return
 
-    var voteItems by remember(state.setPogData) {
-        mutableStateOf<List<PogVoteItem>>(
-            state.setPogData?.mapIndexed { index, setDetail ->
-                PogVoteItem(
-                    title = if (index == (state.setPogData.size - 1)) "POM을 선택해주세요" else "${setDetail.setIndex}세트 POG를 선택해주세요",
-                    options = setDetail.candidates.map { it.playerName } + "해당없음",
-                    isExpanded = index == 0,
-                    selectedOption = null
-                )
-            } ?: emptyList()
+    var voteItems by remember(state.setPogData, state.matchPogData) {
+        mutableStateOf(
+            buildList {
+                state.setPogData?.forEachIndexed { index, setDetail ->
+                    add(
+                        PogVoteItem(
+                            title = "${setDetail.setIndex}세트 POG를 선택해주세요",
+                            options = setDetail.candidates.map { it.playerName } + "해당없음",
+                            isExpanded = index == 0,
+                            selectedOption = null
+                        )
+                    )
+                }
+
+                state.matchPogData?.let { matchPog ->
+                    add(
+                        PogVoteItem(
+                            title = "POM을 선택해주세요",
+                            options = matchPog.candidates.map { it.playerName } + "해당없음",
+                            isExpanded = false,
+                            selectedOption = null
+                        )
+                    )
+                }
+            }
         )
     }
 
-    var pogSectionMode by remember { mutableStateOf(PogSectionMode.VOTING) }
+    var showIncompleteVoteDialog by remember { mutableStateOf(false) }
 
     val savedTexts = voteItems.mapIndexed { index, item ->
         val prefix = if (index == voteItems.lastIndex) "POM" else "${index + 1}세트"
-        "$prefix : ${item.selectedOption ?: "선수이름"}"
+        "$prefix : ${item.selectedOption ?: "투표 안 함"}"
     }
 
     Column(
@@ -115,30 +138,22 @@ fun PredictionScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
-                state.matchData?.let { data ->
+                state.match?.let { card ->
                     CompactMatchCard(
-                        item = MatchCardModel(
-                            matchId = data.matchId,
-                            team1Name = data.team1.teamName,
-                            team2Name = data.team2.teamName,
-                            team1Id = data.team1.teamId,
-                            team2Id = data.team2.teamId,
-                            matchStatus = MatchStatus.SCHEDULED,
-                            matchDate = state.matchDate,
-                            seasonName = state.seasonName,
-                            groupName = state.groupName,
-                            roundName = state.roundName,
-                        ),
+                        item = card,
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )
                 }
             }
 
             item {
-                state.matchData?.let { data ->
+                val card = state.match
+                val data = state.matchData
+
+                if (card != null && data != null) {
                     PredictionVoteSection(
                         title = "승부예측",
-                        matchStatus = MatchStatus.SCHEDULED,
+                        matchStatus = card.matchStatus,
                         team1Name = data.team1.teamName,
                         team2Name = data.team2.teamName,
                         selectedTeam = when (data.myVotedTeamId) {
@@ -146,8 +161,13 @@ fun PredictionScreen(
                             data.team2.teamId.toLong() -> PredictionTeam.TEAM2
                             else -> null
                         },
-                        onLeftClick = { onVoteTeam(data.team1.teamId.toLong()) },
-                        onRightClick = { onVoteTeam(data.team2.teamId.toLong()) }
+                        isVoteEnabled = data.votable,
+                        onLeftClick = {
+                            onVoteTeam(data.team1.teamId)
+                        },
+                        onRightClick = {
+                            onVoteTeam(data.team2.teamId)
+                        }
                     )
                 }
             }
@@ -155,7 +175,7 @@ fun PredictionScreen(
             item {
                 val currentMode = when {
                     state.setPogData.isNullOrEmpty() -> PogSectionMode.WAITING
-                    pogSectionMode == PogSectionMode.SAVED -> PogSectionMode.SAVED
+                    state.isPogSaved -> PogSectionMode.SAVED
                     else -> PogSectionMode.VOTING
                 }
                 PogSection(
@@ -163,6 +183,7 @@ fun PredictionScreen(
                     mode = currentMode,
                     voteItems = voteItems,
                     savedItems = savedTexts,
+                    isSaveEnabled = !state.isPogSaved,
                     onToggleItem = { clickedIndex ->
                         voteItems = voteItems.mapIndexed { index, item ->
                             if (index == clickedIndex) item.copy(isExpanded = !item.isExpanded)
@@ -172,21 +193,89 @@ fun PredictionScreen(
                     onSelectOption = { itemIndex, option ->
                         voteItems = voteItems.mapIndexed { index, item ->
                             if (index == itemIndex) {
-                                val playerId = state.setPogData?.get(itemIndex)?.candidates
-                                    ?.find { it.playerName == option }?.playerId ?: -1
-
-                                onSelectPog(state.setPogData?.get(itemIndex)?.setIndex ?: 0, playerId)
-
-                                item.copy(selectedOption = option, isExpanded = false)
+                                item.copy(
+                                    selectedOption = option,
+                                    isExpanded = false
+                                )
                             } else item
                         }
                     },
                     onSaveClick = {
-                        pogSectionMode = PogSectionMode.SAVED
+                        val setVotes = state.setPogData?.mapIndexed { index, setDetail ->
+                            val selectedOption = voteItems.getOrNull(index)?.selectedOption
+
+                            val playerId: Long? = when (selectedOption) {
+                                null, "해당없음" -> null
+                                else -> setDetail.candidates
+                                    .find { it.playerName == selectedOption }
+                                    ?.playerId
+                                    ?.toLong()
+                            }
+
+                            SetPogVoteItem(
+                                setIndex = setDetail.setIndex,
+                                playerId = playerId
+                            )
+                        }.orEmpty()
+
+                        val pomSelectedOption = voteItems.lastOrNull()?.selectedOption
+                        val pomPlayerId: Long? = when (pomSelectedOption) {
+                            null, "해당없음" -> null
+                            else -> state.matchPogData?.candidates
+                                ?.find { it.playerName == pomSelectedOption }
+                                ?.playerId
+                                ?.toLong()
+                        }
+
+                        val isAllSelected = voteItems.all { it.selectedOption != null }
+
+                        if (isAllSelected) {
+                            onSavePogVotes(setVotes, pomPlayerId)
+                        } else {
+                            showIncompleteVoteDialog = true
+                        }
                     },
                     onResultClick = onResultClick
                 )
             }
         }
+    }
+    if (showIncompleteVoteDialog) {
+        IncompletePogVoteDialog(
+            voteItems = voteItems,
+            onDismiss = {
+                showIncompleteVoteDialog = false
+            },
+            onConfirmSave = {
+                val setVotes = state.setPogData?.mapIndexed { index, setDetail ->
+                    val selectedOption = voteItems.getOrNull(index)?.selectedOption
+
+                    val playerId: Long? = when (selectedOption) {
+                        null, "해당없음" -> null
+                        else -> setDetail.candidates
+                            .find { it.playerName == selectedOption }
+                            ?.playerId
+                            ?.toLong()
+                    }
+
+                    SetPogVoteItem(
+                        setIndex = setDetail.setIndex,
+                        playerId = playerId
+                    )
+                }.orEmpty()
+
+                val pomSelectedOption = voteItems.lastOrNull()?.selectedOption
+                val pomPlayerId: Long? = when (pomSelectedOption) {
+                    null, "해당없음" -> null
+                    else -> state.matchPogData?.candidates
+                        ?.find { it.playerName == pomSelectedOption }
+                        ?.playerId
+                        ?.toLong()
+                }
+
+                showIncompleteVoteDialog = false
+                onSavePogVotes(setVotes, pomPlayerId)
+            }
+        )
     }
 }
