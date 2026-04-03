@@ -467,35 +467,51 @@ class MatchesViewModel(
         matchPogPlayerId: Long?
     ) {
         viewModelScope.launch {
-            postSetPogVoteUseCase(
+            val setResult = postSetPogVoteUseCase(
                 matchId = matchId,
                 setPogVotes = setPogVotes
-            ).onSuccess {
-                postMatchPogVoteUseCase(
-                    matchId = matchId,
-                    playerId = matchPogPlayerId
-                ).onSuccess {
+            )
+
+            val matchResult = postMatchPogVoteUseCase(
+                matchId = matchId,
+                playerId = matchPogPlayerId
+            )
+
+            val setSuccess = setResult.isSuccess
+            val matchSuccess = matchResult.isSuccess
+
+            when {
+                setSuccess && matchSuccess -> {
                     _uiState.update { state ->
                         val currentState = state as? MatchUiState.Prediction ?: return@update state
-                        currentState.copy(
-                            isPogSaved = true
-                        )
+                        currentState.copy(isPogSaved = true)
                     }
-
                     _event.emit(MatchEvent.VoteSuccess)
-                }.onFailure { throwable ->
+                }
+
+                !setSuccess && matchSuccess -> {
                     _event.emit(
                         MatchEvent.ShowToast(
-                            throwable.message ?: "매치 POM 투표에 실패했습니다."
+                            setResult.exceptionOrNull()?.message ?: "세트 POG 투표에 실패했습니다."
                         )
                     )
                 }
-            }.onFailure { throwable ->
-                _event.emit(
-                    MatchEvent.ShowToast(
-                        throwable.message ?: "세트 POG 투표에 실패했습니다."
+
+                setSuccess && !matchSuccess -> {
+                    _event.emit(
+                        MatchEvent.ShowToast(
+                            matchResult.exceptionOrNull()?.message ?: "매치 POM 투표에 실패했습니다."
+                        )
                     )
-                )
+                }
+
+                else -> {
+                    val setMessage = setResult.exceptionOrNull()?.message ?: "세트 POG 투표 실패"
+                    val matchMessage = matchResult.exceptionOrNull()?.message ?: "매치 POM 투표 실패"
+                    _event.emit(
+                        MatchEvent.ShowToast("$setMessage\n$matchMessage")
+                    )
+                }
             }
         }
     }

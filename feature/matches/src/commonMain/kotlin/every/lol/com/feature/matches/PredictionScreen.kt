@@ -68,12 +68,6 @@ fun PredictionRoute(
                     matchPogPlayerId = pomPlayerId
                 )
             )
-            viewModel.onIntent(
-                MatchIntent.SubmitMatchPogVote(
-                    matchId = matchId,
-                    playerId = pomPlayerId
-                )
-            )
         }
     )
 }
