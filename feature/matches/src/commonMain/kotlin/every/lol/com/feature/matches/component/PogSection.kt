@@ -18,7 +18,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import everylol.feature.matches.generated.resources.Res
 import everylol.feature.matches.generated.resources.ic_double_arrow_right
@@ -46,6 +48,7 @@ fun PogSection(
     mode: PogSectionMode,
     voteItems: List<PogVoteItem> = emptyList(),
     savedItems: List<String> = emptyList(),
+    isSaveEnabled: Boolean = true,
     onToggleItem: (Int) -> Unit = {},
     onSelectOption: (itemIndex: Int, option: String) -> Unit = { _, _ -> },
     onSaveClick: () -> Unit = {},
@@ -68,12 +71,12 @@ fun PogSection(
 
                 PogWaitingCard()
             }
-
-            PogSectionMode.VOTING -> {
-                PogVoteHeader(
-                    title = title,
-                    showSaveButton = true,
-                    onSaveClick = onSaveClick
+            PogSectionMode.VOTING,
+            PogSectionMode.SAVED -> {
+                Text(
+                    text = title,
+                    color = EveryLoLTheme.color.grayScale600,
+                    style = EveryLoLTheme.typography.subtitle03
                 )
 
                 Column(
@@ -92,21 +95,13 @@ fun PogSection(
                         )
                     }
                 }
-            }
 
-            PogSectionMode.SAVED -> {
-                PogSavedHeader(
-                    title = title,
+                PogBottomButtons(
+                    isSaved = mode == PogSectionMode.SAVED,
+                    isSaveEnabled = mode != PogSectionMode.SAVED,
+                    onSaveClick = onSaveClick,
                     onResultClick = onResultClick
                 )
-
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    savedItems.forEach { text ->
-                        PogSavedItemCard(text = text)
-                    }
-                }
             }
         }
     }
@@ -147,43 +142,6 @@ fun PogWaitingCard(
 
                 Text(
                     text = "나만의 POG/POM을 뽑아보세요",
-                    color = EveryLoLTheme.color.grayScale600,
-                    style = EveryLoLTheme.typography.subtitle03
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun PogVoteHeader(
-    title: String,
-    showSaveButton: Boolean,
-    onSaveClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = title,
-            color = EveryLoLTheme.color.grayScale600,
-            style = EveryLoLTheme.typography.subtitle03
-        )
-
-        if (showSaveButton) {
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(EveryLoLTheme.color.grayScale900)
-                    .clickable(onClick = onSaveClick)
-                    .padding(horizontal = 6.dp, vertical = 2.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "저장하기",
                     color = EveryLoLTheme.color.grayScale600,
                     style = EveryLoLTheme.typography.subtitle03
                 )
@@ -284,61 +242,161 @@ private fun PogOptionList(
 }
 
 @Composable
-private fun PogSavedHeader(
-    title: String,
+private fun PogBottomButtons(
+    isSaved: Boolean,
+    isSaveEnabled: Boolean,
+    onSaveClick: () -> Unit,
     onResultClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        modifier = modifier.width(328.dp),
+        horizontalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        Text(
-            text = title,
-            color = EveryLoLTheme.color.grayScale600,
-            style = EveryLoLTheme.typography.subtitle03
+        PogActionButton(
+            text = if (isSaved) "저장완료" else "저장하기",
+            backgroundColor = if (isSaved) {
+                EveryLoLTheme.color.grayScale800
+            } else {
+                EveryLoLTheme.color.grayScale400
+            },
+            textColor = if (isSaved) {
+                EveryLoLTheme.color.grayScale600
+            } else {
+                EveryLoLTheme.color.black900
+            },
+            enabled = isSaveEnabled,
+            modifier = Modifier.weight(1f),
+            onClick = onSaveClick
         )
 
-        Row(
-            modifier = Modifier.clickable(onClick = onResultClick),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            Text(
-                text = "실시간 결과 보기",
-                color = EveryLoLTheme.color.white200,
-                style = EveryLoLTheme.typography.subtitle03
-            )
-
-            Icon(
-                painter = painterResource(Res.drawable.ic_double_arrow_right),
-                contentDescription = "실시간 결과 보기",
-                tint = EveryLoLTheme.color.grayScale200,
-                modifier = Modifier.size(width = 12.dp, height = 12.dp)
-            )
-        }
+        PogActionButton(
+            text = "실시간 결과보기",
+            backgroundColor = EveryLoLTheme.color.grayScale400,
+            textColor = EveryLoLTheme.color.black900,
+            enabled = true,
+            modifier = Modifier.weight(1f),
+            onClick = onResultClick
+        )
     }
 }
 
 @Composable
-private fun PogSavedItemCard(
+private fun PogActionButton(
     text: String,
-    modifier: Modifier = Modifier
+    backgroundColor: Color,
+    textColor: Color,
+    enabled: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
 ) {
     Box(
         modifier = modifier
-            .fillMaxWidth()
-            .height(44.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .background(EveryLoLTheme.color.grayScale1000)
-            .padding(horizontal = 16.dp),
-        contentAlignment = Alignment.CenterStart
+            .height(40.dp)
+            .clip(RoundedCornerShape(7.dp))
+            .background(backgroundColor)
+            .clickable(
+                enabled = enabled,
+                onClick = onClick
+            ),
+        contentAlignment = Alignment.Center
     ) {
         Text(
             text = text,
-            color = EveryLoLTheme.color.grayScale600,
-            style = EveryLoLTheme.typography.body01
+            color = textColor,
+            style = EveryLoLTheme.typography.body03
         )
+    }
+}
+
+@Composable
+fun IncompletePogVoteDialog(
+    voteItems: List<PogVoteItem>,
+    onDismiss: () -> Unit,
+    onConfirmSave: () -> Unit
+) {
+    val notSelectedTexts = voteItems.mapIndexedNotNull { index, item ->
+        if (item.selectedOption != null) return@mapIndexedNotNull null
+
+        if (index == voteItems.lastIndex) {
+            "POM (투표 안 함)"
+        } else {
+            "${index + 1}세트 POG (투표 안 함)"
+        }
+    }
+
+    val detailText = if (notSelectedTexts.isEmpty()) {
+        ""
+    } else {
+        "모든 투표가 완료되지 않았습니다.\n${notSelectedTexts.joinToString(", ")}"
+    }
+
+    Dialog(
+        onDismissRequest = onDismiss
+    ) {
+        Box(
+            modifier = Modifier
+                .width(304.dp)
+                .clip(RoundedCornerShape(20.dp))
+                .background(EveryLoLTheme.color.grayScale100)
+                .padding(horizontal = 24.dp)
+                .padding(top = 24.dp, bottom = 20.dp)
+        ) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = "투표를 완료할까요?",
+                        color = EveryLoLTheme.color.grayScale1000,
+                        style = EveryLoLTheme.typography.subtitle02
+                    )
+
+                    Text(
+                        text = detailText,
+                        color = EveryLoLTheme.color.grayScale600,
+                        style = EveryLoLTheme.typography.pretendardBody02
+                    )
+                }
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(42.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(EveryLoLTheme.color.grayScale400)
+                            .clickable(onClick = onDismiss),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "수정",
+                            color = EveryLoLTheme.color.grayScale800,
+                            style = EveryLoLTheme.typography.heading02
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(42.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(EveryLoLTheme.color.grayScale800)
+                            .clickable(onClick = onConfirmSave),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "저장",
+                            color = EveryLoLTheme.color.grayScale400,
+                            style = EveryLoLTheme.typography.heading02
+                        )
+                    }
+                }
+            }
+        }
     }
 }

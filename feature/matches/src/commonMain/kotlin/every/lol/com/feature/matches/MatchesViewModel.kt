@@ -11,6 +11,7 @@ import every.lol.com.core.domain.usecase.PostMatchPogVoteUseCase
 import every.lol.com.core.domain.usecase.PostMatchVoteUseCase
 import every.lol.com.core.domain.usecase.PostSetPogVoteUseCase
 import every.lol.com.core.model.MatchCardModel
+import every.lol.com.core.model.MatchStatus
 import every.lol.com.core.model.SetPogVoteItem
 import every.lol.com.feature.matches.model.MatchIntent
 import every.lol.com.feature.matches.model.MatchUiState
@@ -65,7 +66,8 @@ class MatchesViewModel(
 
                 _uiState.value = MatchUiState.Prediction(
                     matchId = intent.matchId,
-                    isLoading = true
+                    isLoading = true,
+                    match = baseMatchInfo
                 )
                 getMatchCandidate(intent.matchId, baseMatchInfo)
                 getMatchPogCandidate(intent.matchId)
@@ -146,6 +148,15 @@ class MatchesViewModel(
             is MatchIntent.LoadMatchPogResult -> {
                 handleLoadMatchPogResult(intent.matchId)
             }
+
+            is MatchIntent.SubmitPogVotes -> {
+                handleSubmitPogVotes(
+                    matchId = intent.matchId,
+                    setPogVotes = intent.setPogVotes,
+                    matchPogPlayerId = intent.matchPogPlayerId
+                )
+            }
+            MatchIntent.RefreshMatches -> loadMatches(isRefresh = true)
         }
     }
     private fun loadMatches(isRefresh: Boolean = false) {
@@ -223,6 +234,18 @@ class MatchesViewModel(
                 matchId = matchId,
                 teamId = teamId
             ).onSuccess {
+                _uiState.update { state ->
+                    val currentState = state as? MatchUiState.Prediction ?: return@update state
+
+                    val updatedMatchData = currentState.matchData?.copy(
+                        myVotedTeamId = teamId.toLong()
+                    )
+
+                    currentState.copy(
+                        matchData = updatedMatchData
+                    )
+                }
+
                 _event.emit(MatchEvent.VoteSuccess)
             }.onFailure { throwable ->
                 _event.emit(
@@ -352,18 +375,34 @@ class MatchesViewModel(
     //승혁 코드
     private fun getMatchCandidate(matchId: Long, baseInfo: MatchCardModel?) {
         viewModelScope.launch {
-            getMatchCandidateUseCase(matchId).onSuccess {
+            getMatchCandidateUseCase(matchId).onSuccess { result ->
                 _uiState.update { state ->
                     val currentState =
                         state as? MatchUiState.Prediction ?: MatchUiState.Prediction()
                     currentState.copy(
                         isLoading = false,
-                        matchId = it.matchId,
-                        matchData = it,
+                        matchId = result.matchId,
+                        matchData = result,
                         seasonName = baseInfo?.seasonName ?: "",
                         groupName = baseInfo?.groupName ?: "",
                         roundName = baseInfo?.roundName ?: "",
-                        matchDate = baseInfo?.matchDate ?: ""
+                        matchDate = baseInfo?.matchDate ?: "",
+                        match = MatchCardModel(
+                            matchId = result.matchId,
+                            matchDate = baseInfo?.matchDate ?: "",
+                            matchStatus = baseInfo?.matchStatus ?: MatchStatus.SCHEDULED,
+                            seasonName = baseInfo?.seasonName ?: "",
+                            groupName = baseInfo?.groupName,
+                            roundName = baseInfo?.roundName ?: "",
+                            team1Id = result.team1.teamId,
+                            team1Name = result.team1.teamName,
+                            team2Id = result.team2.teamId,
+                            team2Name = result.team2.teamName,
+                            team1VoteRate = baseInfo?.team1VoteRate ?: 0.0,
+                            team2VoteRate = baseInfo?.team2VoteRate ?: 0.0,
+                            totalVoteCount = baseInfo?.totalVoteCount ?: 0,
+                            predictedWinnerTeamName = baseInfo?.predictedWinnerTeamName
+                        )
                     )
                 }
             }.onFailure { error ->
@@ -422,5 +461,42 @@ class MatchesViewModel(
         }
     }
 
+    private fun handleSubmitPogVotes(
+        matchId: Long,
+        setPogVotes: List<SetPogVoteItem>,
+        matchPogPlayerId: Long?
+    ) {
+        viewModelScope.launch {
+            postSetPogVoteUseCase(
+                matchId = matchId,
+                setPogVotes = setPogVotes
+            ).onSuccess {
+                postMatchPogVoteUseCase(
+                    matchId = matchId,
+                    playerId = matchPogPlayerId
+                ).onSuccess {
+                    _uiState.update { state ->
+                        val currentState = state as? MatchUiState.Prediction ?: return@update state
+                        currentState.copy(
+                            isPogSaved = true
+                        )
+                    }
 
+                    _event.emit(MatchEvent.VoteSuccess)
+                }.onFailure { throwable ->
+                    _event.emit(
+                        MatchEvent.ShowToast(
+                            throwable.message ?: "매치 POM 투표에 실패했습니다."
+                        )
+                    )
+                }
+            }.onFailure { throwable ->
+                _event.emit(
+                    MatchEvent.ShowToast(
+                        throwable.message ?: "세트 POG 투표에 실패했습니다."
+                    )
+                )
+            }
+        }
+    }
 }

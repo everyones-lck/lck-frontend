@@ -37,6 +37,7 @@ import every.lol.com.feature.community.navigation.readNavGraph
 import every.lol.com.feature.community.navigation.writeNavGraph
 import every.lol.com.feature.home.navigation.homeNavGraph
 import every.lol.com.feature.intro.navigation.introNavGraph
+import every.lol.com.feature.matches.navigation.liveResultNavGraph
 import every.lol.com.feature.matches.navigation.matchesNavGraph
 import every.lol.com.feature.matches.navigation.predictionNavGraph
 import every.lol.com.feature.mypage.navigation.mypageNavGraph
@@ -154,8 +155,14 @@ fun App() {
                         onBackClick = {
                             navController.popBackStack()
                         },
-                        onResultClick = {
-                            //Todo: 구현
+                        onResultClick = { matchId ->
+                            navController.navigate(Route.LiveResult(matchId))
+                        }
+                    )
+
+                    liveResultNavGraph(
+                        onBackClick = {
+                            navController.popBackStack()
                         }
                     )
 
