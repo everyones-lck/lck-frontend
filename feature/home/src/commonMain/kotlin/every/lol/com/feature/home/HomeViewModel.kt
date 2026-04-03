@@ -4,6 +4,7 @@ import every.lol.com.core.domain.usecase.GetHomeAlertsUseCase
 import every.lol.com.core.domain.usecase.GetHomeNewsUseCase
 import every.lol.com.core.domain.usecase.GetHomeRankingUseCase
 import every.lol.com.core.domain.usecase.GetHomeTodayMatchUseCase
+import every.lol.com.core.domain.usecase.GetMatchVoteRateUseCase
 import every.lol.com.feature.home.model.HomeIntent
 import every.lol.com.feature.home.model.HomeUiState
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -23,7 +24,8 @@ class HomeViewModel(
     private val getHomeTodayMatchUseCase: GetHomeTodayMatchUseCase,
     private val getHomeRankingUseCase: GetHomeRankingUseCase,
     private val getHomeNewsUseCase: GetHomeNewsUseCase,
-    private val getHomeAlertsUseCase: GetHomeAlertsUseCase
+    private val getHomeAlertsUseCase: GetHomeAlertsUseCase,
+    private val getMatchVotestUseCase: GetMatchVoteRateUseCase
     ): ViewModel() {
 
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
@@ -45,7 +47,12 @@ class HomeViewModel(
         }
     }
 
+    private var isInitialLoaded = false
+
     private fun loadInitial() {
+        if (isInitialLoaded) return
+        isInitialLoaded = true
+
         println("loadInitial")
         loadTodayMatchHome()
         loadRanking()
@@ -58,6 +65,9 @@ class HomeViewModel(
     }
 
     private fun loadTodayMatchHome() {
+        val state = _uiState.value
+        if (state is HomeUiState.Home && state.isLoading) return
+
         _uiState.update { state ->
             when (state) {
                 is HomeUiState.Home -> state.copy(isLoading = true)
@@ -76,13 +86,41 @@ class HomeViewModel(
                         isRefreshing = false
                     )
                 }
+                result.matches.forEach { match ->
+                    loadMatchVoteRate(match.matchId)
+                }
             }.onFailure { error ->
                 _uiState.update { state ->
                     val currentState = state as? HomeUiState.Home ?: HomeUiState.Home()
                     currentState.copy(isLoading = false)
                 }
+                isInitialLoaded = false
                 println(error)
                 _event.emit(HomeEvent.ShowToast(error.message ?: "데이터를 불러오지 못했습니다."))
+            }
+        }
+    }
+
+    private fun loadMatchVoteRate(matchId: Long) {
+        viewModelScope.launch {
+            getMatchVotestUseCase(matchId).onSuccess { rate ->
+                _uiState.update { state ->
+                    val currentState = state as? HomeUiState.Home ?: HomeUiState.Home()
+                    val updatedRates = currentState.matchRates.toMutableMap().apply {
+                        put(matchId, rate)
+                    }
+
+                    currentState.copy(
+                        matchRates = updatedRates
+                    )
+                }
+            }.onFailure {
+                _uiState.update { state ->
+                    val currentState = state as? HomeUiState.Home ?: HomeUiState.Home()
+                    currentState.copy(isLoading = false)
+                }
+                isInitialLoaded = false
+                println(it)
             }
         }
     }
@@ -103,6 +141,7 @@ class HomeViewModel(
                     val currentState = state as? HomeUiState.Home ?: HomeUiState.Home()
                     currentState.copy(isLoading = false)
                 }
+                isInitialLoaded = false
                 println(error)
                 _event.emit(HomeEvent.ShowToast(error.message ?: "데이터를 불러오지 못했습니다."))
             }
@@ -126,6 +165,7 @@ class HomeViewModel(
                     val currentState = state as? HomeUiState.Home ?: HomeUiState.Home()
                     currentState.copy(isLoading = false)
                 }
+                isInitialLoaded = false
                 println(error)
                 _event.emit(HomeEvent.ShowToast(error.message ?: "데이터를 불러오지 못했습니다."))
             }
@@ -149,6 +189,7 @@ class HomeViewModel(
                     val currentState = it as? HomeUiState.Home ?: HomeUiState.Home()
                     currentState.copy(isLoading = false)
                 }
+                isInitialLoaded = false
                 println(it)
             }
         }

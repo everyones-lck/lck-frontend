@@ -39,9 +39,9 @@ fun HomeRoute(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val homeState = uiState as? HomeUiState.Home
 
-    LaunchedEffect(Unit) {
+/*    LaunchedEffect(Unit) {
         viewModel.onIntent(HomeIntent.LoadInitial)
-    }
+    }*/
 
     LaunchedEffect(viewModel.event) {
         viewModel.event.collect { event ->

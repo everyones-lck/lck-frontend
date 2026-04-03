@@ -33,10 +33,12 @@ import androidx.compose.ui.unit.dp
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.core.model.HomeTodayMatch
 import every.lol.com.core.model.HomeTodayMatchDetail
+import every.lol.com.core.model.MatchVoteRate
 
 @Composable
 fun MatchCardRow(
     matchCards: HomeTodayMatch?=null,
+    matchRate: Map<Long, MatchVoteRate> = emptyMap(),
     modifier: Modifier = Modifier,
     onClick: (Long) -> Unit = {}
 ){
@@ -55,14 +57,17 @@ fun MatchCardRow(
             item {
                 MatchCard(
                     matchCard = null,
+                    voteRate = null,
                     modifier = Modifier.fillParentMaxWidth(1f),
                     onClick = {}
                 )
             }
         } else {
             items(matches.size) { index ->
+                val match = matches[index]
                 MatchCard(
-                    matchCard = matches[index],
+                    matchCard = match,
+                    voteRate = matchRate[match.matchId],
                     modifier = Modifier.fillParentMaxWidth(1f),
                     onClick = onClick
                 )
@@ -74,9 +79,13 @@ fun MatchCardRow(
 @Composable
 fun MatchCard(
     matchCard: HomeTodayMatchDetail?,
+    voteRate: MatchVoteRate?,
     modifier: Modifier = Modifier,
     onClick: (Long) -> Unit = {}
 ) {
+
+    val team1Progress = voteRate?.team1?.voteRate?.toFloat() ?: 0.5f
+    val team2Progress = voteRate?.team2?.voteRate?.toFloat() ?: 0.5f
 
     val statusColor = when(matchCard?.matchStatus){
         "LIVE" -> EveryLoLTheme.color.semanticWarning
@@ -148,7 +157,7 @@ fun MatchCard(
             ) {
                 MatchCardBarRow(
                     teamName = if (matchCard != null) matchCard.team1.teamName else "-",
-                    progress = 0.5f, //Todo: 추후 수정
+                    progress = team1Progress,
                     barColor = if (matchCard == null || (( matchCard.matchStatus == "FINISHED") &&  !matchCard.team1.winner)) {
                         SolidColor(EveryLoLTheme.color.grayScale800)
                     } else {
@@ -158,7 +167,7 @@ fun MatchCard(
 
                 MatchCardBarRow(
                     teamName = if(matchCard != null) matchCard.team2.teamName else ("-"),
-                    progress = 0.5f, //Todo: 추후 수정
+                    progress = team2Progress,
                     barColor = if (matchCard == null || (( matchCard.matchStatus == "FINISHED") && !matchCard.team2.winner)) {
                         SolidColor(EveryLoLTheme.color.grayScale800)
                     } else {
