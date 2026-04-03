@@ -4,13 +4,16 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -21,8 +24,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -101,7 +105,7 @@ fun NewsBanner(
 ) {
     Box(
         modifier = modifier
-            .fillMaxWidth()
+            .fillMaxSize()
             .clip(RoundedCornerShape(8.dp))
             .clickable { onBannerClick(banners.link) } //딥링크 구현
     ){
@@ -114,36 +118,42 @@ fun NewsBanner(
         Box(
             modifier = Modifier
                 .matchParentSize()
-                .background(
-                    Brush.horizontalGradient(
-                        0.0f to Color.Black.copy(0f),
-                        0.5f to Color.Black.copy(0.2f),
-                        1f to Color.Black.copy(0.8f)
-                    )
-                )
+                .background(Color.Black.copy(0.2f))
         )
         Column(
-            modifier = Modifier.fillMaxWidth().padding(12.dp),
-            horizontalAlignment = Alignment.End,
+            modifier = Modifier
+                .matchParentSize()
+                .padding(12.dp, 7.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.Bottom),
+            horizontalAlignment = Alignment.Start
         ) {
+            Box {
+                Text(
+                    text = "${banners.press} · ${banners.publishedAt}",
+                    style = EveryLoLTheme.typography.label03.copy(
+                        drawStyle = Stroke(
+                            width = 0.2f,
+                            join = StrokeJoin.Round
+                        )
+                    ),
+                    color = EveryLoLTheme.color.gray800
+                )
+                Text(
+                    text = "${banners.press} · ${banners.publishedAt}",
+                    style = EveryLoLTheme.typography.label03,
+                    color = EveryLoLTheme.color.white200
+                )
+            }
             Text(
-                text = banners.press,
-                style = EveryLoLTheme.typography.caption01,
-                color = EveryLoLTheme.color.white200,
-            )
-            Spacer(Modifier.weight(1f))
-            Text(
-                text = banners.publishedAt,
-                style = EveryLoLTheme.typography.caption01,
-                color = EveryLoLTheme.color.white200,
-            )
-            Text(
+                modifier = Modifier
+                    .widthIn(max = 160.dp)
+                    .background(EveryLoLTheme.color.black900)
+                    .padding(4.dp),
                 text = banners.title,
-                style = EveryLoLTheme.typography.subtitle03,
-                color = EveryLoLTheme.color.white200,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.fillMaxWidth(0.66f)
+                style = EveryLoLTheme.typography.subtitle04,
+                color = EveryLoLTheme.color.grayScale100,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
             )
         }
     }
