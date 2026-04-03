@@ -22,6 +22,8 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -42,6 +44,7 @@ import everylol.feature.matches.generated.resources.ic_ranking_four
 import everylol.feature.matches.generated.resources.ic_ranking_one
 import everylol.feature.matches.generated.resources.ic_ranking_three
 import everylol.feature.matches.generated.resources.ic_ranking_two
+import moe.tlaster.precompose.koin.koinViewModel
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 
@@ -53,6 +56,32 @@ data class ResultRankItem(
     val rank: Int,
     val name: String
 )
+
+@Composable
+fun LiveResultRoute(
+    matchId: Long,
+    innerPadding: PaddingValues = PaddingValues(),
+    viewModel: MatchesViewModel = koinViewModel(MatchesViewModel::class),
+    onBackClick: () -> Unit
+) {
+    val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(matchId) {
+        viewModel.onIntent(MatchIntent.ClickLiveResult(matchId))
+    }
+
+    val state = uiState as? MatchUiState.LiveResult ?: return
+
+    LiveResultScreen(
+        state = state,
+        innerPadding = innerPadding,
+        onBackClick = onBackClick,
+        onTabSelected = { index ->
+            viewModel.onIntent(MatchIntent.SelectLiveResultTab(index))
+        }
+    )
+}
+
 @Composable
 fun LiveResultScreen(
     state: MatchUiState.LiveResult,

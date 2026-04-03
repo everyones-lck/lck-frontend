@@ -8,20 +8,22 @@ import androidx.navigation.toRoute
 import every.lol.com.core.navigation.Route
 import every.lol.com.feature.matches.PredictionRoute
 
-fun NavController.navigatePrediction(navOptions: NavOptions) {
-    navigate(route = Route.Prediction, navOptions = navOptions)
+fun NavController.navigatePrediction(matchId: Long, navOptions: NavOptions? = null) {
+    navigate(route = Route.Prediction(matchId), navOptions = navOptions)
 }
 
 fun NavGraphBuilder.predictionNavGraph(
     onBackClick: () -> Unit,
-    onResultClick: () -> Unit
+    onResultClick: (Long) -> Unit
 ) {
     composable<Route.Prediction> { backStackEntry->
         val predictionRoute: Route.Prediction = backStackEntry.toRoute()
         PredictionRoute(
             matchId = predictionRoute.matchId,
             onBackClick = onBackClick,
-            onResultClick = onResultClick
+            onResultClick = {
+                onResultClick(predictionRoute.matchId)
+            }
         )
     }
 }

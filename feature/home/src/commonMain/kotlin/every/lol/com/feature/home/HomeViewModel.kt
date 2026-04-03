@@ -180,8 +180,8 @@ class HomeViewModel(
                     currentState.copy(
                         isLoading = false,
                         alerts = result,
-                        isRefreshing = false,
-                        alertsMessage = result.alerts[0].message
+                        isRefresh = false,
+                        alertsMessage = result.alerts.firstOrNull()?.message.orEmpty()
                     )
                 }
             }.onFailure {
