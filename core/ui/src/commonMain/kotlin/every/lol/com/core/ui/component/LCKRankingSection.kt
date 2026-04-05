@@ -68,14 +68,11 @@ fun LckRankingSection(
             Text(
                 text = "경기가 아직 진행되지 않았습니다",
                 style = EveryLoLTheme.typography.subtitle03,
-                color = EveryLoLTheme.color.white200,
-                modifier = Modifier.padding(horizontal = 16.dp)
+                color = EveryLoLTheme.color.white200
             )
         } else {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
             ) {
                 // Todo: 응원팀 로컬에 저장 및 호출 구현

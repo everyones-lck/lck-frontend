@@ -67,6 +67,7 @@ class AboutLCKViewModel(
                     val currentState = state as? AboutLCKUiState.AboutLCK ?:AboutLCKUiState.AboutLCK()
                     currentState.copy(isLoading = false)
                 }
+                isInitialLoaded = false
                 println(error)
                 _event.emit(AboutLCKEvent.ShowToast("잠시 후 다시 시도해주세요."))
             }

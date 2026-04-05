@@ -47,12 +47,12 @@ fun AboutLCKRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val aboutLCK = uiState as? AboutLCKUiState.AboutLCK
-
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(viewModel.event) {
         viewModel.event.collect { event ->
             when (event) {
-                is AboutLCKEvent.ShowToast -> {  }
+                is AboutLCKEvent.ShowToast -> snackbarHostState.showSnackbar(event.message)
                 else -> {}
             }
         }
@@ -72,6 +72,7 @@ fun AboutLCKRoute(
     }else {
         AboutLCKScreen(
             state = uiState,
+            snackbarHostState = snackbarHostState,
             onIntent = viewModel::onIntent
         )
     }
@@ -80,10 +81,10 @@ fun AboutLCKRoute(
 @Composable
 fun AboutLCKScreen(
     state: AboutLCKUiState,
+    snackbarHostState: SnackbarHostState,
     onIntent: (AboutLCKIntent) -> Unit
 ) {
 
-    val snackbarHostState = remember { SnackbarHostState() }
     val aboutLCKState = state as? AboutLCKUiState.AboutLCK
     val ranking = aboutLCKState?.ranking?.groups?.firstOrNull()?.teams ?: emptyList()
     val matches = aboutLCKState?.match?.matches ?: emptyList()
