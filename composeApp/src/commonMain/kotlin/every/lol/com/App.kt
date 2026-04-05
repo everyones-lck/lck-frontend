@@ -25,18 +25,18 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.core.navigation.MainTab
 import every.lol.com.core.navigation.Route
-import every.lol.com.feature.aboutlck.AboutLCKScreen
+import every.lol.com.feature.aboutlck.navigation.aboutLCKNavGraph
 import every.lol.com.feature.community.navigation.communityNavGraph
 import every.lol.com.feature.community.navigation.readNavGraph
 import every.lol.com.feature.community.navigation.writeNavGraph
 import every.lol.com.feature.home.navigation.homeNavGraph
 import every.lol.com.feature.intro.navigation.introNavGraph
+import every.lol.com.feature.matches.navigation.liveResultNavGraph
 import every.lol.com.feature.matches.navigation.matchesNavGraph
 import every.lol.com.feature.matches.navigation.predictionNavGraph
 import every.lol.com.feature.mypage.navigation.mypageNavGraph
@@ -154,12 +154,20 @@ fun App() {
                         onBackClick = {
                             navController.popBackStack()
                         },
-                        onResultClick = {
-                            //Todo: 구현
+                        onResultClick = { matchId ->
+                            navController.navigate(Route.LiveResult(matchId))
                         }
                     )
 
-                    composable<Route.AboutLCK> { AboutLCKScreen() }
+                    liveResultNavGraph(
+                        onBackClick = {
+                            navController.popBackStack()
+                        }
+                    )
+
+                    aboutLCKNavGraph(
+
+                    )
 
                     communityNavGraph(
                         innerPadding = innerPadding,

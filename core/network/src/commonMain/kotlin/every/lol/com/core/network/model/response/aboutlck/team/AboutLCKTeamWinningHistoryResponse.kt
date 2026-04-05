@@ -1,10 +1,10 @@
-package every.lol.com.core.network.model.response
+package every.lol.com.core.network.model.response.aboutlck.team
 
 import kotlinx.serialization.Serializable
 
 
 @Serializable
-data class AboutLCKTeamHistoryResponse(
+data class AboutLCKTeamWinningHistoryResponse(
     val seasonNameList: List<String>,
     val totalPage: Int,
     val totalElements: Int,

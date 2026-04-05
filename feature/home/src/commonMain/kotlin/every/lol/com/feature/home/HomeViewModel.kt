@@ -181,7 +181,7 @@ class HomeViewModel(
                         isLoading = false,
                         alerts = result,
                         isRefreshing = false,
-                        alertsMessage = result.alerts[0].message
+                        alertsMessage = result.alerts.firstOrNull()?.message.orEmpty()
                     )
                 }
             }.onFailure {

@@ -15,10 +15,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.core.model.MatchStatus
+import every.lol.com.core.ui.component.getTeamColor
 
 enum class PredictionTeam {
     TEAM1, TEAM2
@@ -36,6 +36,7 @@ fun PredictionVoteSection(
     team2Name: String,
     selectedTeam: PredictionTeam?,
     predictionResult: PredictionResult? = null,
+    isVoteEnabled: Boolean,
     onLeftClick: () -> Unit,
     onRightClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -96,6 +97,7 @@ fun PredictionVoteSection(
                 matchStatus = matchStatus,
                 selectedTeam = selectedTeam,
                 predictionResult = predictionResult,
+                isVoteEnabled = isVoteEnabled,
                 modifier = Modifier.weight(1f),
                 onClick = onLeftClick
             )
@@ -107,6 +109,7 @@ fun PredictionVoteSection(
                 matchStatus = matchStatus,
                 selectedTeam = selectedTeam,
                 predictionResult = predictionResult,
+                isVoteEnabled = isVoteEnabled,
                 modifier = Modifier.weight(1f),
                 onClick = onRightClick
             )
@@ -121,6 +124,7 @@ private fun PredictionTeamButton(
     matchStatus: MatchStatus,
     selectedTeam: PredictionTeam?,
     predictionResult: PredictionResult?,
+    isVoteEnabled: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -168,7 +172,7 @@ private fun PredictionTeamButton(
         }
     }
 
-    val enabled = matchStatus == MatchStatus.SCHEDULED
+    val enabled = isVoteEnabled
 
     Box(
         modifier = modifier
@@ -186,22 +190,5 @@ private fun PredictionTeamButton(
             color = textColor,
             style = EveryLoLTheme.typography.body01
         )
-    }
-}
-
-@Composable
-private fun getTeamColor(teamName: String): Color {
-    return when (teamName.uppercase()) {
-        "DK", "DPLUS KIA" -> EveryLoLTheme.color.teamDK
-        "BFX", "BNK FEARX", "FEARX" -> EveryLoLTheme.color.teamBFX
-        "HLE", "HANWHA LIFE ESPORTS" -> EveryLoLTheme.color.teamHLE
-        "GEN", "GEN.G", "GENG" -> EveryLoLTheme.color.teamGen
-        "T1" -> EveryLoLTheme.color.teamT1
-        "KT", "KT Rolster" -> EveryLoLTheme.color.teamKT
-        "BRO", "BRION" -> EveryLoLTheme.color.teamBRO
-        "DRX", "KRX" -> EveryLoLTheme.color.teamKRX
-        "DN", "DNF", "DNS" -> EveryLoLTheme.color.teamDNS
-        "NS", "NONGSHIM" -> EveryLoLTheme.color.teamNS
-        else -> EveryLoLTheme.color.gray800
     }
 }

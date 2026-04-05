@@ -7,12 +7,12 @@ import every.lol.com.core.model.HomeAlerts
 import every.lol.com.core.model.HomeAlertsDetail
 import every.lol.com.core.model.HomeNews
 import every.lol.com.core.model.HomeNewsDetail
-import every.lol.com.core.model.HomeRanking
-import every.lol.com.core.model.HomeRankingGroup
-import every.lol.com.core.model.HomeRankingTeam
 import every.lol.com.core.model.HomeTeam
 import every.lol.com.core.model.HomeTodayMatch
 import every.lol.com.core.model.HomeTodayMatchDetail
+import every.lol.com.core.model.Ranking
+import every.lol.com.core.model.RankingGroup
+import every.lol.com.core.model.RankingTeam
 import every.lol.com.core.network.datasource.HomeDataSource
 
 class HomeRepositoryImpl(
@@ -46,14 +46,14 @@ class HomeRepositoryImpl(
             )
         }
 
-    override suspend fun ranking(): Result<HomeRanking> =
+    override suspend fun ranking(): Result<Ranking> =
         remote.ranking().toResult().map { response ->
-            HomeRanking(
+            Ranking(
                 groups = response.groups.map {
-                    HomeRankingGroup(
+                    RankingGroup(
                         groupName = it.groupName,
                         teams = it.teams.map { team ->
-                            HomeRankingTeam(
+                            RankingTeam(
                                 rank = team.rank,
                                 teamName = team.teamName
                             )

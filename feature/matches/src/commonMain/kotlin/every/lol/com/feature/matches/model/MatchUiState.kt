@@ -24,7 +24,8 @@ sealed interface MatchUiState {
         val seasonName: String ="",
         val groupName: String ="",
         val roundName: String ="",
-        val matchDate: String =""
+        val matchDate: String ="",
+        val isPogSaved: Boolean = false
     ) : MatchUiState
 
     data class LiveResult(
@@ -51,4 +52,10 @@ sealed interface MatchIntent {
     data class SubmitMatchPogVote(val matchId: Long, val playerId: Long?) : MatchIntent
     data class LoadSetPogResult(val matchId: Long) : MatchIntent
     data class LoadMatchPogResult(val matchId: Long) : MatchIntent
+    data class SubmitPogVotes(
+        val matchId: Long,
+        val setPogVotes: List<SetPogVoteItem>,
+        val matchPogPlayerId: Long?
+    ) : MatchIntent
+    data object RefreshMatches : MatchIntent
 }
