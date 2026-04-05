@@ -56,3 +56,10 @@ actual suspend fun getMediaMetadata(
         retriever.release()
     }
 }
+
+actual fun isVideoUri(uri: Any, context: Any): Boolean {
+    val androidContext = context as? Context ?: return false
+    val androidUri = (uri as? Uri) ?: Uri.parse(uri.toString())
+    val mimeType = androidContext.contentResolver.getType(androidUri)
+    return mimeType?.startsWith("video") == true
+}

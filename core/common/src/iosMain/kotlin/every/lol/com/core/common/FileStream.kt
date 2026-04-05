@@ -6,26 +6,15 @@ import io.ktor.utils.io.core.writeFully
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.usePinned
-import platform.Foundation.NSCachesDirectory
-import platform.Foundation.NSData
-import platform.Foundation.NSFileManager
-import platform.Foundation.NSURL
-import platform.Foundation.NSUUID
-import platform.Foundation.NSUserDomainMask
-import platform.Foundation.writeToURL
+import platform.Foundation.*
 import platform.posix.memcpy
 
 @OptIn(ExperimentalForeignApi::class)
-actual fun openFileStream(context: Any,path: String): Input {
-    val fileManager = NSFileManager.defaultManager
-    val data = fileManager.contentsAtPath(path)
-        ?: throw Exception("파일을 읽을 수 없습니다: $path")
-
-    return buildPacket {
-        writeFully(data.toByteArray())
-    }
+actual fun openFileStream(context: Any, path: String): Input {
+    val url = NSURL.URLWithString(path) ?: throw Exception("Invalid Path")
+    val inputStream = NSInputStream.inputStreamWithURL(url) ?: throw Exception("Stream Open Failed")
+    return inputStream.asInput() // Ktor의 ios용 확장함수
 }
-
 @OptIn(ExperimentalForeignApi::class)
 fun NSData.toByteArray(): ByteArray {
     val size = length.toInt()

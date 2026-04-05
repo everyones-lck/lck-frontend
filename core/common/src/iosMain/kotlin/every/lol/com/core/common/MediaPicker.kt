@@ -1,17 +1,7 @@
 package every.lol.com.core.common
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import kotlinx.cinterop.ExperimentalForeignApi
-import platform.AVFoundation.*
-import platform.CoreMedia.*
-import platform.Foundation.*
-import platform.UIKit.*
-import platform.CoreGraphics.*
-import kotlinx.cinterop.*
 
 private const val OPEN_IMAGE_PICKER_NOTIFICATION = "EverylolOpenImagePicker"
 private const val IMAGE_PICKER_RESULT_NOTIFICATION = "EverylolImagePickerResult"
@@ -24,6 +14,15 @@ private const val KEY_VIDEO_DURATION = "duration" // 초 단위 (Double)
 //Todo: iOS 전용 미디어 가져오기 만들기
 @OptIn(ExperimentalForeignApi::class)
 @Composable
+actual fun rememberMultiResourcePickerLauncher(
+    onResult: (List<Any>) -> Unit
+): () -> Unit {
+    // 런처가 호출되었을 때 실행할 빈 람다 반환
+    return {
+        // iOS 구현 전까지 비워둠
+    }
+}
+/*
 actual fun rememberMultiResourcePickerLauncher(
     onResult: (List<Any>) -> Unit
 ): () -> Unit {
@@ -77,7 +76,7 @@ actual fun rememberMultiResourcePickerLauncher(
     }
 
     return {
-      /*  NSNotificationCenter.defaultCenter.postNotificationName(
+      *//*  NSNotificationCenter.defaultCenter.postNotificationName(
             name = OPEN_IMAGE_PICKER_NOTIFICATION,
             `object` = null,
             userInfo = mapOf(
@@ -86,12 +85,19 @@ actual fun rememberMultiResourcePickerLauncher(
                 "maxVideoCount" to 2,
                 "videoDurationLimit" to 180.0
             )
-        )*/
+        )*//*
     }
 }
-
+*/
 
 //동영상에서 썸네일 가져오는 함수
+@OptIn(ExperimentalForeignApi::class)
+actual suspend fun getMediaMetadata(context: Any, uriString: String): VideoMetadata {
+    // iOS 구현 전까지 기본값(0초, 썸네일 없음) 반환
+    return VideoMetadata(0L, null)
+}
+/*
+
 @OptIn(ExperimentalForeignApi::class)
 actual suspend fun getMediaMetadata(context: Any, uriString: String): VideoMetadata {
     val url = NSURL.URLWithString(uriString) ?: return VideoMetadata(0L, null)
@@ -120,4 +126,11 @@ actual suspend fun getMediaMetadata(context: Any, uriString: String): VideoMetad
     } catch (e: Exception) {
         VideoMetadata(durationMs, null)
     }
+}
+*/
+
+actual fun isVideoUri(uri: Any, context: Any): Boolean {
+    // iOS는 보통 URI 문자열에 확장자가 포함되거나 PHAsset 타입을 사용함
+    val uriString = uri.toString().lowercase()
+    return uriString.contains(".mp4") || uriString.contains(".mov")
 }

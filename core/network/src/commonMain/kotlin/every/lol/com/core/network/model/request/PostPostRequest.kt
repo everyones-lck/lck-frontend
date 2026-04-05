@@ -2,10 +2,13 @@ package every.lol.com.core.network.model.request
 
 import kotlinx.serialization.Serializable
 
+data class MediaFileRequst(
+    val uriString: String,
+    val isVideo: Boolean
+)
 
-@Serializable
 data class PostPostRequest(
-    val files: List<ByteArray>?=null,
+    val files: List<MediaFileRequst>?=null,
     val request: PostPostDetailRequest
 )
 
