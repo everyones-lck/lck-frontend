@@ -1,4 +1,4 @@
-package every.lol.com.feature.home.component
+package every.lol.com.core.ui.component
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -25,24 +25,24 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
-import every.lol.com.core.model.HomeRankingTeam
+import every.lol.com.core.model.RankingTeam
 import every.lol.com.core.model.Team.Companion.fromTeamName
-import everylol.feature.home.generated.resources.Res
-import everylol.feature.home.generated.resources.img_ranking_bfx
-import everylol.feature.home.generated.resources.img_ranking_bro
-import everylol.feature.home.generated.resources.img_ranking_dk
-import everylol.feature.home.generated.resources.img_ranking_dns
-import everylol.feature.home.generated.resources.img_ranking_gen
-import everylol.feature.home.generated.resources.img_ranking_hle
-import everylol.feature.home.generated.resources.img_ranking_krx
-import everylol.feature.home.generated.resources.img_ranking_kt
-import everylol.feature.home.generated.resources.img_ranking_ns
-import everylol.feature.home.generated.resources.img_ranking_t1
+import everylol.core.ui.generated.resources.Res
+import everylol.core.ui.generated.resources.img_ranking_bfx
+import everylol.core.ui.generated.resources.img_ranking_bro
+import everylol.core.ui.generated.resources.img_ranking_dk
+import everylol.core.ui.generated.resources.img_ranking_dns
+import everylol.core.ui.generated.resources.img_ranking_gen
+import everylol.core.ui.generated.resources.img_ranking_hle
+import everylol.core.ui.generated.resources.img_ranking_krx
+import everylol.core.ui.generated.resources.img_ranking_kt
+import everylol.core.ui.generated.resources.img_ranking_ns
+import everylol.core.ui.generated.resources.img_ranking_t1
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun LckRankingSection(
-    standings: List<HomeRankingTeam>, //추후 Group으로 수정
+    standings: List<RankingTeam>, //추후 Group으로 수정
     modifier: Modifier = Modifier,
     onTeamClick: (Long) -> Unit = {},
     // cardBackground: @Composable BoxScope.(LckStandingTeamModel) -> Unit = {}
@@ -60,8 +60,7 @@ fun LckRankingSection(
         Text(
             text = "LCK 순위",
             style = EveryLoLTheme.typography.subtitle03,
-            color = EveryLoLTheme.color.grayScale800,
-            modifier = Modifier.padding(horizontal = 16.dp)
+            color = EveryLoLTheme.color.grayScale800
         )
 
         Spacer(modifier = Modifier.height(20.dp))
@@ -159,7 +158,7 @@ private fun FavoriteRankCard(
 
 @Composable
 private fun TopRankCard(
-    team: HomeRankingTeam,
+    team: RankingTeam,
     onClick: (Long) -> Unit
 ) {
 
@@ -212,7 +211,7 @@ private fun TopRankCard(
 
 @Composable
 private fun RankListRow(
-    team: HomeRankingTeam,
+    team: RankingTeam,
     isFavorite: Boolean,
     onClick: (Long) -> Unit
 ) {

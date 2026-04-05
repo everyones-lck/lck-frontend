@@ -21,12 +21,12 @@ import every.lol.com.core.domain.usecase.CheckAuthUseCase
 import every.lol.com.core.domain.usecase.DeleteCommentUseCase
 import every.lol.com.core.domain.usecase.DeletePostUseCase
 import every.lol.com.core.domain.usecase.GetCommunityPostsUseCase
-import every.lol.com.core.domain.usecase.GetMatchPogResultUseCase
 import every.lol.com.core.domain.usecase.GetHomeAlertsUseCase
 import every.lol.com.core.domain.usecase.GetHomeNewsUseCase
 import every.lol.com.core.domain.usecase.GetHomeRankingUseCase
 import every.lol.com.core.domain.usecase.GetHomeTodayMatchUseCase
 import every.lol.com.core.domain.usecase.GetMatchPogCandidateUseCase
+import every.lol.com.core.domain.usecase.GetMatchPogResultUseCase
 import every.lol.com.core.domain.usecase.GetMatchVoteRateUseCase
 import every.lol.com.core.domain.usecase.GetMatchesCandidateUseCase
 import every.lol.com.core.domain.usecase.GetMatchesUseCase
@@ -51,6 +51,7 @@ import every.lol.com.core.domain.usecase.ReportPostUseCase
 import every.lol.com.core.domain.usecase.SignupUseCase
 import every.lol.com.core.domain.usecase.SocialLoginUseCase
 import every.lol.com.core.domain.usecase.WithdrawalUseCase
+import every.lol.com.core.domain.usecase.aboutlck.GetAboutLCKMatchUseCase
 import every.lol.com.core.network.datasource.AboutLCKDataSource
 import every.lol.com.core.network.datasource.AuthDataSource
 import every.lol.com.core.network.datasource.CommunityDataSource
@@ -65,6 +66,7 @@ import every.lol.com.core.network.remote.CommunityDataSourceImpl
 import every.lol.com.core.network.remote.HomeDataSourceImpl
 import every.lol.com.core.network.remote.MatchesDataSourceImpl
 import every.lol.com.core.network.remote.MyPagesDataSourceImpl
+import every.lol.com.feature.aboutlck.AboutLCKViewModel
 import every.lol.com.feature.community.CommunityViewModel
 import every.lol.com.feature.home.HomeViewModel
 import every.lol.com.feature.intro.IntroViewModel
@@ -135,11 +137,14 @@ val appDependenciesModule = module {
     factory { GetMatchesCandidateUseCase(get()) }
     factory { GetSetPogCandidateUseCase(get()) }
 
+    factory { GetAboutLCKMatchUseCase(get())  }
+
     factoryOf(::IntroViewModel)
     factoryOf(::HomeViewModel)
     factoryOf(::MypageViewModel)
     factoryOf(::CommunityViewModel)
     factoryOf(::MatchesViewModel)
+    factoryOf(::AboutLCKViewModel)
 }
 
 fun initKoin(

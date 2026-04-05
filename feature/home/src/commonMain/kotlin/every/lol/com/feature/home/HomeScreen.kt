@@ -22,7 +22,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
-import every.lol.com.feature.home.component.LckRankingSection
+import every.lol.com.core.ui.component.LckRankingSection
 import every.lol.com.feature.home.component.MatchCardRow
 import every.lol.com.feature.home.component.MatchNoticeBanner
 import every.lol.com.feature.home.component.NewsBannerRow
@@ -152,7 +152,7 @@ fun HomeScreen(
             LckRankingSection(
                 standings = ranking,
                 //favoriteTeamId = myFavoriteTeamId,
-                modifier = Modifier.padding(top = 24.dp),
+                modifier = Modifier.padding(top = 24.dp).padding(horizontal = 16.dp),
                 onTeamClick = { teamId ->
                     // TODO
                 }

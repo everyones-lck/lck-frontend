@@ -27,10 +27,10 @@ class AboutLCKRepositoryImpl(
     private val local: AuthLocalDataSource
 ): AboutLCKRepository {
 
-    override suspend fun aboutLCKMatch(searchData: String): Result<AboutLCKMatch> =
-        remote.aboutLCKMatch(searchData).toResult().map{ response ->
+    override suspend fun aboutLCKMatch(searchDate: String): Result<AboutLCKMatch?> =
+        remote.aboutLCKMatch(searchDate).toResult().map{ response ->
             AboutLCKMatch(
-                matches = response.matches.map { dateList ->
+                matches = response?.matches!!.map { dateList ->
                     MatchDetail(
                         matchDate = dateList.matchDate,
                         matchId = dateList.matchId,

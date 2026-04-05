@@ -19,12 +19,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.core.model.MatchCardModel
 import every.lol.com.core.model.MatchStatus
-import every.lol.com.core.model.TodayMatchCard
 import everylol.feature.matches.generated.resources.Res
 import everylol.feature.matches.generated.resources.ic_double_arrow_down
 import org.jetbrains.compose.resources.painterResource

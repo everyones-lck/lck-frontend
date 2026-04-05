@@ -19,10 +19,10 @@ class AboutLCKDataSourceImpl(
     private val httpClient: HttpClient
 ): AboutLCKDataSource {
 
-    override suspend fun aboutLCKMatch(searchData: String): ApiResponse<AboutLCKMatchResponse> = runCatching {
+    override suspend fun aboutLCKMatch(searchDate: String): ApiResponse<AboutLCKMatchResponse?> = runCatching {
         httpClient.get("/aboutlck/match"){
             url{
-                parameters.append("searchData", searchData)
+                parameters.append("searchDate", searchDate)
             }
         }
     }.asApiResponse()
