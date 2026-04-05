@@ -180,7 +180,7 @@ class HomeViewModel(
                     currentState.copy(
                         isLoading = false,
                         alerts = result,
-                        isRefresh = false,
+                        isRefreshing = false,
                         alertsMessage = result.alerts.firstOrNull()?.message.orEmpty()
                     )
                 }
