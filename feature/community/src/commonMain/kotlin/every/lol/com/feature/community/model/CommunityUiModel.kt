@@ -2,6 +2,7 @@ package every.lol.com.feature.community.model
 
 import androidx.compose.runtime.Immutable
 import every.lol.com.core.model.CommentList
+import every.lol.com.core.model.PopularPostListDetail
 import every.lol.com.core.model.PostDetail
 import every.lol.com.core.model.PostListDetail
 
@@ -25,7 +26,7 @@ sealed interface CommunityUiState {
     data class Community(
         val selectedTab: CommunityTab = CommunityTab.ALL,
         val isLoading: Boolean = false,
-        val popularPosts: List<PostDetail> = emptyList(),
+        val popularPosts: List<PopularPostListDetail> = emptyList(),
         val posts: List<PostListDetail> = emptyList(),
     ) : CommunityUiState
 

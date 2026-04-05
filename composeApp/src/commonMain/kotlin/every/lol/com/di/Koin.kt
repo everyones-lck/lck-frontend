@@ -20,6 +20,7 @@ import every.lol.com.core.domain.repository.MyPagesRepository
 import every.lol.com.core.domain.usecase.CheckAuthUseCase
 import every.lol.com.core.domain.usecase.DeleteCommentUseCase
 import every.lol.com.core.domain.usecase.DeletePostUseCase
+import every.lol.com.core.domain.usecase.GetCommunityPopularPostsUseCase
 import every.lol.com.core.domain.usecase.GetCommunityPostsUseCase
 import every.lol.com.core.domain.usecase.GetHomeAlertsUseCase
 import every.lol.com.core.domain.usecase.GetHomeNewsUseCase
@@ -113,6 +114,7 @@ val appDependenciesModule = module {
     factory { LogoutUseCase(get()) }
     factory { WithdrawalUseCase(get()) }
     factory { GetCommunityPostsUseCase(get()) }
+    factory { GetCommunityPopularPostsUseCase(get()) }
     factory { GetReadPostUseCase(get())}
     factory { PostCommunityPostUseCase(get()) }
     factory { DeletePostUseCase(get()) }
