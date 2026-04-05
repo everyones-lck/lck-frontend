@@ -36,6 +36,7 @@ fun PredictionVoteSection(
     team2Name: String,
     selectedTeam: PredictionTeam?,
     predictionResult: PredictionResult? = null,
+    isVoteEnabled: Boolean,
     onLeftClick: () -> Unit,
     onRightClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -96,6 +97,7 @@ fun PredictionVoteSection(
                 matchStatus = matchStatus,
                 selectedTeam = selectedTeam,
                 predictionResult = predictionResult,
+                isVoteEnabled = isVoteEnabled,
                 modifier = Modifier.weight(1f),
                 onClick = onLeftClick
             )
@@ -107,6 +109,7 @@ fun PredictionVoteSection(
                 matchStatus = matchStatus,
                 selectedTeam = selectedTeam,
                 predictionResult = predictionResult,
+                isVoteEnabled = isVoteEnabled,
                 modifier = Modifier.weight(1f),
                 onClick = onRightClick
             )
@@ -121,6 +124,7 @@ private fun PredictionTeamButton(
     matchStatus: MatchStatus,
     selectedTeam: PredictionTeam?,
     predictionResult: PredictionResult?,
+    isVoteEnabled: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -168,7 +172,7 @@ private fun PredictionTeamButton(
         }
     }
 
-    val enabled = matchStatus == MatchStatus.SCHEDULED
+    val enabled = isVoteEnabled
 
     Box(
         modifier = modifier
