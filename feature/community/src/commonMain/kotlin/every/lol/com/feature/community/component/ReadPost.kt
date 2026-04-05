@@ -94,7 +94,6 @@ fun ReadPost(
                 is PostBlock.Video -> {
                     CommunityVideo(
                         videoUrl = block.videoUrl,
-                        thumbnailUrl = block.thumbnailUrl.toString(),
                         onVideoClick = onVideoClick
                     )
                 }

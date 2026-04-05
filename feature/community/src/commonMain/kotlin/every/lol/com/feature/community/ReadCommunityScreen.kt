@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -66,6 +67,7 @@ import every.lol.com.core.model.mapToUiState
 import every.lol.com.core.ui.ext.everylolDefault
 import every.lol.com.feature.community.component.ReadComment
 import every.lol.com.feature.community.component.ReadPost
+import every.lol.com.feature.community.component.VideoPlayerView
 import every.lol.com.feature.community.model.CommunityIntent
 import every.lol.com.feature.community.model.CommunityUiState
 import everylol.feature.community.generated.resources.Res
@@ -130,7 +132,7 @@ fun ReadCommunityScreen(
 ) {
 
     val snackbarHostState = remember { SnackbarHostState() }
-    var selectedImageUrl by remember { mutableStateOf<String?>(null) }
+    var selectedMedia by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
     var isPostMenuExpanded by remember { mutableStateOf(false) }
     var commentText by remember { mutableStateOf("") }
     val isKeyboardOpen = WindowInsets.ime.asPaddingValues().calculateBottomPadding() > 0.dp
@@ -270,8 +272,8 @@ fun ReadCommunityScreen(
                                 postDetail = postDetail,
                                 contentBlocks = mapToUiState(postDetail),
                                 onMoreClick = { isPostMenuExpanded = true },
-                                onImageClick = { selectedImageUrl = it },
-                                onVideoClick = {},
+                                onImageClick = { url -> selectedMedia = url to false },
+                                onVideoClick = { url -> selectedMedia = url to true },
                                 onLikeClick = { onIntent(CommunityIntent.LikePost(postId)) },
                                 isCommented = isCommented,
                                 isLiked = state.isLiked,
@@ -321,11 +323,11 @@ fun ReadCommunityScreen(
                 onReport = { onIntent(CommunityIntent.ReportPost(postId, "신고")) }
             )
         }
-
-        selectedImageUrl?.let { url ->
-            FullScreenImageViewer(
-                imageUrl = url,
-                onDismiss = { selectedImageUrl = null }
+        selectedMedia?.let { (url, isVideo) ->
+            FullScreenMediaViewer(
+                mediaUrl = url,
+                isVideo = isVideo,
+                onDismiss = { selectedMedia = null }
             )
         }
     }
@@ -400,33 +402,42 @@ fun PostMenu(
         }
     }
 }
-
 @Composable
-fun FullScreenImageViewer(
-    imageUrl: String,
+fun FullScreenMediaViewer(
+    mediaUrl: String,
+    isVideo: Boolean,
     onDismiss: () -> Unit
 ) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(EveryLoLTheme.color.grayScale900.copy(alpha = 0.8f))
+            .background(EveryLoLTheme.color.grayScale900.copy(alpha = 0.9f))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null
             ) { onDismiss() },
         contentAlignment = Alignment.Center
     ) {
-        AsyncImage(
-            model = imageUrl,
-            modifier = Modifier
-                .padding(20.dp)
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(8.dp))
-                .heightIn(max = 616.dp),
-            contentDescription = null,
-            contentScale = ContentScale.Fit
-        )
-
+        if (isVideo) {
+            VideoPlayerView(
+                url = mediaUrl,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(16f / 9f)
+                    .clip(RoundedCornerShape(8.dp))
+            )
+        } else {
+            AsyncImage(
+                model = mediaUrl,
+                modifier = Modifier
+                    .padding(20.dp)
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .heightIn(max = 616.dp),
+                contentDescription = null,
+                contentScale = ContentScale.Fit
+            )
+        }
 
         IconButton(
             onClick = onDismiss,

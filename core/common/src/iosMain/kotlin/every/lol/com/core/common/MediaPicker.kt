@@ -2,6 +2,15 @@ package every.lol.com.core.common
 
 import androidx.compose.runtime.Composable
 import kotlinx.cinterop.ExperimentalForeignApi
+import androidx.compose.runtime.*
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.toComposeImageBitmap
+import platform.AVFoundation.*
+import platform.CoreMedia.*
+import platform.Foundation.*
+import platform.UIKit.*
+import org.jetbrains.skia.Image
+
 
 private const val OPEN_IMAGE_PICKER_NOTIFICATION = "EverylolOpenImagePicker"
 private const val IMAGE_PICKER_RESULT_NOTIFICATION = "EverylolImagePickerResult"
@@ -133,4 +142,28 @@ actual fun isVideoUri(uri: Any, context: Any): Boolean {
     // iOS는 보통 URI 문자열에 확장자가 포함되거나 PHAsset 타입을 사용함
     val uriString = uri.toString().lowercase()
     return uriString.contains(".mp4") || uriString.contains(".mov")
+}
+
+@Composable
+actual fun rememberVideoThumbnail(videoUrl: String): ImageBitmap? {
+    var bitmap by remember(videoUrl) { mutableStateOf<ImageBitmap?>(null) }
+
+    LaunchedEffect(videoUrl) {
+        val url = NSURL.URLWithString(videoUrl) ?: return@LaunchedEffect
+        val asset = AVURLAsset.assetWithURL(url)
+        val generator = AVAssetImageGenerator(asset = asset).apply {
+            appliesPreferredTrackTransform = true // 영상 회전값 자동 보정
+        }
+
+        val time = CMTimeMake(value = 1, timescale = 1) // 1초 지점
+
+        try {
+            // iOS 네이티브 비동기 추출 로직 (CGImage를 ImageBitmap으로 변환하는 과정 필요)
+            // 실제 프로젝트의 Skia 유틸리티 함수(asImageBitmap)를 사용하여 변환하세요.
+            // bitmap = cgImage.toComposeImageBitmap()
+        } catch (e: Exception) {
+            println("iOS Thumbnail Error: ${e.message}")
+        }
+    }
+    return bitmap
 }

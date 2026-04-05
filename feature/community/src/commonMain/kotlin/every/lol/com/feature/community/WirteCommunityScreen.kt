@@ -109,8 +109,6 @@ fun WriteCommunityScreen(
     val context = rememberPlatformContext()
 
     val mediaPickerLauncher = rememberMultiResourcePickerLauncher { results ->
-        // 이 내부(람다)는 더 이상 @Composable 영역이 아니지만,
-        // 위에서 정의한 scope와 context를 "캡처"해서 사용할 수 있습니다.
         scope.launch(Dispatchers.Default) {
             val currentImages = state.selectedMedias.filter { !it.isVideo }
             val currentVideos = state.selectedMedias.filter { it.isVideo }
@@ -123,26 +121,22 @@ fun WriteCommunityScreen(
             results.forEach { result ->
                 val uriString = result.toString()
 
-                // 💡 [수정] Context 체크 없이 expect 함수 호출
                 val isVideo = isVideoUri(result, context)
 
                 if (isVideo && (currentVideos.size + videoCountInBatch < 2)) {
-                    // 비디오 메타데이터 가져오기
                     val metadata = getMediaMetadata(context, uriString)
-
                     newMediaList.add(
                         CommunityUiState.MediaItem(
                             id = "vid_${Clock.System.now().toEpochMilliseconds()}",
                             uriString = uriString,
                             thumbnail = metadata.thumbnail,
-                            isVideo = true, // 💡 이제 정상적으로 true가 들어감
+                            isVideo = true,
                             durationMs = metadata.durationMs,
                             order = currentOrder
                         )
                     )
                     videoCountInBatch++
                 } else if (!isVideo && (currentImages.size + imageCountInBatch < 10)) {
-                    // 이미지 처리 로직...
                     newMediaList.add(
                         CommunityUiState.MediaItem(
                             id = "img_${Clock.System.now().toEpochMilliseconds()}",

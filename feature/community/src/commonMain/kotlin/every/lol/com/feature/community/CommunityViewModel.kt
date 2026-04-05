@@ -15,6 +15,7 @@ import every.lol.com.feature.community.model.CommunityIntent
 import every.lol.com.feature.community.model.CommunityUiState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -300,35 +301,37 @@ class CommunityViewModel(
 
         uploadScope.launch {
             try {
+                val currentJob = coroutineContext[Job]
                 _uiState.update { if (it is CommunityUiState.Write) it.copy(isLoading = true) else it }
-                 val fileInputs = currentState.selectedMedias.map { media ->
-                     MediaFile(uriString = media.uriString, isVideo = media.isVideo)
-                 }
+
+                val fileInputs = currentState.selectedMedias.map { media ->
+                    MediaFile(uriString = media.uriString, isVideo = media.isVideo)
+                }
+
                 val postBlocks = mutableListOf<PostBlock>()
                 val lines = content.split("\n")
                 lines.forEachIndexed { index, lineText ->
-                    if (lineText.isNotBlank()) {
-                        postBlocks.add(PostBlock.Text(text = lineText))
-                    }
+                    if (lineText.isNotBlank()) postBlocks.add(PostBlock.Text(text = lineText))
                     currentState.selectedMedias
                         .filter { it.order == index }
                         .forEach { media ->
-                            if (media.isVideo) {
-                                postBlocks.add(PostBlock.Video(videoUrl = media.uriString))
-                            } else {
-                                postBlocks.add(PostBlock.Image(imageUrl = media.uriString))
-                            }
+                            val block = if (media.isVideo) PostBlock.Video(media.uriString)
+                            else PostBlock.Image(media.uriString)
+                            postBlocks.add(block)
                         }
                 }
-                postCommunityPostUseCase(
+
+                val result = postCommunityPostUseCase(
                     files = fileInputs,
                     type = currentState.selectedTab.displayName,
                     title = title,
                     blocks = postBlocks
-                ).onSuccess {
+                )
+
+                result.onSuccess {
                     _event.emit(CommunityEvent.WriteSuccess)
                     onIntent(CommunityIntent.Loading)
-                }.onFailure {
+                }.onFailure { e ->
                     _uiState.update { if (it is CommunityUiState.Write) it.copy(isLoading = false) else it }
                 }
             } catch (e: Exception) {
