@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -59,6 +58,7 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import every.lol.com.core.common.EveryLolBackHandler
 import every.lol.com.core.designsystem.component.EverylolBottomInputBar
 import every.lol.com.core.designsystem.component.EverylolTopAppBar
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
@@ -123,6 +123,7 @@ fun ReadRoute(
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ReadCommunityScreen(
     postId: Int,
@@ -153,6 +154,13 @@ fun ReadCommunityScreen(
         }
     }
 
+    EveryLolBackHandler(enabled = selectedMedia != null || isPostMenuExpanded) {
+        if (selectedMedia != null) {
+            selectedMedia = null
+        } else {
+            isPostMenuExpanded = false
+        }
+    }
     LaunchedEffect(state.isLoading) {
         if (!state.isLoading) {
             isRefreshing = false
@@ -422,8 +430,8 @@ fun FullScreenMediaViewer(
             VideoPlayerView(
                 url = mediaUrl,
                 modifier = Modifier
+                    .padding(20.dp)
                     .fillMaxWidth()
-                    .aspectRatio(16f / 9f)
                     .clip(RoundedCornerShape(8.dp))
             )
         } else {
