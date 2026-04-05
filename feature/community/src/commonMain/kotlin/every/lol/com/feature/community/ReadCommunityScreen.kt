@@ -278,18 +278,35 @@ fun ReadCommunityScreen(
                                 likeCount = state.likeCount
                             )
                         }
-                        items(
-                            items = safeCommentList,
-                            key = { it.commentId }
-                        ) { comment ->
-                            ReadComment(
-                                comment = comment,
-                                onClick = { replyingTo = comment },
-                                onDelete = { onIntent(CommunityIntent.DeleteComment(comment.commentId)) },
-                                onReport = { onIntent(CommunityIntent.ReportComment(comment.commentId, "신고")) }
-                            )
-                            Spacer(Modifier.height(8.dp))
+
+                        val safeCommentList = postDetail.commentList ?: emptyList()
+
+                        safeCommentList.forEach { parentComment ->
+                            item(key = "parent_${parentComment.commentId}") {
+                                ReadComment(
+                                    comment = parentComment,
+                                    isReply = false,
+                                    onClick = { replyingTo = parentComment },
+                                    onDelete = { onIntent(CommunityIntent.DeleteComment(parentComment.commentId)) },
+                                    onReport = { onIntent(CommunityIntent.ReportComment(parentComment.commentId, "신고")) }
+                                )
+                            }
+
+                            items(
+                                items = parentComment.replies ?: emptyList(),
+                                key = { "reply_${it.commentId}" }
+                            ) { reply ->
+                                ReadComment(
+                                    comment = reply,
+                                    isReply = true,
+                                    onClick = { },
+                                    onDelete = { onIntent(CommunityIntent.DeleteComment(reply.commentId)) },
+                                    onReport = { onIntent(CommunityIntent.ReportComment(reply.commentId, "신고")) }
+                                )
+                                Spacer(Modifier.height(8.dp))
+                            }
                         }
+
                         item { Spacer(Modifier.height(12.dp)) }
                     }
                 }

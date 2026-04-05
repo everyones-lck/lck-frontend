@@ -29,26 +29,26 @@ data class PostDetailBlocks(
 )
 
 data class CommentList(
-    val commentId: Int,
+    override val commentId: Int,
     val parentCommentId: Int?=null,
-    val profileImageUrl: String,
-    val nickname: String,
+    override val profileImageUrl: String,
+    override val nickname: String,
     val supportTeams: List<String>,
-    val content: String,
-    val createdAt: String,
-    val isDeleted: Boolean,
-    val isWriter: Boolean,
+    override val content: String,
+    override val createdAt: String,
+    override val isDeleted: Boolean,
+    override val isWriter: Boolean,
     val replies: List<CommentRepliesList>?=null
-)
+): CommentItem
 
 data class CommentRepliesList(
-    val commentId: Int,
+    override val commentId: Int,
     val parentCommentId: Int?=null,
-    val profileImageUrl: String,
-    val nickname: String,
+    override val profileImageUrl: String,
+    override val nickname: String,
     val supportTeams: List<String>,
-    val content: String,
-    val createdAt: String,
-    val isDeleted: Boolean,
-    val isWriter: Boolean,
-)
+    override val content: String,
+    override val createdAt: String,
+    override val isDeleted: Boolean,
+    override val isWriter: Boolean,
+): CommentItem
