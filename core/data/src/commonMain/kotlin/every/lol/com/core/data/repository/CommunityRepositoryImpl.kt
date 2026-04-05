@@ -99,7 +99,7 @@ class CommunityRepositoryImpl(
         remote.popularPostList(period).toResult().map { response ->
             PopularPostList(
                 period = response.period,
-                postList = response.postList.map { PopularPostListDetail(it.postId, it.postTypeName, it.postTitle, it.postContent, it.postCreatedAt, it.userNickname, it.userProfilePicture, it.imageThumbnailUrl, it.videoThumbnailUrl, it.imageCounts, it.videoCounts, it.commentCounts, it.likeCount, it.viewCount)}
+                postList = response.postList.map { PopularPostListDetail(it.postId, it.postTypeName, it.postTitle, it.postContent, it.postCreatedAt, it.userNickname, it.userProfilePicture, it.imageThumbnailUrl, it.videoThumbnailUrl, it.imageCounts, it.videoCounts, it.commentCount, it.likeCount, it.viewCount)}
             )
         }
 

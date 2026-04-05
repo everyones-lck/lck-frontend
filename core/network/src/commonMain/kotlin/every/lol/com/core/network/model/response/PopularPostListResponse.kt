@@ -22,7 +22,7 @@ data class PopularPostListDetailResponse(
     val videoThumbnailUrl: String?=null,
     val imageCounts: Int,
     val videoCounts: Int,
-    val commentCounts: Int,
+    val commentCount: Int,
     val likeCount: Int,
     val viewCount: Int
 )

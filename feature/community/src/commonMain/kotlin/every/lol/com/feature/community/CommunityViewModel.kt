@@ -2,6 +2,7 @@ package every.lol.com.feature.community
 
 import every.lol.com.core.domain.usecase.DeleteCommentUseCase
 import every.lol.com.core.domain.usecase.DeletePostUseCase
+import every.lol.com.core.domain.usecase.GetCommunityPopularPostsUseCase
 import every.lol.com.core.domain.usecase.GetCommunityPostsUseCase
 import every.lol.com.core.domain.usecase.GetReadPostUseCase
 import every.lol.com.core.domain.usecase.PostCommunityCommentUseCase
@@ -36,6 +37,7 @@ sealed interface CommunityEvent{
 
 class CommunityViewModel(
     private val getCommunityPostsUseCase: GetCommunityPostsUseCase,
+    private val getCommunityPopularPostsUseCase: GetCommunityPopularPostsUseCase,
     private val getReadPostUseCase: GetReadPostUseCase,
     private val postCommunityPostUseCase: PostCommunityPostUseCase,
     private val deletePostUseCase: DeletePostUseCase,
@@ -151,6 +153,8 @@ class CommunityViewModel(
         tab: CommunityUiState.CommunityTab?=null,
         isNextPage: Boolean = false
     ) {
+        if(tab == CommunityUiState.CommunityTab.ALL) getPopularPosts("weekly")
+
         val currentTab = tab
             ?: (uiState.value as? CommunityUiState.Community)?.selectedTab
             ?: CommunityUiState.CommunityTab.ALL
@@ -198,6 +202,7 @@ class CommunityViewModel(
     }
 
     private fun loadReadPost(postId: Int, isRefresh: Boolean = false) {
+
         val currentState = _uiState.value
 
         if (!isRefresh && currentState is CommunityUiState.Read && currentState.postId == postId && currentState.post != null) {
@@ -411,6 +416,20 @@ class CommunityViewModel(
                 }
             }.onFailure {
                 _event.emit(CommunityEvent.ShowToast("좋아요에 실패하였습니다."))
+            }
+        }
+    }
+
+    private fun getPopularPosts(period: String){
+        viewModelScope.launch {
+            getCommunityPopularPostsUseCase(period).onSuccess { response ->
+                _uiState.update {
+                    if (it is CommunityUiState.Community) it.copy(popularPosts = response.postList) else it
+                }
+            }.onFailure {
+                _uiState.update {
+                    if (it is CommunityUiState.Community) it.copy(popularPosts = emptyList()) else it
+                }
             }
         }
     }

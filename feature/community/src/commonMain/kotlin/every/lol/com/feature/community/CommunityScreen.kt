@@ -176,7 +176,10 @@ fun CommunityScreen(
 
                         if (currentTab == CommunityUiState.CommunityTab.ALL) {
                             TitleText("주간 인기글")
-                            PopularPost(popularPosts = popularPosts)
+                            PopularPost(
+                                popularPosts = popularPosts,
+                                onPostClick = onReadClick
+                            )
                             TitleText("전체 게시판")
                         }
                     }

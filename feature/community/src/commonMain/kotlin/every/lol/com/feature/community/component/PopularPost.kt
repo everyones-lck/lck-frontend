@@ -1,11 +1,12 @@
 package every.lol.com.feature.community.component
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -17,6 +18,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
+import every.lol.com.core.model.PopularPostListDetail
 import everylol.feature.community.generated.resources.Res
 import everylol.feature.community.generated.resources.ic_no_content
 import org.jetbrains.compose.resources.painterResource
@@ -25,12 +27,12 @@ import org.jetbrains.compose.resources.painterResource
 @Composable
 fun PopularPost(
     modifier: Modifier = Modifier,
-    popularPosts: List<Any>
+    popularPosts: List<PopularPostListDetail>,
+    onPostClick: (Int) -> Unit
 ) {
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = 200.dp)
             .clip(RoundedCornerShape(12.dp))
             .background(EveryLoLTheme.color.grayScale1000)
             .padding(16.dp,8.dp),
@@ -39,6 +41,7 @@ fun PopularPost(
     ) {
         if (popularPosts.isEmpty()) {
             Column(
+                modifier = modifier.height(200.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
@@ -56,10 +59,10 @@ fun PopularPost(
         } else {
             popularPosts.forEach { post ->
                 PopularPostItem(
-                    category = "잡담",
-                    title = "16글자가 넘어가면 말줄임표가 생기는 테스트 제목입니다",
-                    createDate = "02.24",
-                    postId = 0
+                    category = post.postTypeName,
+                    title = post.postTitle,
+                    createDate = post.postCreatedAt,
+                    onClick = { onPostClick(post.postId) }
                 )
             }
         }
@@ -72,10 +75,13 @@ private fun PopularPostItem(
     category: String,
     title: String,
     createDate: String,
-    postId: Int
+    onClick: () -> Unit
 ){
     Row(
-        modifier = modifier.fillMaxWidth().padding(16.dp, 8.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+            .clickable(onClick = onClick),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ){
