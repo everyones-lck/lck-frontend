@@ -5,11 +5,13 @@ import every.lol.com.core.datastore.AuthLocalDataSource
 import every.lol.com.core.domain.repository.CommunityRepository
 import every.lol.com.core.model.CommentList
 import every.lol.com.core.model.FileList
+import every.lol.com.core.model.MediaFile
 import every.lol.com.core.model.PostDetail
 import every.lol.com.core.model.PostLike
 import every.lol.com.core.model.PostList
 import every.lol.com.core.model.PostListDetail
 import every.lol.com.core.network.datasource.CommunityDataSource
+import every.lol.com.core.network.model.request.MediaFileRequst
 import every.lol.com.core.network.model.request.PostCommentRequest
 import every.lol.com.core.network.model.request.PostPostDetailRequest
 import every.lol.com.core.network.model.request.PostPostRequest
@@ -21,8 +23,18 @@ class CommunityRepositoryImpl(
     private val local: AuthLocalDataSource
 ): CommunityRepository {
 
-    override suspend fun postPost(files: List<ByteArray>?, type: String, title: String, content: String): Result<Unit> =
-        remote.postPost( PostPostRequest(files, PostPostDetailRequest(type, title, content))).toResult().map {it.postId}
+    override suspend fun postPost(files: List<MediaFile>?, type: String, title: String, content: String): Result<Unit> {
+
+        val networkMediaFiles = files?.map {
+            MediaFileRequst(
+                uriString = it.uriString,
+                isVideo = it.isVideo
+            )
+        }
+
+        return remote.postPost( PostPostRequest(networkMediaFiles, PostPostDetailRequest(type, title, content))).toResult().map {it.postId}
+
+    }
 
     override suspend fun editPost(postId: Int, type: String, title: String, content: String): Result<Unit> =
         remote.editPost(postId, PostPostDetailRequest(type, title, content)).toResult().map{it.postId}

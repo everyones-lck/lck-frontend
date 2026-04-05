@@ -130,7 +130,6 @@ firebase-crashlytics-buildtools = { group = "com.google.firebase", name = "fireb
 
 #kakao
 kakao-sdk-user = { group = "com.kakao.sdk", name = "v2-user", version.ref = "kakao" }
-datastore-core = { group = "androidx.datastore", name = "datastore-core", version.ref = "datastoreCore" }
 
 #reorderable
 compose-reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }

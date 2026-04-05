@@ -18,11 +18,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -32,8 +32,10 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import every.lol.com.core.common.getMediaMetadata
+import every.lol.com.core.common.isVideoUri
 import every.lol.com.core.common.rememberMultiResourcePickerLauncher
-import every.lol.com.core.common.toImageByteArray
+import every.lol.com.core.common.rememberPlatformContext
 import every.lol.com.core.designsystem.component.EverylolButton
 import every.lol.com.core.designsystem.component.EverylolModal
 import every.lol.com.core.designsystem.component.EverylolTextField
@@ -46,6 +48,8 @@ import every.lol.com.feature.community.component.TabBar
 import every.lol.com.feature.community.component.TitleText
 import every.lol.com.feature.community.model.CommunityIntent
 import every.lol.com.feature.community.model.CommunityUiState
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import moe.tlaster.precompose.koin.koinViewModel
 import kotlin.time.Clock
 
@@ -63,12 +67,6 @@ fun WriteRoute(
     LaunchedEffect(Unit) {
         if (uiState !is CommunityUiState.Write) {
             viewModel.onIntent(CommunityIntent.ClickWriteTab(CommunityUiState.WriteTab.TALK))
-        }
-    }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            viewModel.onIntent(CommunityIntent.Loading)
         }
     }
 
@@ -101,77 +99,66 @@ fun WriteCommunityScreen(
     onBackClick: () -> Unit,
     onIntent: (CommunityIntent) -> Unit
 ) {
+
+    val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     val isFormValid = state.title.isNotBlank() && state.content.isNotBlank()
     var showWritePostModal by remember { mutableStateOf(false) }
     val keyboardHeight = WindowInsets.ime.getBottom(LocalDensity.current)
     val isKeyboardVisible = keyboardHeight > 0
+    val context = rememberPlatformContext()
 
     val mediaPickerLauncher = rememberMultiResourcePickerLauncher { results ->
-        println("PICKER_DEBUG: Results received. Count: ${results.size}")
+        // 이 내부(람다)는 더 이상 @Composable 영역이 아니지만,
+        // 위에서 정의한 scope와 context를 "캡처"해서 사용할 수 있습니다.
+        scope.launch(Dispatchers.Default) {
+            val currentImages = state.selectedMedias.filter { !it.isVideo }
+            val currentVideos = state.selectedMedias.filter { it.isVideo }
+            val currentOrder = (state.content.split("\n").size - 1).coerceAtLeast(0)
 
-        val currentImages = state.selectedMedias.filter { !it.isVideo }
-        val currentVideos = state.selectedMedias.filter { it.isVideo }
+            val newMediaList = mutableListOf<CommunityUiState.MediaItem>()
+            var imageCountInBatch = 0
+            var videoCountInBatch = 0
 
-        val currentTextLines = state.content.split("\n")
-        val currentOrder = (currentTextLines.size - 1).coerceAtLeast(0)
+            results.forEach { result ->
+                val uriString = result.toString()
 
-        val newMediaList = mutableListOf<CommunityUiState.MediaItem>()
-        var imageCountInBatch = 0
-        var videoCountInBatch = 0
+                // 💡 [수정] Context 체크 없이 expect 함수 호출
+                val isVideo = isVideoUri(result, context)
 
-        results.forEachIndexed { index, result ->
-            // 💡 핵심: Coil Uri 객체로 변환(toUri)하지 말고 String 상태를 유지합니다.
-            // 그래야 androidMain의 'is String -> Uri.parse(this)' 로직을 탑니다.
-            val uriString = result.toString()
+                if (isVideo && (currentVideos.size + videoCountInBatch < 2)) {
+                    // 비디오 메타데이터 가져오기
+                    val metadata = getMediaMetadata(context, uriString)
 
-            println("PICKER_DEBUG: Processing Item $index - String Path: $uriString")
-
-            val isVideo = uriString.contains("video", ignoreCase = true) ||
-                    uriString.contains("mp4", ignoreCase = true)
-
-            if (isVideo) {
-                if (currentVideos.size + videoCountInBatch < 2) {
-                    // 💡 String 타입에 대해 직접 확장 함수 호출
-                    val data = uriString.toImageByteArray()
-                    if (data == null) {
-                        println("PICKER_DEBUG: Failed to convert Video to ByteArray (Path: $uriString)")
-                    } else {
-                        newMediaList.add(
-                            CommunityUiState.MediaItem(
-                                id = "vid_${Clock.System.now().toEpochMilliseconds()}_${index}",
-                                url = data,
-                                isVideo = true,
-                                order = currentOrder
-                            )
+                    newMediaList.add(
+                        CommunityUiState.MediaItem(
+                            id = "vid_${Clock.System.now().toEpochMilliseconds()}",
+                            uriString = uriString,
+                            thumbnail = metadata.thumbnail,
+                            isVideo = true, // 💡 이제 정상적으로 true가 들어감
+                            durationMs = metadata.durationMs,
+                            order = currentOrder
                         )
-                        videoCountInBatch++
-                    }
-                }
-            } else {
-                if (currentImages.size + imageCountInBatch < 10) {
-                    // 💡 String 타입에 대해 직접 확장 함수 호출
-                    val data = uriString.toImageByteArray()
-                    if (data == null) {
-                        println("PICKER_DEBUG: Failed to convert Image to ByteArray (Path: $uriString)")
-                    } else {
-                        newMediaList.add(
-                            CommunityUiState.MediaItem(
-                                id = "img_${Clock.System.now().toEpochMilliseconds()}_${index}",
-                                url = data,
-                                isVideo = false,
-                                order = currentOrder
-                            )
+                    )
+                    videoCountInBatch++
+                } else if (!isVideo && (currentImages.size + imageCountInBatch < 10)) {
+                    // 이미지 처리 로직...
+                    newMediaList.add(
+                        CommunityUiState.MediaItem(
+                            id = "img_${Clock.System.now().toEpochMilliseconds()}",
+                            uriString = uriString,
+                            thumbnail = null,
+                            isVideo = false,
+                            durationMs = 0L,
+                            order = currentOrder
                         )
-                        imageCountInBatch++
-                    }
+                    )
+                    imageCountInBatch++
                 }
             }
-        }
-
-        println("PICKER_DEBUG: Final newMediaList size: ${newMediaList.size}")
-        if (newMediaList.isNotEmpty()) {
-            onIntent(CommunityIntent.AddMedias(newMediaList))
+            if (newMediaList.isNotEmpty()) {
+                onIntent(CommunityIntent.AddMedias(newMediaList))
+            }
         }
     }
 
@@ -269,7 +256,7 @@ fun WriteCommunityScreen(
                                 state.selectedMedias
                             )
                         )
-                        showWritePostModal = false
+                        // showWritePostModal = false
                     },
                     onDismiss = { showWritePostModal = false }
                 )

@@ -255,7 +255,7 @@ fun ContentMediaItem(
                 .background(EveryLoLTheme.color.grayScale900)
         ) {
             AsyncImage(
-                model = media.url,
+                model = if (media.isVideo) media.thumbnail else media.uriString,
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop

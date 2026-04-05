@@ -88,7 +88,7 @@ val appDependenciesModule = module {
     single<AuthDataSource> { AuthDataSourceImpl(get(named("noAuth"))) }
     single<HomeDataSource> { HomeDataSourceImpl(get(named("auth"))) }
     single<MyPagesDataSource> { MyPagesDataSourceImpl(get(named("auth"))) }
-    single<CommunityDataSource> { CommunityDataSourceImpl(get(named("auth"))) }
+    single<CommunityDataSource> { CommunityDataSourceImpl( get(), get(named("auth"))) }
     single<AboutLCKDataSource> { AboutLCKDataSourceImpl(get(named("auth"))) }
     single<MatchesDataSource> { MatchesDataSourceImpl(get(named("auth"))) }
 

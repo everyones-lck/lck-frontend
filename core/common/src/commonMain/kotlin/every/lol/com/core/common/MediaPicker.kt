@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 
 @Composable
 expect fun rememberMultiResourcePickerLauncher(
-    onResult: (List<Any>) -> Unit
+    onResult:(List<Any>) -> Unit
 ): () -> Unit
 
 data class VideoMetadata(
@@ -16,3 +16,5 @@ expect suspend fun getMediaMetadata(
     context: Any,
     uriString: String
 ): VideoMetadata
+
+expect fun isVideoUri(uri: Any, context: Any): Boolean

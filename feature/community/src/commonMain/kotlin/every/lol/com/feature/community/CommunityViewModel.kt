@@ -1,6 +1,5 @@
 package every.lol.com.feature.community
 
-import every.lol.com.core.common.compressImage
 import every.lol.com.core.domain.usecase.DeleteCommentUseCase
 import every.lol.com.core.domain.usecase.DeletePostUseCase
 import every.lol.com.core.domain.usecase.GetCommunityPostsUseCase
@@ -10,6 +9,7 @@ import every.lol.com.core.domain.usecase.PostCommunityPostLikeUseCase
 import every.lol.com.core.domain.usecase.PostCommunityPostUseCase
 import every.lol.com.core.domain.usecase.ReportCommentUseCase
 import every.lol.com.core.domain.usecase.ReportPostUseCase
+import every.lol.com.core.model.MediaFile
 import every.lol.com.feature.community.model.CommunityIntent
 import every.lol.com.feature.community.model.CommunityUiState
 import kotlinx.coroutines.CoroutineScope
@@ -248,62 +248,48 @@ class CommunityViewModel(
     }
 
     private fun handleAddMedias(newMedias: List<CommunityUiState.MediaItem>) {
-        val timeLimit = 3 * 60 * 1000L
-        println("step1")
-        // 1. 시간 제한 필터링
-        val timeFilteredMedias = newMedias.filter {
-            if (it.isVideo) it.durationMs <= timeLimit else true
-        }
-
-        if (timeFilteredMedias.size < newMedias.size) {
-            viewModelScope.launch {
-                _event.emit(CommunityEvent.ShowToast("3분을 초과하는 영상은 제외되었습니다."))
-            }
-        }
-
         updateWriteState { state ->
             val currentMedias = state.selectedMedias
             val currentImages = currentMedias.filter { !it.isVideo }
             val currentVideos = currentMedias.filter { it.isVideo }
 
-            // 2. 새로 추가될 미디어 분류
-            val newImages = timeFilteredMedias.filter { !it.isVideo }
-            val newVideos = timeFilteredMedias.filter { it.isVideo }
+            // 1. 새로 추가될 미디어 분류 (이미 duration 처리가 끝난 상태로 가정)
+            val newImages = newMedias.filter { !it.isVideo }
+            val newVideos = newMedias.filter { it.isVideo }
 
-            // 💡 [수정] 개수 제한을 넘지 않는 '새로운' 미디어만 선별
-            val availableImageSpace = (10 - currentImages.size).coerceAtMost(newImages.size)
-            val availableVideoSpace = (2 - currentVideos.size).coerceAtMost(newVideos.size)
+            // 2. 남은 여유 공간 계산
+            val availableImageSpace = (10 - currentImages.size).coerceAtLeast(0)
+            val availableVideoSpace = (2 - currentVideos.size).coerceAtLeast(0)
 
+            // 3. 제한을 초과하는 경우 토스트 알림
             if (newImages.size > availableImageSpace || newVideos.size > availableVideoSpace) {
                 viewModelScope.launch {
                     _event.emit(CommunityEvent.ShowToast("사진은 최대 10장, 영상은 최대 2개까지 가능합니다."))
                 }
             }
-            println("step2")
 
+            // 4. 허용된 개수만큼만 가져오기
             val validNewImages = newImages.take(availableImageSpace)
             val validNewVideos = newVideos.take(availableVideoSpace)
+            val processedNewMedias = (validNewImages + validNewVideos)
 
-            // 3. 현재 텍스트의 마지막 줄 인덱스 계산
+            if (processedNewMedias.isEmpty()) return@updateWriteState state
+
+            // 5. 현재 텍스트 위치(Order) 부여 및 컨텐츠 업데이트
             val currentLines = state.content.split("\n")
             val lastLineIndex = (currentLines.size - 1).coerceAtLeast(0)
 
-            // 4. 새로운 미디어에 order 부여
-            val processedNewMedias = (validNewImages + validNewVideos).map {
+            val finalNewMedias = processedNewMedias.map {
                 it.copy(order = lastLineIndex)
             }
 
-            // 💡 [수정] 새로운 내용(엔터) 추가 및 리스트 합치기
-            // content 마지막에 \n을 추가해야 새로운 텍스트 블록이 생기면서 이미지가 그 사이에 박힙니다.
-            val updatedContent = if (processedNewMedias.isNotEmpty()) {
-                if (state.content.isEmpty()) "\n" else state.content + "\n"
-            } else {
-                state.content
-            }
-            println("미디어 추가 로직 실행: 새 미디어 ${processedNewMedias.size}개")
+            val updatedContent = if (state.content.isEmpty()) "\n" else state.content + "\n"
+
+            println("미디어 추가 완료: 이미지 ${validNewImages.size}개, 영상 ${validNewVideos.size}개")
+
             state.copy(
                 content = updatedContent,
-                selectedMedias = currentMedias + processedNewMedias
+                selectedMedias = currentMedias + finalNewMedias
             )
         }
     }
@@ -333,26 +319,36 @@ class CommunityViewModel(
 
         uploadScope.launch {
             try {
-                _uiState.update { if (it is CommunityUiState.Write) it.copy(isLoading = true) else it }
-
-                val compressedFiles = withContext(Dispatchers.Default) {
-                    currentState.selectedMedias.map { it.url.compressImage(30) }
+                _uiState.update { state ->
+                    if (state is CommunityUiState.Write) state.copy(isLoading = true) else state
                 }
 
-                withContext(Dispatchers.IO) {
-                    postCommunityPostUseCase(compressedFiles, currentState.selectedTab.displayName, title, content)
-                        .onSuccess {
-                            withContext(Dispatchers.Main) {
-                                _event.emit(CommunityEvent.WriteSuccess)
-                            }
-                        }
-                        .onFailure {error ->
-                            println(error)
-                            _uiState.update { if (it is CommunityUiState.Write) it.copy(isLoading = false) else it }
-                        }
+                val fileInputs = withContext(Dispatchers.IO) {
+                    currentState.selectedMedias.map { media ->
+                        MediaFile(
+                            uriString = media.uriString,
+                            isVideo = media.isVideo
+                        )
+                    }
                 }
+
+                println("미디어 개수: ${fileInputs.size}   /   $fileInputs")
+                postCommunityPostUseCase(
+                    files = fileInputs,
+                    type = currentState.selectedTab.displayName,
+                    title = title,
+                    content = content
+                ).onSuccess {
+                    _event.emit(CommunityEvent.WriteSuccess)
+                    onIntent(CommunityIntent.Loading)
+                }.onFailure {
+                    _uiState.update { state ->
+                        if (state is CommunityUiState.Write) state.copy(isLoading = false) else state
+                    }                }
             } catch (e: Exception) {
-                _uiState.update { if (it is CommunityUiState.Write) it.copy(isLoading = false) else it }
+                _uiState.update { state ->
+                    if (state is CommunityUiState.Write) state.copy(isLoading = false) else state
+                }
             }
         }
     }

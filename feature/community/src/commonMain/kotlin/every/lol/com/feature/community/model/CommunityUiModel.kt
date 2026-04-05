@@ -14,7 +14,7 @@ sealed interface CommunityUiState {
         TRADE("후기")
     }
 
-    enum class WriteTab(val displayName: String){
+    enum class WriteTab(val displayName: String) {
         TALK("잡담"),
         QUESTION("질문"),
         TRADE("후기")
@@ -37,7 +37,7 @@ sealed interface CommunityUiState {
         val comments: List<CommentList> = emptyList(),
         val isLiked: Boolean = false,
         val likeCount: Int = 0
-    ): CommunityUiState
+    ) : CommunityUiState
 
     data class Write(
         val isLoading: Boolean = false,
@@ -45,14 +45,15 @@ sealed interface CommunityUiState {
         val title: String = "",
         val content: String = "",
         val selectedMedias: List<MediaItem> = emptyList(),
-    ): CommunityUiState
+    ) : CommunityUiState
 
     data class MediaItem(
         val id: String,
-        val url: ByteArray,
+        val uriString: String,
         val isVideo: Boolean = false,
+        val thumbnail: ByteArray? = null,
         val durationMs: Long = 0L,
-        val order : Int = -1
+        val order: Int = -1
     )
 }
 
