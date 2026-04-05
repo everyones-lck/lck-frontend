@@ -3,9 +3,9 @@ package every.lol.com.feature.home.model
 import androidx.compose.runtime.Immutable
 import every.lol.com.core.model.HomeAlerts
 import every.lol.com.core.model.HomeNews
-import every.lol.com.core.model.HomeRanking
 import every.lol.com.core.model.HomeTodayMatch
 import every.lol.com.core.model.MatchVoteRate
+import every.lol.com.core.model.Ranking
 
 @Immutable
 sealed interface HomeUiState {
@@ -15,7 +15,7 @@ sealed interface HomeUiState {
         val isLoading: Boolean = false,
         val matches: HomeTodayMatch ?= null,
         val matchRates: Map<Long, MatchVoteRate> = emptyMap(),
-        val ranking: HomeRanking?= null,
+        val ranking: Ranking?= null,
         val news: HomeNews?=null,
         val alerts: HomeAlerts?=null,
         val alertsMessage: String?=null,

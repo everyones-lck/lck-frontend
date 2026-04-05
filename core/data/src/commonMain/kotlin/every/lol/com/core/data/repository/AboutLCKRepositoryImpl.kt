@@ -27,30 +27,32 @@ class AboutLCKRepositoryImpl(
     private val local: AuthLocalDataSource
 ): AboutLCKRepository {
 
-    override suspend fun aboutLCKMatch(searchData: String): Result<AboutLCKMatch> =
-        remote.aboutLCKMatch(searchData).toResult().map{ response ->
-            AboutLCKMatch(
-                matches = response.matches.map { dateList ->
-                    MatchDetail(
-                        matchDate = dateList.matchDate,
-                        matchId = dateList.matchId,
-                        matchStatus = dateList.matchStatus,
-                        seasonName = dateList.seasonName,
-                        groupName = dateList.groupName,
-                        roundName = dateList.roundName,
-                        team1 = MatchTeam(
-                            teamId = dateList.team1.teamId,
-                            teamName = dateList.team1.teamName,
-                            winner = dateList.team1.winner
-                        ),
-                        team2 = MatchTeam(
-                            teamId = dateList.team2.teamId,
-                            teamName = dateList.team2.teamName,
-                            winner = dateList.team2.winner
+    override suspend fun aboutLCKMatch(searchDate: String): Result<AboutLCKMatch?> =
+        remote.aboutLCKMatch(searchDate).toResult().map { response ->
+            response?.let { payload ->
+                AboutLCKMatch(
+                    matches = payload.matches.map { dateList ->
+                        MatchDetail(
+                            matchDate = dateList.matchDate,
+                            matchId = dateList.matchId,
+                            matchStatus = dateList.matchStatus,
+                            seasonName = dateList.seasonName,
+                            groupName = dateList.groupName,
+                            roundName = dateList.roundName,
+                            team1 = MatchTeam(
+                                teamId = dateList.team1.teamId,
+                                teamName = dateList.team1.teamName,
+                                winner = dateList.team1.winner
+                            ),
+                            team2 = MatchTeam(
+                                teamId = dateList.team2.teamId,
+                                teamName = dateList.team2.teamName,
+                                winner = dateList.team2.winner
+                            )
                         )
-                    )
-                }
-            )
+                    }
+                )
+            }
         }
 
     override suspend fun aboutLCKTeamWinningHistory(teamId: Int, page: Int, size: Int): Result<AboutLCKTeamWinnigHistory> =

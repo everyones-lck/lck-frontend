@@ -12,7 +12,7 @@ import every.lol.com.core.network.model.response.aboutlck.team.AboutLCKTeamRatin
 import every.lol.com.core.network.model.response.aboutlck.team.AboutLCKTeamWinningHistoryResponse
 
 interface AboutLCKDataSource {
-    suspend fun aboutLCKMatch(searchData:String): ApiResponse<AboutLCKMatchResponse>
+    suspend fun aboutLCKMatch(searchDate:String): ApiResponse<AboutLCKMatchResponse?>
     suspend fun aboutLCKTeamWinningHistory(teamId: Int, page: Int, size: Int): ApiResponse<AboutLCKTeamWinningHistoryResponse>
     suspend fun aboutLCKTeamRatingHistory(teamId: Int, page: Int, size: Int): ApiResponse<AboutLCKTeamRatingHistoryResponse>
     suspend fun aboutLCKTeamPlayerHistory(teamId: Int, page: Int, size: Int): ApiResponse<AboutLCKTeamPlayerHistoryResponse>

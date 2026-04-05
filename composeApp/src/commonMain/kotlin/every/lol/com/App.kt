@@ -25,13 +25,12 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.core.navigation.MainTab
 import every.lol.com.core.navigation.Route
-import every.lol.com.feature.aboutlck.AboutLCKScreen
+import every.lol.com.feature.aboutlck.navigation.aboutLCKNavGraph
 import every.lol.com.feature.community.navigation.communityNavGraph
 import every.lol.com.feature.community.navigation.readNavGraph
 import every.lol.com.feature.community.navigation.writeNavGraph
@@ -166,7 +165,9 @@ fun App() {
                         }
                     )
 
-                    composable<Route.AboutLCK> { AboutLCKScreen() }
+                    aboutLCKNavGraph(
+
+                    )
 
                     communityNavGraph(
                         innerPadding = innerPadding,

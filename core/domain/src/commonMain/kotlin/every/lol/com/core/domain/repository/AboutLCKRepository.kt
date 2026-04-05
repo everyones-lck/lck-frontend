@@ -11,7 +11,7 @@ import every.lol.com.core.model.aboutlck.team.AboutLCKTeamRatingHistory
 import every.lol.com.core.model.aboutlck.team.AboutLCKTeamWinnigHistory
 
 interface AboutLCKRepository {
-    suspend fun aboutLCKMatch(searchData: String): Result<AboutLCKMatch>
+    suspend fun aboutLCKMatch(searchDate: String): Result<AboutLCKMatch?>
     suspend fun aboutLCKTeamWinningHistory(teamId: Int, page: Int, size: Int):Result<AboutLCKTeamWinnigHistory>
     suspend fun aboutLCKTeamRatingHistory(teamId: Int, page: Int, size: Int): Result<AboutLCKTeamRatingHistory>
     suspend fun aboutLCKTeamPlayerHistory(teamId: Int, page: Int, size: Int): Result<AboutLCKTeamPlayerHistory>
