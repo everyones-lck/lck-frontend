@@ -6,6 +6,8 @@ import every.lol.com.core.domain.repository.CommunityRepository
 import every.lol.com.core.model.CommentList
 import every.lol.com.core.model.CommentRepliesList
 import every.lol.com.core.model.MediaFile
+import every.lol.com.core.model.PopularPostList
+import every.lol.com.core.model.PopularPostListDetail
 import every.lol.com.core.model.PostBlock
 import every.lol.com.core.model.PostDetail
 import every.lol.com.core.model.PostDetailBlocks
@@ -90,6 +92,14 @@ class CommunityRepositoryImpl(
             PostList(
                 postDetailList = response.postDetailList.map { PostListDetail(it.postId, it.postType, it.postTitle, it.postContent, it.postCreatedAt, it.userNickname, it.userProfileUrl, it.supportTeamNames, it.imageThumbnailUrl, it.videoThumbnailUrl, it.imageCounts, it.videoCounts, it.commentCounts, it.viewCount, it.likeCount, it.isLiked, it.isWriter) },
                 isLast = response.isLast
+            )
+        }
+
+    override suspend fun popularPostList(period: String): Result<PopularPostList> =
+        remote.popularPostList(period).toResult().map { response ->
+            PopularPostList(
+                period = response.period,
+                postList = response.postList.map { PopularPostListDetail(it.postId, it.postTypeName, it.postTitle, it.postContent, it.postCreatedAt, it.userNickname, it.userProfilePicture, it.imageThumbnailUrl, it.videoThumbnailUrl, it.imageCounts, it.videoCounts, it.commentCounts, it.likeCount, it.viewCount)}
             )
         }
 

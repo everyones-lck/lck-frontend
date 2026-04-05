@@ -8,6 +8,7 @@ import every.lol.com.core.network.model.request.PostPostDetailRequest
 import every.lol.com.core.network.model.request.PostPostRequest
 import every.lol.com.core.network.model.request.ReportCommentRequest
 import every.lol.com.core.network.model.request.ReportPostRequest
+import every.lol.com.core.network.model.response.PopularPostListResponse
 import every.lol.com.core.network.model.response.PostDetailResponse
 import every.lol.com.core.network.model.response.PostIdResponse
 import every.lol.com.core.network.model.response.PostLikeResponse
@@ -89,6 +90,14 @@ class CommunityDataSourceImpl(
                 parameters.append("postType", postType)
                 parameters.append("page", page.toString())
                 parameters.append("size", size.toString())
+            }
+        }
+    }.asApiResponse()
+
+    override suspend fun popularPostList(period: String): ApiResponse<PopularPostListResponse> = runCatching {
+        httpClient.get("/post/popular"){
+            url {
+                parameters.append("period", period)
             }
         }
     }.asApiResponse()

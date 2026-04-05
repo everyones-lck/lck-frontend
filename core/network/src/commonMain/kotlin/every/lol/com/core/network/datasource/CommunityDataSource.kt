@@ -6,6 +6,7 @@ import every.lol.com.core.network.model.request.PostPostDetailRequest
 import every.lol.com.core.network.model.request.PostPostRequest
 import every.lol.com.core.network.model.request.ReportCommentRequest
 import every.lol.com.core.network.model.request.ReportPostRequest
+import every.lol.com.core.network.model.response.PopularPostListResponse
 import every.lol.com.core.network.model.response.PostDetailResponse
 import every.lol.com.core.network.model.response.PostIdResponse
 import every.lol.com.core.network.model.response.PostLikeResponse
@@ -16,6 +17,7 @@ interface CommunityDataSource {
     suspend fun editPost(postId: Int, request: PostPostDetailRequest): ApiResponse<PostIdResponse>
     suspend fun detailPost(postId: Int): ApiResponse<PostDetailResponse>
     suspend fun postList(postType: String, page: Int, size: Int): ApiResponse<PostListResponse>
+    suspend fun popularPostList(period: String): ApiResponse<PopularPostListResponse>
     suspend fun deletePost(postId: Int): ApiResponse<Unit?>
     suspend fun postComment(postId: Int, request: PostCommentRequest): ApiResponse<Unit?>
     suspend fun deleteComment(commentId: Int): ApiResponse<Unit?>
