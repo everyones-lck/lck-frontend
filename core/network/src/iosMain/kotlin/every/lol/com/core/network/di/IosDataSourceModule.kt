@@ -12,4 +12,5 @@ actual val platformDataSourceModule = module {
     single<DataStore<Preferences>> { createDataStore() }
     single { SocialLoginDataSource() }
     single<HttpClientEngineFactory<*>> { Darwin }
+    single<Any>{object {}}
 }

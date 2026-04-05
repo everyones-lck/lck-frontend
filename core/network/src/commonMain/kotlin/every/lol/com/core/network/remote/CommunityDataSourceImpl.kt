@@ -30,6 +30,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 
 class CommunityDataSourceImpl(
+    private val platformContext: Any,
     private val httpClient: HttpClient
 ): CommunityDataSource {
 
@@ -67,7 +68,7 @@ class CommunityDataSourceImpl(
                                      },
                                      block = {
                                          // 💡 [해결] uriString(String)을 openFileStream을 통해 Input(스트림)으로 변환합니다.
-                                         val stream = openFileStream(mediaFile.uriString)
+                                         val stream = openFileStream( platformContext, mediaFile.uriString)
 
                                          // 이제 stream은 Input 타입이므로 .remaining 사용이 가능합니다.
                                          println("DEBUG: [실제 전송 시작] $fileName / 크기: ${stream.remaining} bytes")

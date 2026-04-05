@@ -7,10 +7,12 @@ import every.lol.com.core.datastore.createDataStore
 import every.lol.com.core.network.datasource.SocialLoginDataSource
 import io.ktor.client.engine.HttpClientEngineFactory
 import io.ktor.client.engine.okhttp.OkHttp
+import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 
 actual val platformDataSourceModule = module {
     single { SocialLoginDataSource(get()) }
     single<DataStore<Preferences>> { createDataStore(get<Context>()) }
     single<HttpClientEngineFactory<*>> { OkHttp }
+    single<Any> { androidContext() }
 }
