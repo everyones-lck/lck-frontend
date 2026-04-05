@@ -1,7 +1,6 @@
-package every.lol.com.core.model
+package every.lol.com.core.model.aboutlck.team
 
-
-data class AboutLCKTeamHistory(
+data class AboutLCKTeamWinnigHistory(
     val seasonNameList: List<String>,
     val totalPage: Int,
     val totalElements: Int,
