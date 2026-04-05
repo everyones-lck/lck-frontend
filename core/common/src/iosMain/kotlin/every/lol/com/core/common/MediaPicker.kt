@@ -6,9 +6,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import kotlinx.cinterop.ExperimentalForeignApi
-import platform.Foundation.NSNotificationCenter
-import platform.Foundation.NSOperationQueue
-import platform.Foundation.NSUUID
+import platform.AVFoundation.*
+import platform.CoreMedia.*
+import platform.Foundation.*
+import platform.UIKit.*
+import platform.CoreGraphics.*
+import kotlinx.cinterop.*
 
 private const val OPEN_IMAGE_PICKER_NOTIFICATION = "EverylolOpenImagePicker"
 private const val IMAGE_PICKER_RESULT_NOTIFICATION = "EverylolImagePickerResult"
@@ -74,16 +77,47 @@ actual fun rememberMultiResourcePickerLauncher(
     }
 
     return {
-        NSNotificationCenter.defaultCenter.postNotificationName(
+      /*  NSNotificationCenter.defaultCenter.postNotificationName(
             name = OPEN_IMAGE_PICKER_NOTIFICATION,
             `object` = null,
-            // Swift 쪽에서 이 파라미터들을 참고해서 PHPicker를 띄워야 합니다.
             userInfo = mapOf(
                 KEY_REQUEST_ID to requestId,
                 "maxImageCount" to 10,
                 "maxVideoCount" to 2,
                 "videoDurationLimit" to 180.0
             )
-        )
+        )*/
+    }
+}
+
+
+//동영상에서 썸네일 가져오는 함수
+@OptIn(ExperimentalForeignApi::class)
+actual suspend fun getMediaMetadata(context: Any, uriString: String): VideoMetadata {
+    val url = NSURL.URLWithString(uriString) ?: return VideoMetadata(0L, null)
+    val asset = AVURLAsset.assetWithURL(url) as AVAsset
+
+    val duration = asset.duration
+    val durationMs = (CMTimeGetSeconds(duration) * 1000).toLong()
+
+    val imageGenerator = AVAssetImageGenerator(asset = asset).apply {
+        appliesPreferredTrackTransform = true
+    }
+
+    return try {
+        val cgImage = imageGenerator.copyCGImageAtTime(
+            requestedTime = CMTimeMake(0, 1),
+            actualTime = null,
+            error = null
+        ) ?: return VideoMetadata(durationMs, null)
+
+        val uiImage = UIImage.imageWithCGImage(cgImage)
+
+        val data = UIImageJPEGRepresentation(uiImage, 0.7)
+        val thumbnailBytes = data?.toByteArray()
+
+        VideoMetadata(durationMs, thumbnailBytes)
+    } catch (e: Exception) {
+        VideoMetadata(durationMs, null)
     }
 }

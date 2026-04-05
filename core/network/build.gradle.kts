@@ -38,6 +38,7 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.koin.core)
             implementation(projects.core.domain)
+            implementation(projects.core.common)
             implementation(project(":core:datastore"))
         }
         iosMain.dependencies {
