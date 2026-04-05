@@ -9,21 +9,33 @@ sealed class PostBlock{
     @Serializable
     data class Image(val imageUrl: String) : PostBlock()
     @Serializable
-    data class Video(val videoUrl: String, val thumbnailUrl: String) : PostBlock()
+    data class Video(val videoUrl: String, val thumbnailUrl: String?=null) : PostBlock()
 }
 
-
 fun mapToUiState(serverPost: PostDetail): List<PostBlock> {
-    val uiBlocks = mutableListOf<PostBlock>()
+    // 서버에서 준 blocks 리스트를 순회하며 PostBlock으로 변환
+    return serverPost.blocks
+        .sortedBy { it.sequence } // 혹시 모르니 순서대로 정렬
+        .mapNotNull { block ->
+            when (block.type) {
+                "TEXT" -> {
+                    block.content?.let { PostBlock.Text(text = it) }
+                }
 
-    uiBlocks.add(PostBlock.Text(serverPost.content))
+                "IMAGE" -> {
+                    block.fileUrl?.let { PostBlock.Image(imageUrl = it) }
+                }
 
-    serverPost.fileList.forEach { file ->
-        if (file.isImage) {
-            uiBlocks.add(PostBlock.Image(file.fileUrl))
-        } else {
-            uiBlocks.add(PostBlock.Video(file.fileUrl, thumbnailUrl = ""))
+                "VIDEO" -> {
+                    block.fileUrl?.let {
+                        PostBlock.Video(
+                            videoUrl = it,
+                            thumbnailUrl = null // 서버에서 안 주므로 null 처리
+                        )
+                    }
+                }
+
+                else -> null
+            }
         }
-    }
-    return uiBlocks
 }

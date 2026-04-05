@@ -8,6 +8,15 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 
 @Composable
@@ -62,4 +71,33 @@ actual fun isVideoUri(uri: Any, context: Any): Boolean {
     val androidUri = (uri as? Uri) ?: Uri.parse(uri.toString())
     val mimeType = androidContext.contentResolver.getType(androidUri)
     return mimeType?.startsWith("video") == true
+}
+
+@Composable
+actual fun rememberVideoThumbnail(videoUrl: String): ImageBitmap? {
+    var bitmap by remember(videoUrl) { mutableStateOf<ImageBitmap?>(null) }
+
+    LaunchedEffect(videoUrl) {
+        withContext(Dispatchers.IO) {
+            val retriever = MediaMetadataRetriever()
+            try {
+
+                retriever.setDataSource(videoUrl, HashMap<String, String>())
+
+                val frame = retriever.getFrameAtTime(
+                    1000000,
+                    MediaMetadataRetriever.OPTION_CLOSEST_SYNC
+                )
+
+                bitmap = frame?.asImageBitmap()
+            } catch (e: Exception) {
+                println("Ktor Log: Thumbnail Extraction Failed - ${e.message}")
+            } finally {
+                try {
+                    retriever.release()
+                } catch (e: Exception) { /* 무시 */ }
+            }
+        }
+    }
+    return bitmap
 }

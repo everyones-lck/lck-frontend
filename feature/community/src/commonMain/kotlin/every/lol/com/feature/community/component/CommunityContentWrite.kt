@@ -199,12 +199,10 @@ fun ContentTextItem(
                 .fillMaxWidth()
                 .onPreviewKeyEvent { event ->
                     if (event.type == KeyEventType.KeyDown) {
-                        // 💡 엔터 키를 직접 가로채서 처리
                         if (event.key == Key.Enter) {
                             onEnterPressed()
                             return@onPreviewKeyEvent true
                         }
-                        // 💡 백스페이스 처리
                         if (event.key == Key.Backspace && value.isEmpty()) {
                             onBackspaceOnEmpty()
                             return@onPreviewKeyEvent true
@@ -280,7 +278,6 @@ fun ContentMediaItem(
                 Box(modifier = Modifier.matchParentSize().background(Color.White.copy(alpha = 0.4f)))
             }
 
-            // 삭제 버튼
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)

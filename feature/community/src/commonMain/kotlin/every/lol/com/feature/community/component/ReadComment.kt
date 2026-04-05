@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -29,7 +30,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
-import every.lol.com.core.model.CommentList
+import every.lol.com.core.model.CommentItem
 import every.lol.com.core.ui.component.ProfileImage
 import everylol.feature.community.generated.resources.Res
 import everylol.feature.community.generated.resources.ic_more
@@ -37,16 +38,20 @@ import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun ReadComment(
-    comment: CommentList,
+    comment: CommentItem,
     isReply: Boolean = false,
     onClick:() -> Unit,
     onDelete: () -> Unit,
     onReport: () -> Unit
 ) {
-    var selectedComment by remember { mutableStateOf<CommentList?>(null) }
+    var selectedComment by remember { mutableStateOf<CommentItem?>(null) }
 
     Box(modifier = Modifier.fillMaxWidth()) {
-        Row(modifier = Modifier.clickable(onClick = onClick).fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .clickable(enabled = !comment.isDeleted, onClick = onClick)
+                .padding(bottom = 8.dp)
+                .fillMaxWidth()) {
             if (isReply) {
                 Spacer(Modifier.width(20.dp))
             }
@@ -66,22 +71,24 @@ fun ReadComment(
                     ) {
                         ProfileImage(
                             modifier = Modifier.size(16.dp),
-                            profile = comment.profileImageUrl
+                            profile = if (comment.isDeleted) "" else comment.profileImageUrl
                         )
                         Text(
-                            text = comment.nickname,
+                            text = if (comment.isDeleted) "(알 수 없음)" else comment.nickname,
                             style = EveryLoLTheme.typography.caption01,
                             color = EveryLoLTheme.color.grayScale800
                         )
                     }
-                    Icon(
-                        modifier = Modifier
-                            .size(16.dp)
-                            .clickable{ selectedComment = comment },
-                        painter = painterResource(Res.drawable.ic_more),
-                        contentDescription = null,
-                        tint = EveryLoLTheme.color.community600
-                    )
+                    if (!comment.isDeleted) {
+                        Icon(
+                            modifier = Modifier
+                                .size(16.dp)
+                                .clickable { selectedComment = comment },
+                            painter = painterResource(Res.drawable.ic_more),
+                            contentDescription = null,
+                            tint = EveryLoLTheme.color.community600
+                        )
+                    }
                 }
 
                 Column(
@@ -91,7 +98,7 @@ fun ReadComment(
                         modifier = Modifier.fillMaxWidth(),
                         text = comment.content,
                         style = EveryLoLTheme.typography.pretendardBody02,
-                        color = EveryLoLTheme.color.community600
+                        color = if (comment.isDeleted) EveryLoLTheme.color.grayScale800 else EveryLoLTheme.color.community600
                     )
                     Text(
                         modifier = Modifier.fillMaxWidth(),
@@ -105,7 +112,7 @@ fun ReadComment(
 
         if (selectedComment != null) {
             CommentMenu(
-                isMine = comment.isWriter,
+                isMine = selectedComment?.isWriter ?: false,
                 onDismiss = { selectedComment = null },
                 onDelete = onDelete,
                 onReport = onReport

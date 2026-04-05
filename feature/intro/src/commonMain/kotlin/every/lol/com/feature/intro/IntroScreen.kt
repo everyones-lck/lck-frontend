@@ -115,7 +115,7 @@ internal fun IntroRoute(
                 }
 
                 is IntroUiState.TosDetail -> {
-                    EveryLolBackHandler {
+                    EveryLolBackHandler(true) {
                         viewModel.onIntent(IntroIntent.ClickBackToSignup)
                     }
                     TosScreen(

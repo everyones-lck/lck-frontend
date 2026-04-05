@@ -39,7 +39,7 @@ fun CommunityItem(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ){
         CommunityPostHeader(
-            profile = post.userProfilePicture,
+            profile = post.userProfileUrl,
             nickname = post.userNickname,
             date = post.postCreatedAt
         )
@@ -58,16 +58,24 @@ fun CommunityItem(
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
-            if (!post.thumbnailFileUrl.isNullOrBlank()) {
+            if (!post.imageThumbnailUrl.isNullOrBlank() || !post.videoThumbnailUrl.isNullOrBlank()) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ){
-                    postThumbnail(
-                        image = post.thumbnailFileUrl,
-                        totalCounts = 10
-                    )
+                    post.imageThumbnailUrl?.let{
+                        postThumbnail(
+                            image = post.imageThumbnailUrl,
+                            totalCounts = post.imageCounts
+                        )
+                    }
+                    post.videoThumbnailUrl?.let{
+                        postThumbnail(
+                            image = post.videoThumbnailUrl,
+                            totalCounts = post.videoCounts
+                        )
+                    }
                 }
             }
 

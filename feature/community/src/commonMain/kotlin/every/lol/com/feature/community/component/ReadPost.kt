@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -50,7 +49,7 @@ fun ReadPost(
         ) {
             CommunityPostHeader(
                 profile = postDetail.writerProfileUrl,
-                nickname = postDetail.writerNickName,
+                nickname = postDetail.writerNickname,
                 date = postDetail.postCreatedAt
             )
             Icon(
@@ -85,7 +84,7 @@ fun ReadPost(
                         model = block.imageUrl,
                         contentDescription = null,
                         modifier = Modifier
-                            .height(160.dp)
+                            .fillMaxWidth()
                             .clip(RoundedCornerShape(11.dp))
                             .clickable { onImageClick(block.imageUrl) },
                         contentScale = ContentScale.FillHeight
@@ -94,7 +93,6 @@ fun ReadPost(
                 is PostBlock.Video -> {
                     CommunityVideo(
                         videoUrl = block.videoUrl,
-                        thumbnailUrl = block.thumbnailUrl,
                         onVideoClick = onVideoClick
                     )
                 }
@@ -104,7 +102,7 @@ fun ReadPost(
         CommunityPostActions(
             isCommented = isCommented,
             isLiked = isLiked,
-            commentCount = postDetail.commentList.size,
+            commentCount = postDetail.commentCount,
             likeCount = likeCount,
             viewCount = 0,
             onLikeClick = onLikeClick

@@ -58,10 +58,11 @@ fun Scope.createHttpClient(
     }
 
     install(Logging) {
-        level = if (BuildConfig.DEBUG) LogLevel.BODY else LogLevel.INFO
+        level = if (BuildConfig.DEBUG) LogLevel.HEADERS else LogLevel.INFO
+
         logger = object : Logger {
-            override fun log(message: String) { println("Ktor Log: $message")
-                if (message.contains("Content-Type: image") || message.length > 1000) return
+            override fun log(message: String) {
+                println("Ktor Log: $message")
             }
         }
     }

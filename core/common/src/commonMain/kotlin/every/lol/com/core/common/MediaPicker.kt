@@ -1,6 +1,7 @@
 package every.lol.com.core.common
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.ImageBitmap
 
 @Composable
 expect fun rememberMultiResourcePickerLauncher(
@@ -18,3 +19,6 @@ expect suspend fun getMediaMetadata(
 ): VideoMetadata
 
 expect fun isVideoUri(uri: Any, context: Any): Boolean
+
+@Composable
+expect fun rememberVideoThumbnail(videoUrl: String): ImageBitmap?

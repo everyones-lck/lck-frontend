@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -57,6 +58,7 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import every.lol.com.core.common.EveryLolBackHandler
 import every.lol.com.core.designsystem.component.EverylolBottomInputBar
 import every.lol.com.core.designsystem.component.EverylolTopAppBar
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
@@ -65,6 +67,7 @@ import every.lol.com.core.model.mapToUiState
 import every.lol.com.core.ui.ext.everylolDefault
 import every.lol.com.feature.community.component.ReadComment
 import every.lol.com.feature.community.component.ReadPost
+import every.lol.com.feature.community.component.VideoPlayerView
 import every.lol.com.feature.community.model.CommunityIntent
 import every.lol.com.feature.community.model.CommunityUiState
 import everylol.feature.community.generated.resources.Res
@@ -120,6 +123,7 @@ fun ReadRoute(
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ReadCommunityScreen(
     postId: Int,
@@ -129,7 +133,7 @@ fun ReadCommunityScreen(
 ) {
 
     val snackbarHostState = remember { SnackbarHostState() }
-    var selectedImageUrl by remember { mutableStateOf<String?>(null) }
+    var selectedMedia by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
     var isPostMenuExpanded by remember { mutableStateOf(false) }
     var commentText by remember { mutableStateOf("") }
     val isKeyboardOpen = WindowInsets.ime.asPaddingValues().calculateBottomPadding() > 0.dp
@@ -150,6 +154,13 @@ fun ReadCommunityScreen(
         }
     }
 
+    EveryLolBackHandler(enabled = selectedMedia != null || isPostMenuExpanded) {
+        if (selectedMedia != null) {
+            selectedMedia = null
+        } else {
+            isPostMenuExpanded = false
+        }
+    }
     LaunchedEffect(state.isLoading) {
         if (!state.isLoading) {
             isRefreshing = false
@@ -233,7 +244,9 @@ fun ReadCommunityScreen(
             }
         ) { innerPadding ->
             state.post?.let { postDetail ->
-                val isCommented = postDetail.commentList.any { it.isWriter }
+                val safeCommentList = postDetail.commentList ?: emptyList()
+                val isCommented = safeCommentList.any { it.isWriter }
+
                 PullToRefreshBox(
                     state = pullToRefreshState,
                     isRefreshing = isRefreshing,
@@ -267,26 +280,43 @@ fun ReadCommunityScreen(
                                 postDetail = postDetail,
                                 contentBlocks = mapToUiState(postDetail),
                                 onMoreClick = { isPostMenuExpanded = true },
-                                onImageClick = { selectedImageUrl = it },
-                                onVideoClick = {},
+                                onImageClick = { url -> selectedMedia = url to false },
+                                onVideoClick = { url -> selectedMedia = url to true },
                                 onLikeClick = { onIntent(CommunityIntent.LikePost(postId)) },
                                 isCommented = isCommented,
                                 isLiked = state.isLiked,
                                 likeCount = state.likeCount
                             )
                         }
-                        items(postDetail.commentList.size) { index ->
-                            val comment = postDetail.commentList[index]
-                            ReadComment(
-                                comment = comment,
-                                onClick = {
-                                    replyingTo = comment
-                                },
-                                onDelete = { onIntent(CommunityIntent.DeleteComment(comment.commentId)) },
-                                onReport = { onIntent(CommunityIntent.ReportComment(comment.commentId, "신고")) }
-                            )
-                            Spacer(Modifier.height(8.dp))
+
+                        val safeCommentList = postDetail.commentList ?: emptyList()
+
+                        safeCommentList.forEach { parentComment ->
+                            item(key = "parent_${parentComment.commentId}") {
+                                ReadComment(
+                                    comment = parentComment,
+                                    isReply = false,
+                                    onClick = { replyingTo = parentComment },
+                                    onDelete = { onIntent(CommunityIntent.DeleteComment(parentComment.commentId)) },
+                                    onReport = { onIntent(CommunityIntent.ReportComment(parentComment.commentId, "신고")) }
+                                )
+                            }
+
+                            items(
+                                items = parentComment.replies ?: emptyList(),
+                                key = { "reply_${it.commentId}" }
+                            ) { reply ->
+                                ReadComment(
+                                    comment = reply,
+                                    isReply = true,
+                                    onClick = { },
+                                    onDelete = { onIntent(CommunityIntent.DeleteComment(reply.commentId)) },
+                                    onReport = { onIntent(CommunityIntent.ReportComment(reply.commentId, "신고")) }
+                                )
+                                Spacer(Modifier.height(8.dp))
+                            }
                         }
+
                         item { Spacer(Modifier.height(12.dp)) }
                     }
                 }
@@ -301,11 +331,11 @@ fun ReadCommunityScreen(
                 onReport = { onIntent(CommunityIntent.ReportPost(postId, "신고")) }
             )
         }
-
-        selectedImageUrl?.let { url ->
-            FullScreenImageViewer(
-                imageUrl = url,
-                onDismiss = { selectedImageUrl = null }
+        selectedMedia?.let { (url, isVideo) ->
+            FullScreenMediaViewer(
+                mediaUrl = url,
+                isVideo = isVideo,
+                onDismiss = { selectedMedia = null }
             )
         }
     }
@@ -380,33 +410,42 @@ fun PostMenu(
         }
     }
 }
-
 @Composable
-fun FullScreenImageViewer(
-    imageUrl: String,
+fun FullScreenMediaViewer(
+    mediaUrl: String,
+    isVideo: Boolean,
     onDismiss: () -> Unit
 ) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(EveryLoLTheme.color.grayScale900.copy(alpha = 0.8f))
+            .background(EveryLoLTheme.color.grayScale900.copy(alpha = 0.9f))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null
             ) { onDismiss() },
         contentAlignment = Alignment.Center
     ) {
-        AsyncImage(
-            model = imageUrl,
-            modifier = Modifier
-                .padding(20.dp)
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(8.dp))
-                .heightIn(max = 616.dp),
-            contentDescription = null,
-            contentScale = ContentScale.Fit
-        )
-
+        if (isVideo) {
+            VideoPlayerView(
+                url = mediaUrl,
+                modifier = Modifier
+                    .padding(20.dp)
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+            )
+        } else {
+            AsyncImage(
+                model = mediaUrl,
+                modifier = Modifier
+                    .padding(20.dp)
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .heightIn(max = 616.dp),
+                contentDescription = null,
+                contentScale = ContentScale.Fit
+            )
+        }
 
         IconButton(
             onClick = onDismiss,

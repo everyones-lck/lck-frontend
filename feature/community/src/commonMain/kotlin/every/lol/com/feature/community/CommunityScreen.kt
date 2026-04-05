@@ -60,6 +60,10 @@ fun CommunityRoute(
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    LaunchedEffect(Unit) {
+        viewModel.onIntent(CommunityIntent.Loading)
+    }
+
     LaunchedEffect(viewModel.event) {
         viewModel.event.collect { event ->
             when (event) {

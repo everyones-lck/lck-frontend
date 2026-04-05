@@ -12,11 +12,20 @@ data class PostListResponse(
 @Serializable
 data class PostListDetailResponse(
     val postId: Int,
+    val postType: String,
     val postTitle: String,
     val postContent: String,
     val postCreatedAt: String,
     val userNickname: String,
-    val userProfilePicture: String,
-    val thumbnailFileUrl: String?=null,
-    val commentCounts: Int
+    val userProfileUrl: String,
+    val supportTeamNames: List<String>,
+    val imageThumbnailUrl: String?=null,
+    val videoThumbnailUrl: String?=null,
+    val imageCounts: Int,
+    val videoCounts: Int,
+    val commentCounts: Int,
+    val viewCount: Int,
+    val likeCount: Int,
+    val isLiked: Boolean,
+    val isWriter: Boolean
 )

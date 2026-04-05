@@ -4,4 +4,4 @@ import androidx.compose.runtime.Composable
 
 
 @Composable
-expect fun EveryLolBackHandler(onBack: () -> Unit)
+expect fun EveryLolBackHandler(enabled: Boolean,onBack: () -> Unit)
