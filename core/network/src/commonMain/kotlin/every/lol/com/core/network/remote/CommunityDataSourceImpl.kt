@@ -24,7 +24,6 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
-import io.ktor.utils.io.core.remaining
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
@@ -40,11 +39,8 @@ class CommunityDataSourceImpl(
              val jsonString = Json.encodeToString(request.request)
              httpClient.post("/post/create") {
                  timeout {
-                     // 💡 요청 전체 시간 (5분)
                      requestTimeoutMillis = 300_000L
-                     // 💡 연결 시도 시간 (30초)
                      connectTimeoutMillis = 30_000L
-                     // 💡 [중요] 패킷 간 전송 제한 시간 (5분) - 영상 업로드 필수 설정
                      socketTimeoutMillis = 300_000L
                  }
 
@@ -55,9 +51,8 @@ class CommunityDataSourceImpl(
                                  append(HttpHeaders.ContentType, "application/json")
                              })
                              request.files?.forEachIndexed { index, mediaFile ->
-                                 val isVideo = mediaFile.isVideo
-                                 val contentType = if (isVideo) "video/mp4" else "image/jpeg"
-                                 val extension = if (isVideo) "mp4" else "jpg"
+                                 val contentType = if (mediaFile.isVideo) "video/mp4" else "image/jpeg"
+                                 val extension = if (mediaFile.isVideo) "mp4" else "jpg"
                                  val fileName = "file_$index.$extension"
 
                                  appendInput(
@@ -67,14 +62,7 @@ class CommunityDataSourceImpl(
                                          append(HttpHeaders.ContentDisposition, "filename=\"$fileName\"")
                                      },
                                      block = {
-                                         // 💡 [해결] uriString(String)을 openFileStream을 통해 Input(스트림)으로 변환합니다.
-                                         val stream = openFileStream( platformContext, mediaFile.uriString)
-
-                                         // 이제 stream은 Input 타입이므로 .remaining 사용이 가능합니다.
-                                         println("DEBUG: [실제 전송 시작] $fileName / 크기: ${stream.remaining} bytes")
-
-                                         // 최종적으로 스트림 객체를 반환합니다.
-                                         stream
+                                         openFileStream(platformContext, mediaFile.uriString)
                                      }
                                  )
                              }

@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -233,7 +234,9 @@ fun ReadCommunityScreen(
             }
         ) { innerPadding ->
             state.post?.let { postDetail ->
-                val isCommented = postDetail.commentList.any { it.isWriter }
+                val safeCommentList = postDetail.commentList ?: emptyList()
+                val isCommented = safeCommentList.any { it.isWriter }
+
                 PullToRefreshBox(
                     state = pullToRefreshState,
                     isRefreshing = isRefreshing,
@@ -275,13 +278,13 @@ fun ReadCommunityScreen(
                                 likeCount = state.likeCount
                             )
                         }
-                        items(postDetail.commentList.size) { index ->
-                            val comment = postDetail.commentList[index]
+                        items(
+                            items = safeCommentList,
+                            key = { it.commentId }
+                        ) { comment ->
                             ReadComment(
                                 comment = comment,
-                                onClick = {
-                                    replyingTo = comment
-                                },
+                                onClick = { replyingTo = comment },
                                 onDelete = { onIntent(CommunityIntent.DeleteComment(comment.commentId)) },
                                 onReport = { onIntent(CommunityIntent.ReportComment(comment.commentId, "신고")) }
                             )

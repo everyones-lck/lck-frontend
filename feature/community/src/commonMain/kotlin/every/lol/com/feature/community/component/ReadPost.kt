@@ -50,7 +50,7 @@ fun ReadPost(
         ) {
             CommunityPostHeader(
                 profile = postDetail.writerProfileUrl,
-                nickname = postDetail.writerNickName,
+                nickname = postDetail.writerNickname,
                 date = postDetail.postCreatedAt
             )
             Icon(
@@ -94,7 +94,7 @@ fun ReadPost(
                 is PostBlock.Video -> {
                     CommunityVideo(
                         videoUrl = block.videoUrl,
-                        thumbnailUrl = block.thumbnailUrl,
+                        thumbnailUrl = block.thumbnailUrl.toString(),
                         onVideoClick = onVideoClick
                     )
                 }
@@ -104,7 +104,7 @@ fun ReadPost(
         CommunityPostActions(
             isCommented = isCommented,
             isLiked = isLiked,
-            commentCount = postDetail.commentList.size,
+            commentCount = postDetail.commentCount,
             likeCount = likeCount,
             viewCount = 0,
             onLikeClick = onLikeClick

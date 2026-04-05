@@ -16,5 +16,13 @@ data class PostPostRequest(
 data class PostPostDetailRequest(
     val postType: String,
     val postTitle: String,
-    val postContent: String
+    val blocks: List<BlocksRequest>
+)
+
+@Serializable
+data class BlocksRequest(
+    val sequence: Int,
+    val type: String,
+    val content: String?=null,
+    val fileIndex: Int?=null
 )

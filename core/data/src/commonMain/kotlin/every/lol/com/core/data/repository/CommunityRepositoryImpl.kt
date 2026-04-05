@@ -4,13 +4,16 @@ import every.lol.com.core.data.mapper.toResult
 import every.lol.com.core.datastore.AuthLocalDataSource
 import every.lol.com.core.domain.repository.CommunityRepository
 import every.lol.com.core.model.CommentList
-import every.lol.com.core.model.FileList
+import every.lol.com.core.model.CommentRepliesList
 import every.lol.com.core.model.MediaFile
+import every.lol.com.core.model.PostBlock
 import every.lol.com.core.model.PostDetail
+import every.lol.com.core.model.PostDetailBlocks
 import every.lol.com.core.model.PostLike
 import every.lol.com.core.model.PostList
 import every.lol.com.core.model.PostListDetail
 import every.lol.com.core.network.datasource.CommunityDataSource
+import every.lol.com.core.network.model.request.BlocksRequest
 import every.lol.com.core.network.model.request.MediaFileRequst
 import every.lol.com.core.network.model.request.PostCommentRequest
 import every.lol.com.core.network.model.request.PostPostDetailRequest
@@ -23,43 +26,60 @@ class CommunityRepositoryImpl(
     private val local: AuthLocalDataSource
 ): CommunityRepository {
 
-    override suspend fun postPost(files: List<MediaFile>?, type: String, title: String, content: String): Result<Unit> {
-
-        val networkMediaFiles = files?.map {
-            MediaFileRequst(
-                uriString = it.uriString,
-                isVideo = it.isVideo
-            )
+    override suspend fun postPost(files: List<MediaFile>?, type: String, title: String, blocks: List<PostBlock>): Result<Unit> {
+        val networkBlocks = blocks.mapIndexed { index, block ->
+            when (block) {
+                is PostBlock.Text -> BlocksRequest(
+                    sequence = index + 1,
+                    type = "TEXT",
+                    content = block.text
+                )
+                is PostBlock.Image -> BlocksRequest(
+                    sequence = index + 1,
+                    type = "IMAGE",
+                    fileIndex = files?.indexOfFirst { it.uriString == block.imageUrl } ?: -1
+                )
+                is PostBlock.Video -> BlocksRequest(
+                    sequence = index + 1,
+                    type = "VIDEO",
+                    fileIndex = files?.indexOfFirst { it.uriString == block.videoUrl } ?: -1
+                )
+            }
         }
 
-        return remote.postPost( PostPostRequest(networkMediaFiles, PostPostDetailRequest(type, title, content))).toResult().map {it.postId}
+        // 2. 파일 리스트 변환 (Remote 전달용)
+        val networkMediaFiles = files?.map {
+            MediaFileRequst(uriString = it.uriString, isVideo = it.isVideo)
+        }
 
+        val requestBody = PostPostRequest(
+            files = networkMediaFiles,
+            request = PostPostDetailRequest(
+                postType = type,
+                postTitle = title,
+                blocks = networkBlocks
+            )
+        )
+
+        return remote.postPost(requestBody)
+            .toResult()
+            .map { }
     }
 
-    override suspend fun editPost(postId: Int, type: String, title: String, content: String): Result<Unit> =
-        remote.editPost(postId, PostPostDetailRequest(type, title, content)).toResult().map{it.postId}
+/*    override suspend fun editPost(postId: Int, type: String, title: String, content: String): Result<Unit> =
+        remote.editPost(postId, PostPostDetailRequest(type, title, blocks)).toResult().map{it.postId}*/
 
     override suspend fun detailPost(postId: Int): Result<PostDetail> =
         remote.detailPost(postId).toResult().map {response ->
-            PostDetail(
-                postType = response.postType,
-                writerProfileUrl = response.writerProfileUrl,
-                writerNickName = response.writerNickname,
-                postTitle = response.postTitle,
-                postCreatedAt = response.postCreatedAt,
-                content = response.content,
-                isWriter = response.isWriter,
-                fileList = response.fileList.map {
-                    FileList(fileUrl = it.fileUrl, isImage = it.isImage)
+            PostDetail(response.postId, response.postType, response.writerProfileUrl, response.writerNickname, response.writerTeams, response.postTitle, response.postCreatedAt, response.isModified, response.isWriter, response.isLiked, response.likeCount, response.viewCount, response.commentCount, response.imageCounts, response.videoCounts,
+                blocks = response.blocks.map {
+                    PostDetailBlocks(it.sequence, it.type, it.content, it.fileUrl, it.fileName)
                 },
-                commentList = response.commentList.map {
-                    CommentList(
-                        profileImageUrl = it.profileImageUrl,
-                        nickname = it.nickname,
-                        content = it.content,
-                        createdAt = it.createdAt,
-                        commentId = it.commentId,
-                        isWriter = it.isWriter
+                commentList = response.commentList!!.map {
+                    CommentList(it.commentId, it.parentCommentId, it.profileImageUrl, it.nickname, it.supportTeams, it.content, it.createdAt, it.isDeleted, it.isWriter,
+                        it.replies!!.map{ repliesList ->
+                            CommentRepliesList(repliesList.commentId, repliesList.parentCommentId, repliesList.profileImageUrl, repliesList.nickname, repliesList.supportTeams, repliesList.content, repliesList.createdAt, repliesList.isDeleted, repliesList.isWriter)
+                        }
                     )
                 }
             )
@@ -68,18 +88,7 @@ class CommunityRepositoryImpl(
     override suspend fun postList(postType: String, page: Int, size: Int): Result<PostList> =
         remote.postList(postType, page, size).toResult().map { response ->
             PostList(
-                postDetailList = response.postDetailList.map {
-                    PostListDetail(
-                        postId = it.postId,
-                        postTitle = it.postTitle,
-                        postContent = it.postContent,
-                        postCreatedAt = it.postCreatedAt,
-                        userNickname = it.userNickname,
-                        userProfilePicture = it.userProfilePicture,
-                        thumbnailFileUrl = it.thumbnailFileUrl,
-                        commentCounts = it.commentCounts
-                    )
-                },
+                postDetailList = response.postDetailList.map { PostListDetail(it.postId, it.postType, it.postTitle, it.postContent, it.postCreatedAt, it.userNickname, it.userProfileUrl, it.supportTeamNames, it.imageThumbnailUrl, it.videoThumbnailUrl, it.imageCounts, it.videoCounts, it.commentCounts, it.viewCount, it.likeCount, it.isLiked, it.isWriter) },
                 isLast = response.isLast
             )
         }

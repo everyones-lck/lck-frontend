@@ -10,11 +10,11 @@ import every.lol.com.core.domain.usecase.PostCommunityPostUseCase
 import every.lol.com.core.domain.usecase.ReportCommentUseCase
 import every.lol.com.core.domain.usecase.ReportPostUseCase
 import every.lol.com.core.model.MediaFile
+import every.lol.com.core.model.PostBlock
 import every.lol.com.feature.community.model.CommunityIntent
 import every.lol.com.feature.community.model.CommunityUiState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -23,7 +23,6 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import moe.tlaster.precompose.viewmodel.ViewModel
 import moe.tlaster.precompose.viewmodel.viewModelScope
 
@@ -197,7 +196,6 @@ class CommunityViewModel(
         }
     }
 
-
     private fun loadReadPost(postId: Int, isRefresh: Boolean = false) {
         val currentState = _uiState.value
 
@@ -212,28 +210,21 @@ class CommunityViewModel(
                 CommunityUiState.Read(postId = postId, isLoading = true)
             }
         }
+
         viewModelScope.launch {
             getReadPostUseCase(postId).onSuccess { post ->
                 _uiState.update { current ->
-                    if (current is CommunityUiState.Read) {
-                        current.copy(
-                            post = post,
-                            isLoading = false,
-                            isMine = post.isWriter
-                        )
-                    } else {
-                        //마이페이지에서 넘어오면 이걸로 로드
-                        CommunityUiState.Read(
-                            postId = postId,
-                            post = post,
-                            isLoading = false,
-                            isMine = post.isWriter
-                        )
-                    }
+                    val baseState = if (current is CommunityUiState.Read && current.postId == postId) current else CommunityUiState.Read(postId = postId)
+
+                    baseState.copy(
+                        post = post, // 이 post 객체 안에 List<PostBlock>이 들어있음
+                        isLoading = false,
+                        isMine = post.isWriter
+                    )
                 }
             }.onFailure {
                 _uiState.update { current ->
-                    if (current is CommunityUiState.Read ) {
+                    if (current is CommunityUiState.Read) {
                         current.copy(isLoading = false)
                     } else current
                 }
@@ -253,39 +244,29 @@ class CommunityViewModel(
             val currentImages = currentMedias.filter { !it.isVideo }
             val currentVideos = currentMedias.filter { it.isVideo }
 
-            // 1. 새로 추가될 미디어 분류 (이미 duration 처리가 끝난 상태로 가정)
             val newImages = newMedias.filter { !it.isVideo }
             val newVideos = newMedias.filter { it.isVideo }
 
-            // 2. 남은 여유 공간 계산
             val availableImageSpace = (10 - currentImages.size).coerceAtLeast(0)
             val availableVideoSpace = (2 - currentVideos.size).coerceAtLeast(0)
 
-            // 3. 제한을 초과하는 경우 토스트 알림
             if (newImages.size > availableImageSpace || newVideos.size > availableVideoSpace) {
                 viewModelScope.launch {
                     _event.emit(CommunityEvent.ShowToast("사진은 최대 10장, 영상은 최대 2개까지 가능합니다."))
                 }
             }
 
-            // 4. 허용된 개수만큼만 가져오기
             val validNewImages = newImages.take(availableImageSpace)
             val validNewVideos = newVideos.take(availableVideoSpace)
             val processedNewMedias = (validNewImages + validNewVideos)
 
             if (processedNewMedias.isEmpty()) return@updateWriteState state
-
-            // 5. 현재 텍스트 위치(Order) 부여 및 컨텐츠 업데이트
-            val currentLines = state.content.split("\n")
-            val lastLineIndex = (currentLines.size - 1).coerceAtLeast(0)
-
+            val lastLineIndex = state.content.split("\n").size - 1
             val finalNewMedias = processedNewMedias.map {
-                it.copy(order = lastLineIndex)
+                it.copy(order = lastLineIndex.coerceAtLeast(0))
             }
 
             val updatedContent = if (state.content.isEmpty()) "\n" else state.content + "\n"
-
-            println("미디어 추가 완료: 이미지 ${validNewImages.size}개, 영상 ${validNewVideos.size}개")
 
             state.copy(
                 content = updatedContent,
@@ -319,36 +300,39 @@ class CommunityViewModel(
 
         uploadScope.launch {
             try {
-                _uiState.update { state ->
-                    if (state is CommunityUiState.Write) state.copy(isLoading = true) else state
-                }
-
-                val fileInputs = withContext(Dispatchers.IO) {
-                    currentState.selectedMedias.map { media ->
-                        MediaFile(
-                            uriString = media.uriString,
-                            isVideo = media.isVideo
-                        )
+                _uiState.update { if (it is CommunityUiState.Write) it.copy(isLoading = true) else it }
+                 val fileInputs = currentState.selectedMedias.map { media ->
+                     MediaFile(uriString = media.uriString, isVideo = media.isVideo)
+                 }
+                val postBlocks = mutableListOf<PostBlock>()
+                val lines = content.split("\n")
+                lines.forEachIndexed { index, lineText ->
+                    if (lineText.isNotBlank()) {
+                        postBlocks.add(PostBlock.Text(text = lineText))
                     }
+                    currentState.selectedMedias
+                        .filter { it.order == index }
+                        .forEach { media ->
+                            if (media.isVideo) {
+                                postBlocks.add(PostBlock.Video(videoUrl = media.uriString))
+                            } else {
+                                postBlocks.add(PostBlock.Image(imageUrl = media.uriString))
+                            }
+                        }
                 }
-
-                println("미디어 개수: ${fileInputs.size}   /   $fileInputs")
                 postCommunityPostUseCase(
                     files = fileInputs,
                     type = currentState.selectedTab.displayName,
                     title = title,
-                    content = content
+                    blocks = postBlocks
                 ).onSuccess {
                     _event.emit(CommunityEvent.WriteSuccess)
                     onIntent(CommunityIntent.Loading)
                 }.onFailure {
-                    _uiState.update { state ->
-                        if (state is CommunityUiState.Write) state.copy(isLoading = false) else state
-                    }                }
-            } catch (e: Exception) {
-                _uiState.update { state ->
-                    if (state is CommunityUiState.Write) state.copy(isLoading = false) else state
+                    _uiState.update { if (it is CommunityUiState.Write) it.copy(isLoading = false) else it }
                 }
+            } catch (e: Exception) {
+                _uiState.update { if (it is CommunityUiState.Write) it.copy(isLoading = false) else it }
             }
         }
     }
