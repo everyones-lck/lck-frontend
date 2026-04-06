@@ -3,8 +3,11 @@ package every.lol.com.core.designsystem.component
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -19,6 +22,13 @@ import androidx.compose.ui.unit.dp
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 
 @Composable
+fun EverylolToastHost(hostState: SnackbarHostState, modifier: Modifier = Modifier) {
+    SnackbarHost(hostState = hostState, modifier = modifier.padding(bottom = 80.dp) ) { data ->
+        EverylolToast(text = data.visuals.message)
+    }
+}
+
+@Composable
 fun EverylolToast (
     text: String,
     modifier : Modifier = Modifier
@@ -27,6 +37,7 @@ fun EverylolToast (
     Box(
         modifier = modifier
             .fillMaxWidth()
+            .heightIn(max = 120.dp)
             .padding(horizontal = 28.dp)
             .clip(RoundedCornerShape(8.dp))
             .background(EveryLoLTheme.color.grayScale1000.copy(0.8f))

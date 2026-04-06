@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,6 +38,7 @@ import every.lol.com.core.common.rememberPlatformContext
 import every.lol.com.core.designsystem.component.EverylolButton
 import every.lol.com.core.designsystem.component.EverylolModal
 import every.lol.com.core.designsystem.component.EverylolTextField
+import every.lol.com.core.designsystem.component.EverylolToastHost
 import every.lol.com.core.designsystem.component.EverylolTopAppBar
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.core.ui.ext.everylolDefault
@@ -63,6 +63,7 @@ fun WriteRoute(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val currentState = uiState
     val focusManager = LocalFocusManager.current
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) {
         if (uiState !is CommunityUiState.Write) {
@@ -77,6 +78,9 @@ fun WriteRoute(
                     focusManager.clearFocus()
                     onBackClick()
                 }
+                is CommunityEvent.ShowToast -> {
+                    snackbarHostState.showSnackbar(event.message)
+                }
                 else -> {}
             }
         }
@@ -87,7 +91,8 @@ fun WriteRoute(
             WriteCommunityScreen(
                 state = currentState,
                 onBackClick = onBackClick,
-                onIntent = viewModel::onIntent
+                onIntent = viewModel::onIntent,
+                snackbarHostState = snackbarHostState
             )
         }
     }
@@ -97,11 +102,11 @@ fun WriteRoute(
 fun WriteCommunityScreen(
     state: CommunityUiState.Write,
     onBackClick: () -> Unit,
-    onIntent: (CommunityIntent) -> Unit
+    onIntent: (CommunityIntent) -> Unit,
+    snackbarHostState: SnackbarHostState
 ) {
 
     val scope = rememberCoroutineScope()
-    val snackbarHostState = remember { SnackbarHostState() }
     val isFormValid = state.title.isNotBlank() && state.content.isNotBlank()
     var showWritePostModal by remember { mutableStateOf(false) }
     val keyboardHeight = WindowInsets.ime.getBottom(LocalDensity.current)
@@ -163,7 +168,7 @@ fun WriteCommunityScreen(
                 .everylolDefault(EveryLoLTheme.color.newBg, false),
             containerColor = Color.Transparent,
             contentWindowInsets = WindowInsets(0, 0, 0, 0),
-            snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+            snackbarHost = { EverylolToastHost(snackbarHostState) },
             topBar = {
                 EverylolTopAppBar(onBackClick = onBackClick, title = "글 작성하기")
             },

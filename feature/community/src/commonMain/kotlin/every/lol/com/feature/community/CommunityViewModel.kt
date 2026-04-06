@@ -338,9 +338,11 @@ class CommunityViewModel(
                     onIntent(CommunityIntent.Loading)
                 }.onFailure { e ->
                     _uiState.update { if (it is CommunityUiState.Write) it.copy(isLoading = false) else it }
+                    _event.emit(CommunityEvent.ShowToast("업로드에 실패했습니다: ${e.message}"))
                 }
             } catch (e: Exception) {
                 _uiState.update { if (it is CommunityUiState.Write) it.copy(isLoading = false) else it }
+                _event.emit(CommunityEvent.ShowToast("업로드에 실패했습니다: ${e.message}"))
             }
         }
     }
