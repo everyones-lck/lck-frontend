@@ -96,7 +96,7 @@ private fun PopularPostItem(
         )
         Text(
             text = createDate,
-            style = EveryLoLTheme.typography.body02,
+            style = EveryLoLTheme.typography.pretendardBody02,
             color = EveryLoLTheme.color.gray800
         )
     }

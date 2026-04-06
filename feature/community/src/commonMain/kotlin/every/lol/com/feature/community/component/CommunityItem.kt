@@ -54,7 +54,7 @@ fun CommunityItem(
             )
             Text(
                 text = post.postContent,
-                style = EveryLoLTheme.typography.body02,
+                style = EveryLoLTheme.typography.pretendardBody02,
                 color = EveryLoLTheme.color.community600,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
