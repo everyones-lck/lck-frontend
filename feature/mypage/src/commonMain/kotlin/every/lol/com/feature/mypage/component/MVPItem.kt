@@ -25,7 +25,7 @@ import every.lol.com.feature.mypage.model.MypageUiState
 fun MVPItem(
     mvp: MypageUiState.MVPItem
 ) {
-    val team = Team.fromId(mvp.playerTeam)
+    val team = Team.fromTeamId(mvp.playerTeam)
     Column(
         modifier = Modifier
             .fillMaxWidth()

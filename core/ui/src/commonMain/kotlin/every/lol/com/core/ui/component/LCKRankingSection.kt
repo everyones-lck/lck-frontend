@@ -1,5 +1,6 @@
 package every.lol.com.core.ui.component
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,6 +19,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,17 +44,29 @@ import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun LckRankingSection(
-    standings: List<RankingTeam>, //추후 Group으로 수정
+    standings: List<RankingTeam>,
     modifier: Modifier = Modifier,
     onTeamClick: (Long) -> Unit = {},
+    supportTeams : List<Int>,
     // cardBackground: @Composable BoxScope.(LckStandingTeamModel) -> Unit = {}
 ) {
     if (standings.isEmpty()) return
 
-    //val favoriteTeam = standings.firstOrNull { it.teamId == favoriteTeamId }
 
-    val top3 = standings.take(3)
-    val lowerRanks = standings.drop(3)
+    val favoriteTeamId = remember(supportTeams) {
+        supportTeams.randomOrNull()
+    }
+
+    val favoriteTeam = standings.find { fromTeamName(it.teamName).id== favoriteTeamId }
+
+    val remainingTeams = if (favoriteTeam != null) {
+        standings.filter { it.teamName != favoriteTeam.teamName }
+    } else {
+        standings
+    }
+
+    val top3 = remainingTeams.take(3)
+    val lowerRanks = remainingTeams.drop(3)
 
     Column(
         modifier = modifier.fillMaxWidth()
@@ -75,14 +89,12 @@ fun LckRankingSection(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
             ) {
-                // Todo: 응원팀 로컬에 저장 및 호출 구현
-                /*favoriteTeam?.let { team ->
-                FavoriteRankCard(
-                    team = team,
-                    onClick = onTeamClick,
-                    cardBackground = cardBackground
-                )
-            }*/
+                favoriteTeam?.let { team ->
+                    FavoriteRankCard(
+                        team = favoriteTeam,
+                        onClick = onTeamClick
+                    )
+                }
                 top3.forEach { team ->
                     TopRankCard(
                         team = team,
@@ -95,15 +107,14 @@ fun LckRankingSection(
             Spacer(modifier = Modifier.height(10.dp))
 
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 lowerRanks.forEach { team ->
+                    val isMyTeam = supportTeams.contains(fromTeamName(team.teamName).id)
                     RankListRow(
                         team = team,
-                        isFavorite = false,
+                        isFavorite = isMyTeam,
                         onClick = onTeamClick
                     )
                 }
@@ -112,46 +123,57 @@ fun LckRankingSection(
     }
 }
 
-/*@Composable
+@Composable
 private fun FavoriteRankCard(
-    team: HomeRankingTeam,
+    team: RankingTeam,
     onClick: (Long) -> Unit,
     //cardBackground: @Composable BoxScope.(LckStandingTeamModel) -> Unit
 ) {
+
+    val rankingBgRes = when (fromTeamName(team.teamName).id) {
+        1 -> Res.drawable.img_ranking_t1
+        2 -> Res.drawable.img_ranking_gen
+        3 -> Res.drawable.img_ranking_dk
+        4 -> Res.drawable.img_ranking_kt
+        5 -> Res.drawable.img_ranking_hle
+        6 -> Res.drawable.img_ranking_krx
+        7 -> Res.drawable.img_ranking_ns
+        8 -> Res.drawable.img_ranking_bro
+        9 -> Res.drawable.img_ranking_bfx
+        10 -> Res.drawable.img_ranking_dns
+        else -> Res.drawable.img_ranking_t1
+    }
+
     Card(
         modifier = Modifier
             .width(76.dp)
             .height(112.dp)
-            .clickable { onClick(team.teamId) },
+            .clickable { onClick(fromTeamName(team.teamName).id.toLong()) },
         shape = RoundedCornerShape(4.dp),
         colors = CardDefaults.cardColors(
             containerColor = EveryLoLTheme.color.grayScale1000
         ),
-        border = BorderStroke(1.dp, EveryLoLTheme.color.teamT1)
+        border = BorderStroke(1.dp, getTeamColor(team.teamName))
     ) {
         Box(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxSize()
         ) {
-            cardBackground(team)
-
+            Image(
+                painter = painterResource(rankingBgRes),
+                contentDescription = null,
+                modifier = Modifier.matchParentSize(),
+                contentScale = ContentScale.FillBounds
+            )
             Text(
                 text = "${team.rank}",
                 style = EveryLoLTheme.typography.subtitle03,
                 color = EveryLoLTheme.color.white200,
                 modifier = Modifier.padding(start = 8.dp, top = 7.dp)
             )
-
-            Text(
-                text = team.teamName,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(end = 10.dp, bottom = 10.dp)
-            )
         }
     }
-}*/
+}
 
 @Composable
 private fun TopRankCard(
@@ -194,7 +216,7 @@ private fun TopRankCard(
                 painter = painterResource(rankingBgRes),
                 contentDescription = null,
                 modifier = Modifier.matchParentSize(),
-                contentScale = ContentScale.FillBounds // 전체를 꽉 채움
+                contentScale = ContentScale.FillBounds
             )
             Text(
                 text = "${team.rank}",
@@ -224,17 +246,17 @@ private fun RankListRow(
                 val teamId = fromTeamName(team.teamName).id.toLong()
                 onClick(teamId)
             }
-            .padding(horizontal = 8.dp, vertical = 8.dp),
+            .padding(horizontal = 8.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = "${team.rank}",
             style = EveryLoLTheme.typography.subtitle03,
             color = EveryLoLTheme.color.white200,
-            modifier = Modifier.width(10.dp)
+            modifier = Modifier.width(20.dp)
         )
 
-        Spacer(modifier = Modifier.width(30.dp))
+        Spacer(modifier = Modifier.width(19.dp))
 
         Text(
             text = team.teamName,
