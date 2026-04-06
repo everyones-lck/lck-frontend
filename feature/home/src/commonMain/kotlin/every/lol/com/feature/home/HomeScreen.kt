@@ -1,7 +1,9 @@
 package every.lol.com.feature.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -84,7 +87,7 @@ fun HomeScreen(
     var showMatchBanner by rememberSaveable { mutableStateOf(true) }
     val matchData = homeState?.matches
     val newsBanners = homeState?.news
-    val alertsMessage = homeState?.alertsMessage
+    val currentAlerts = homeState?.alerts?.alerts ?: emptyList()
     val ranking = homeState?.ranking?.groups?.firstOrNull()?.teams ?: emptyList()
     val supportTeams = homeState?.supportTeam ?: emptyList()
 
@@ -104,24 +107,25 @@ fun HomeScreen(
                 }
             )
         }
-        alertsMessage?.let {
-            item {
-                if (showMatchBanner) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
-                            .padding(top = 16.dp)
-                    ) {
-                        MatchNoticeBanner(
-                            message = alertsMessage.toString(),
-                            onCloseClick = { showMatchBanner = false }
-                        )
+        items(
+            items = currentAlerts,
+            key = { it.matchId }
+        ) { alert ->
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .padding(top = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                MatchNoticeBanner(
+                    message = alert.message,
+                    onCloseClick = {
+                        onIntent(HomeIntent.CloseAlarm(alert.matchId))
                     }
-                }
+                )
             }
         }
-
         item {
 
             MatchCardRow(
