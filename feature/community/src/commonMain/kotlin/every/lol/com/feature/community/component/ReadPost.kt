@@ -34,7 +34,7 @@ fun ReadPost(
     onLikeClick: () -> Unit = {},
     isCommented: Boolean = false,
     isLiked: Boolean = false,
-    likeCount: Int
+    likeCount: Int = 0
 ) {
     Column(
         modifier = Modifier
@@ -104,7 +104,7 @@ fun ReadPost(
             isLiked = isLiked,
             commentCount = postDetail.commentCount,
             likeCount = likeCount,
-            viewCount = 0,
+            viewCount = postDetail.viewCount,
             onLikeClick = onLikeClick
         )
     }
