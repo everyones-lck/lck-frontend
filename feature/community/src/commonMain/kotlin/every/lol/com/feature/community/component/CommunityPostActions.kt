@@ -1,6 +1,5 @@
 package every.lol.com.feature.community.component
 
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -14,6 +13,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.feature.community.model.CommunityUiState
@@ -81,11 +85,22 @@ fun CountBox(
     Row(
         modifier = Modifier
             .clip(RoundedCornerShape(7.dp))
-            .border(
-                width = 1.dp,
-                color = borderColor,
-                shape = RoundedCornerShape(7.dp)
-            )
+            .drawWithContent {
+                drawContent()
+                val strokeWidth = 1.dp.toPx()
+                val halfStrokeWidth = strokeWidth / 2
+
+                drawRoundRect(
+                    color = borderColor,
+                    topLeft = Offset(halfStrokeWidth, halfStrokeWidth),
+                    size = Size(
+                        size.width - strokeWidth,
+                        size.height - strokeWidth
+                    ),
+                    cornerRadius = CornerRadius(7.dp.toPx()),
+                    style = Stroke(width = strokeWidth)
+                )
+            }
             .padding(if(isList) 8.dp else 12.dp, 4.dp)
             .clickable { onCountClick(type) } ,
         horizontalArrangement = Arrangement.spacedBy(4.dp),

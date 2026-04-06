@@ -103,7 +103,9 @@ fun ReadRoute(
             postId = postId,
             state = currentState,
             onBackClick = onBackClick,
-            onIntent = viewModel::onIntent
+            onIntent = viewModel::onIntent,
+            isLiked = currentState.isLiked,
+            likeCount = currentState.likeCount
         )
     } else {
         Box(
@@ -129,7 +131,9 @@ fun ReadCommunityScreen(
     postId: Int,
     state: CommunityUiState.Read,
     onBackClick: () -> Unit,
-    onIntent: (CommunityIntent) -> Unit
+    onIntent: (CommunityIntent) -> Unit,
+    isLiked: Boolean = false,
+    likeCount: Int = 0
 ) {
 
     val snackbarHostState = remember { SnackbarHostState() }
@@ -244,6 +248,9 @@ fun ReadCommunityScreen(
             }
         ) { innerPadding ->
             state.post?.let { postDetail ->
+                val safeCommentList = postDetail.commentList ?: emptyList()
+                val isCommented = safeCommentList.any { it.isWriter }
+
                 PullToRefreshBox(
                     state = pullToRefreshState,
                     isRefreshing = isRefreshing,
@@ -279,7 +286,10 @@ fun ReadCommunityScreen(
                                 onMoreClick = { isPostMenuExpanded = true },
                                 onImageClick = { url -> selectedMedia = url to false },
                                 onVideoClick = { url -> selectedMedia = url to true },
-                                onLikeClick = { onIntent(CommunityIntent.LikePost(postId)) }
+                                onLikeClick = { onIntent(CommunityIntent.LikePost(postId)) },
+                                isCommented = isCommented,
+                                isLiked = isLiked,
+                                likeCount = likeCount
                             )
                         }
 
