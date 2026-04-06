@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -81,6 +82,7 @@ fun CommunityItem(
 
         }
         CommunityPostActions(
+            isList = true,
             type = type,
             postType = post.postType,
             commentCount = post.commentCounts,
@@ -109,7 +111,7 @@ private fun postThumbnail(
             contentDescription = null,
             contentScale = ContentScale.Crop
         )
-        /*Text(
+        Text(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(3.dp)
@@ -119,6 +121,6 @@ private fun postThumbnail(
             text = "1/${totalCounts}",
             style = EveryLoLTheme.typography.caption02,
             color = EveryLoLTheme.color.grayScale800,
-        )*/
+        )
     }
 }

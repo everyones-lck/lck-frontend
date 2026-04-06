@@ -48,9 +48,9 @@ fun CommunityPostActions(
             if(postType == null) return
             CategoryBox(category = postType)
         }
-        CountBox(type = 0, count = likeCount, isActive = isLiked, onCountClick = {onLikeClick()})
-        CountBox(type = 1, count = viewCount, isActive = false, onCountClick = {})
-        CountBox(type = 2, count = commentCount, isActive = isCommented, onCountClick = {})
+        CountBox(isList = isList, type = 0, count = likeCount, isActive = isLiked, onCountClick = {onLikeClick()})
+        CountBox(isList = isList, type = 1, count = viewCount, isActive = false, onCountClick = {})
+        CountBox(isList = isList, type = 2, count = commentCount, isActive = isCommented, onCountClick = {})
     }
 }
 
@@ -101,7 +101,7 @@ fun CountBox(
                     style = Stroke(width = strokeWidth)
                 )
             }
-            .padding(if(isList) 8.dp else 12.dp, 4.dp)
+            .padding(if (isList) 8.dp else 12.dp,if(isList) 4.dp else 8.dp)
             .clickable { onCountClick(type) } ,
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically,
