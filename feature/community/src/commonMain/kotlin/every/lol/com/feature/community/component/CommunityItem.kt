@@ -82,9 +82,11 @@ fun CommunityItem(
         }
         CommunityPostActions(
             type = type,
+            postType = post.postType,
             commentCount = post.commentCounts,
-            likeCount = 0,
-            viewCount = 0
+            likeCount = post.likeCount,
+            viewCount = post.viewCount,
+            isLiked = post.isLiked
         )
     }
 }

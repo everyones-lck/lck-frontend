@@ -25,7 +25,9 @@ import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun CommunityPostActions(
+    isList: Boolean = false,
     type: CommunityUiState.CommunityTab?=null,
+    postType: String?=null,
     commentCount: Int,
     likeCount: Int,
     viewCount: Int,
@@ -35,14 +37,15 @@ fun CommunityPostActions(
 ){
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(14.dp, Alignment.End),
+        horizontalArrangement = Arrangement.spacedBy(if (isList) 14.dp else 8.dp, Alignment.End),
         verticalAlignment = Alignment.CenterVertically
     ){
         if(type == CommunityUiState.CommunityTab.ALL){
-            //CategoryBox(category = type.toString()) //Todo: 카테고리 반영
+            if(postType == null) return
+            CategoryBox(category = postType)
         }
-        //CountBox(type = 0, count = likeCount, isActive = isLiked, onCountClick = {onLikeClick()}) //Todo: 좋아요 개수
-        //CountBox(type = 1, count = viewCount, isActive = false, onCountClick = {}) //Todo: 조회수 개수
+        CountBox(type = 0, count = likeCount, isActive = isLiked, onCountClick = {onLikeClick()})
+        CountBox(type = 1, count = viewCount, isActive = false, onCountClick = {})
         CountBox(type = 2, count = commentCount, isActive = isCommented, onCountClick = {})
     }
 }
@@ -50,6 +53,7 @@ fun CommunityPostActions(
 
 @Composable
 fun CountBox(
+    isList: Boolean = false,
     type: Int, //0: 좋아요, 1: 조회수, 2: 댓글
     count: Int,
     isActive:Boolean,
@@ -82,7 +86,7 @@ fun CountBox(
                 color = borderColor,
                 shape = RoundedCornerShape(7.dp)
             )
-            .padding(8.dp, 4.dp)
+            .padding(if(isList) 8.dp else 12.dp, 4.dp)
             .clickable { onCountClick(type) } ,
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically,

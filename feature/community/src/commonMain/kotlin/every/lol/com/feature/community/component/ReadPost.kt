@@ -31,10 +31,7 @@ fun ReadPost(
     onMoreClick: () -> Unit,
     onImageClick: (String) -> Unit,
     onVideoClick: (String) -> Unit,
-    onLikeClick: () -> Unit = {},
-    isCommented: Boolean = false,
-    isLiked: Boolean = false,
-    likeCount: Int
+    onLikeClick: () -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -100,11 +97,11 @@ fun ReadPost(
         }
 
         CommunityPostActions(
-            isCommented = isCommented,
-            isLiked = isLiked,
+            isCommented = postDetail.isLiked,
+            isLiked = postDetail.isLiked,
             commentCount = postDetail.commentCount,
-            likeCount = likeCount,
-            viewCount = 0,
+            likeCount = postDetail.likeCount,
+            viewCount = postDetail.viewCount,
             onLikeClick = onLikeClick
         )
     }

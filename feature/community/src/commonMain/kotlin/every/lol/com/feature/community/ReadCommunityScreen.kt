@@ -244,9 +244,6 @@ fun ReadCommunityScreen(
             }
         ) { innerPadding ->
             state.post?.let { postDetail ->
-                val safeCommentList = postDetail.commentList ?: emptyList()
-                val isCommented = safeCommentList.any { it.isWriter }
-
                 PullToRefreshBox(
                     state = pullToRefreshState,
                     isRefreshing = isRefreshing,
@@ -282,10 +279,7 @@ fun ReadCommunityScreen(
                                 onMoreClick = { isPostMenuExpanded = true },
                                 onImageClick = { url -> selectedMedia = url to false },
                                 onVideoClick = { url -> selectedMedia = url to true },
-                                onLikeClick = { onIntent(CommunityIntent.LikePost(postId)) },
-                                isCommented = isCommented,
-                                isLiked = state.isLiked,
-                                likeCount = state.likeCount
+                                onLikeClick = { onIntent(CommunityIntent.LikePost(postId)) }
                             )
                         }
 
