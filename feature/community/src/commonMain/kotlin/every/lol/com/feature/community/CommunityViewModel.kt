@@ -16,7 +16,8 @@ import every.lol.com.feature.community.model.CommunityIntent
 import every.lol.com.feature.community.model.CommunityUiState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -25,6 +26,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import moe.tlaster.precompose.viewmodel.ViewModel
 import moe.tlaster.precompose.viewmodel.viewModelScope
 
@@ -306,40 +308,47 @@ class CommunityViewModel(
 
         uploadScope.launch {
             try {
-                val currentJob = coroutineContext[Job]
-                _uiState.update { if (it is CommunityUiState.Write) it.copy(isLoading = true) else it }
 
-                val fileInputs = currentState.selectedMedias.map { media ->
-                    MediaFile(uriString = media.uriString, isVideo = media.isVideo)
-                }
+                withContext(NonCancellable + Dispatchers.IO) {
+                    _uiState.update { if (it is CommunityUiState.Write) it.copy(isLoading = true) else it }
 
-                val postBlocks = mutableListOf<PostBlock>()
-                val lines = content.split("\n")
-                lines.forEachIndexed { index, lineText ->
-                    if (lineText.isNotBlank()) postBlocks.add(PostBlock.Text(text = lineText))
-                    currentState.selectedMedias
-                        .filter { it.order == index }
-                        .forEach { media ->
-                            val block = if (media.isVideo) PostBlock.Video(media.uriString)
-                            else PostBlock.Image(media.uriString)
-                            postBlocks.add(block)
-                        }
-                }
+                    val fileInputs = currentState.selectedMedias.map { media ->
+                        MediaFile(uriString = media.uriString, isVideo = media.isVideo)
+                    }
 
-                val result = postCommunityPostUseCase(
-                    files = fileInputs,
-                    type = currentState.selectedTab.displayName,
-                    title = title,
-                    blocks = postBlocks
-                )
+                    val postBlocks = mutableListOf<PostBlock>()
+                    val lines = content.split("\n")
+                    lines.forEachIndexed { index, lineText ->
+                        if (lineText.isNotBlank()) postBlocks.add(PostBlock.Text(text = lineText))
+                        currentState.selectedMedias
+                            .filter { it.order == index }
+                            .forEach { media ->
+                                val block = if (media.isVideo) PostBlock.Video(media.uriString)
+                                else PostBlock.Image(media.uriString)
+                                postBlocks.add(block)
+                            }
+                    }
+                    println("UPLOAD_DEBUG: Start Network Request")
+                    val result = postCommunityPostUseCase(
+                        files = fileInputs,
+                        type = currentState.selectedTab.displayName,
+                        title = title,
+                        blocks = postBlocks
+                    )
 
-                result.onSuccess {
-                    _event.emit(CommunityEvent.WriteSuccess)
-                    onIntent(CommunityIntent.Loading)
-                }.onFailure { e ->
-                    _uiState.update { if (it is CommunityUiState.Write) it.copy(isLoading = false) else it }
-                }
-            } catch (e: Exception) {
+                    result.onSuccess {
+                        _event.emit(CommunityEvent.WriteSuccess)
+                        onIntent(CommunityIntent.Loading)
+                    }.onFailure { e ->
+                        println("UPLOAD_DEBUG: Failure!")
+                        println("UPLOAD_DEBUG: Exception Type: ${e::class.simpleName}")
+                        println("UPLOAD_DEBUG: Message: ${e.message}")
+                        println("UPLOAD_DEBUG: Cause: ${e.cause}")
+                        _uiState.update { if (it is CommunityUiState.Write) it.copy(isLoading = false) else it }
+                    }            }        } catch (e: Exception) {
+                println("UPLOAD_DEBUG: Caught Exception in launch block")
+                println("UPLOAD_DEBUG: Exception: $e")
+                e.printStackTrace()
                 _uiState.update { if (it is CommunityUiState.Write) it.copy(isLoading = false) else it }
             }
         }

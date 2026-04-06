@@ -23,6 +23,7 @@ import io.ktor.client.request.get
 import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import kotlinx.coroutines.NonCancellable
@@ -36,43 +37,47 @@ class CommunityDataSourceImpl(
 
     override suspend fun postPost(request: PostPostRequest):ApiResponse<PostIdResponse> =
         withContext(NonCancellable) {
-         runCatching {
-             val jsonString = Json.encodeToString(request.request)
-             httpClient.post("/post/create") {
-                 timeout {
-                     requestTimeoutMillis = 300_000L
-                     connectTimeoutMillis = 30_000L
-                     socketTimeoutMillis = 300_000L
-                 }
+            runCatching {
+                val jsonString = Json.encodeToString(request.request)
+                val response = httpClient.post("/post/create") {
+                    timeout {
+                        requestTimeoutMillis = 300_000L
+                        connectTimeoutMillis = 30_000L
+                        socketTimeoutMillis = 300_000L
+                    }
 
-                 setBody(
-                     MultiPartFormDataContent(
-                         formData {
-                             append("request", jsonString, Headers.build {
-                                 append(HttpHeaders.ContentType, "application/json")
-                             })
-                             request.files?.forEachIndexed { index, mediaFile ->
-                                 val contentType = if (mediaFile.isVideo) "video/mp4" else "image/jpeg"
-                                 val extension = if (mediaFile.isVideo) "mp4" else "jpg"
-                                 val fileName = "file_$index.$extension"
+                    setBody(
+                        MultiPartFormDataContent(
+                            formData {
+                                append("request", jsonString, Headers.build {
+                                    append(HttpHeaders.ContentType, "application/json")
+                                })
+                                request.files?.forEachIndexed { index, mediaFile ->
+                                    val contentType = if (mediaFile.isVideo) "video/mp4" else "image/jpeg"
+                                    val extension = if (mediaFile.isVideo) "mp4" else "jpg"
+                                    val fileName = "file_$index.$extension"
 
-                                 appendInput(
-                                     key = "files",
-                                     headers = Headers.build {
-                                         append(HttpHeaders.ContentType, contentType)
-                                         append(HttpHeaders.ContentDisposition, "filename=\"$fileName\"")
-                                     },
-                                     block = {
-                                         openFileStream(platformContext, mediaFile.uriString)
-                                     }
-                                 )
-                             }
-                         }
-                     )
-                 )
-             }
-         }
-    }.asApiResponse()
+                                    appendInput(
+                                        key = "files",
+                                        headers = Headers.build {
+                                            append(HttpHeaders.ContentType, contentType)
+                                            append(HttpHeaders.ContentDisposition, "filename=\"$fileName\"")
+                                        },
+                                        block = {
+                                            openFileStream(platformContext, mediaFile.uriString)
+                                        }
+                                    )
+                                }
+                            }                 )
+                    )
+                }
+                val rawBody = response.bodyAsText()
+                println("UPLOAD_DEBUG: Status = ${response.status}")
+                println("UPLOAD_DEBUG: Raw Body = $rawBody")
+
+                response
+            }
+        }.asApiResponse()
 
     override suspend fun editPost(postId: Int, request: PostPostDetailRequest): ApiResponse<PostIdResponse> = runCatching {
         httpClient.patch("/post/$postId/modify"){
