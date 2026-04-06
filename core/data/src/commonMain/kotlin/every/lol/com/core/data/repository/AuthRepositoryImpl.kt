@@ -46,6 +46,7 @@ class AuthRepositoryImpl(
 
         return remote.signup(signupRequest).toResult()
             .mapCatching { dto ->
+                local.saveSupportTeam(request.teamIds)
                 local.saveUserId(request.kakaoUserId)
                 local.saveToken(dto.accessToken, dto.refreshToken, dto.accessTokenExpirationTime, dto.refreshTokenExpirationTime)
             }
@@ -103,4 +104,8 @@ class AuthRepositoryImpl(
         }
     }
 
+    override suspend fun getSupportTeam(): List<Int>? {
+        val supportTeams = local.getSupportTeamIdsOnce() ?: return null
+        return supportTeams
+    }
 }

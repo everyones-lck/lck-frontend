@@ -11,6 +11,7 @@ sealed interface AboutLCKUiState {
     data class AboutLCK(
         val isLoading: Boolean = false,
         val ranking: Ranking?= null,
+        val supportTeam: List<Int> = emptyList(),
         val match: AboutLCKMatch?= null
         ) : AboutLCKUiState
 }

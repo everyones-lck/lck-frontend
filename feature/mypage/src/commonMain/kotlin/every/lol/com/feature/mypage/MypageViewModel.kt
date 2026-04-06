@@ -114,7 +114,7 @@ class MypageViewModel(
                 val myInform = MypageUiState.MyInform(
                     nickName = userInform.nickname,
                     teamIds = userInform.teamIds.mapNotNull { id ->
-                        Team.fromId(id)
+                        Team.fromTeamId(id)
                     }.toSet(),
                     profileImage = userInform.profileImage
                 )

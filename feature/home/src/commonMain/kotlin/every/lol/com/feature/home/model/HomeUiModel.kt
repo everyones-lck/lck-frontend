@@ -16,6 +16,7 @@ sealed interface HomeUiState {
         val matches: HomeTodayMatch ?= null,
         val matchRates: Map<Long, MatchVoteRate> = emptyMap(),
         val ranking: Ranking?= null,
+        val supportTeam: List<Int> = emptyList(),
         val news: HomeNews?=null,
         val alerts: HomeAlerts?=null,
         val alertsMessage: String?=null,

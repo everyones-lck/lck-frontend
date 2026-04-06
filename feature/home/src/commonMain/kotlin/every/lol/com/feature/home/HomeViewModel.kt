@@ -5,6 +5,7 @@ import every.lol.com.core.domain.usecase.GetHomeNewsUseCase
 import every.lol.com.core.domain.usecase.GetHomeRankingUseCase
 import every.lol.com.core.domain.usecase.GetHomeTodayMatchUseCase
 import every.lol.com.core.domain.usecase.GetMatchVoteRateUseCase
+import every.lol.com.core.domain.usecase.GetSupportTeamUseCase
 import every.lol.com.feature.home.model.HomeIntent
 import every.lol.com.feature.home.model.HomeUiState
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -23,6 +24,7 @@ sealed interface HomeEvent{
 class HomeViewModel(
     private val getHomeTodayMatchUseCase: GetHomeTodayMatchUseCase,
     private val getHomeRankingUseCase: GetHomeRankingUseCase,
+    private val getSupportTeamUseCase: GetSupportTeamUseCase,
     private val getHomeNewsUseCase: GetHomeNewsUseCase,
     private val getHomeAlertsUseCase: GetHomeAlertsUseCase,
     private val getMatchVotestUseCase: GetMatchVoteRateUseCase
@@ -128,13 +130,15 @@ class HomeViewModel(
     private fun loadRanking() {
         viewModelScope.launch {
             getHomeRankingUseCase().onSuccess { result ->
-                _uiState.update { state ->
-                    val currentState = state as? HomeUiState.Home ?: HomeUiState.Home()
-                    currentState.copy(
-                        isLoading = false,
-                        ranking = result,
-                        isRefreshing = false
-                    )
+                getSupportTeamUseCase().onSuccess { supportTeam ->
+                    _uiState.update { state ->
+                        val currentState = state as? HomeUiState.Home ?: HomeUiState.Home()
+                        currentState.copy(
+                            isLoading = false,
+                            ranking = result,
+                            supportTeam = supportTeam
+                        )
+                    }
                 }
             }.onFailure { error ->
                 _uiState.update { state ->

@@ -22,14 +22,13 @@ class MyPageRepositoryImpl(
         private const val PAGING_SIZE = 10
     }
 
-    override suspend fun getProfile(): Result<UserInform> =
-        remote.getProfile().toResult().mapCatching { response ->
-            UserInform(
-                nickname = response.nickname,
-                profileImage = response.profileImageUrl,
-                teamIds = response.teamIds,
-            )
+    override suspend fun getProfile(): Result<UserInform> {
+        return remote.getProfile().toResult().mapCatching { response ->
+            local.saveSupportTeam(response.teamIds)
+            UserInform(response.nickname,response.profileImageUrl, response.teamIds,)
         }
+    }
+
 
     override suspend fun patchProfile(nickname: String?, profileImage: ByteArray?): Result<Unit> {
         val isDefaultImage = if (profileImage == null) true else false

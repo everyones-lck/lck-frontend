@@ -86,7 +86,7 @@ fun HomeScreen(
     val newsBanners = homeState?.news
     val alertsMessage = homeState?.alertsMessage
     val ranking = homeState?.ranking?.groups?.firstOrNull()?.teams ?: emptyList()
-    val myFavoriteTeamId = 6L
+    val supportTeams = homeState?.supportTeam ?: emptyList()
 
     LazyColumn(
         modifier = Modifier
@@ -151,7 +151,7 @@ fun HomeScreen(
         item {
             LckRankingSection(
                 standings = ranking,
-                //favoriteTeamId = myFavoriteTeamId,
+                supportTeams = supportTeams,
                 modifier = Modifier.padding(top = 24.dp).padding(horizontal = 16.dp),
                 onTeamClick = { teamId ->
                     // TODO

@@ -1,6 +1,7 @@
 package every.lol.com.feature.aboutlck
 
 import every.lol.com.core.domain.usecase.GetHomeRankingUseCase
+import every.lol.com.core.domain.usecase.GetSupportTeamUseCase
 import every.lol.com.core.domain.usecase.aboutlck.GetAboutLCKMatchUseCase
 import every.lol.com.feature.aboutlck.model.AboutLCKIntent
 import every.lol.com.feature.aboutlck.model.AboutLCKUiState
@@ -21,6 +22,7 @@ sealed interface AboutLCKEvent{
 class AboutLCKViewModel(
     private val getAboutLCKMatchUseCase: GetAboutLCKMatchUseCase,
     private val getHomeRankingUseCase: GetHomeRankingUseCase,
+    private val getSupportTeamUseCase: GetSupportTeamUseCase
     ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<AboutLCKUiState>(AboutLCKUiState.Loading)
@@ -77,12 +79,15 @@ class AboutLCKViewModel(
     private fun loadRanking() {
         viewModelScope.launch {
             getHomeRankingUseCase().onSuccess { result ->
-                _uiState.update { state ->
-                    val currentState = state as? AboutLCKUiState.AboutLCK ?:AboutLCKUiState.AboutLCK()
-                    currentState.copy(
-                        isLoading = false,
-                        ranking = result
-                    )
+                getSupportTeamUseCase().onSuccess { supportTeam ->
+                    _uiState.update { state ->
+                        val currentState = state as? AboutLCKUiState.AboutLCK ?:AboutLCKUiState.AboutLCK()
+                        currentState.copy(
+                            isLoading = false,
+                            ranking = result,
+                            supportTeam = supportTeam
+                        )
+                    }
                 }
             }.onFailure { error ->
                 _uiState.update { state ->
