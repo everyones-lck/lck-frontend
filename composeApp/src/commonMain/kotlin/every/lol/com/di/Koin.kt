@@ -37,6 +37,7 @@ import every.lol.com.core.domain.usecase.GetProfileUseCase
 import every.lol.com.core.domain.usecase.GetReadPostUseCase
 import every.lol.com.core.domain.usecase.GetSetPogCandidateUseCase
 import every.lol.com.core.domain.usecase.GetSetPogResultUseCase
+import every.lol.com.core.domain.usecase.GetSupportTeamUseCase
 import every.lol.com.core.domain.usecase.LogoutUseCase
 import every.lol.com.core.domain.usecase.NicknameUseCase
 import every.lol.com.core.domain.usecase.PatchMyTeamUseCase
@@ -106,6 +107,7 @@ val appDependenciesModule = module {
     factory { SignupUseCase(get()) }
     factory { NicknameUseCase(get()) }
     factory { CheckAuthUseCase(get()) }
+    factory { GetSupportTeamUseCase(get()) }
     factory { GetProfileUseCase(get()) }
     factory { PatchProfileUseCase(get()) }
     factory { PatchMyTeamUseCase(get()) }

@@ -28,6 +28,7 @@ class AuthPreferences(
         val REFRESH_TOKEN_KEY = stringPreferencesKey("refresh_token")
         val ACCESS_TOKEN_EXPIRATION_TIME_KEY = stringPreferencesKey("access_token_expiration_time")
         val REFRESH_TOKEN_EXPIRATION_TIME_KEY = stringPreferencesKey("refresh_token_expiration_time")
+        val SUPPORT_TEAM_KEY = stringPreferencesKey("support_team")
     }
 
     suspend fun saveUserId(kakaoUserId: String){
@@ -55,6 +56,27 @@ class AuthPreferences(
             preferences.remove(ACCESS_TOKEN_EXPIRATION_TIME_KEY)
             preferences.remove(REFRESH_TOKEN_EXPIRATION_TIME_KEY)
             preferences.remove(KAKAO_USER_ID)
+        }
+    }
+
+    val supportTeamIds: Flow<List<Int>> = dataStore.data.map { preferences ->
+        val teamString = preferences[SUPPORT_TEAM_KEY] ?: ""
+        if (teamString.isEmpty()) {
+            emptyList()
+        } else {
+            teamString.split(",").mapNotNull { it.toIntOrNull() }
+        }
+    }
+
+    suspend fun saveSupportTeam(teamIds: List<Int>) {
+        dataStore.edit { preferences ->
+            preferences[SUPPORT_TEAM_KEY] = teamIds.joinToString(",")
+        }
+    }
+
+    suspend fun clearSupportTeam() {
+        dataStore.edit { preferences ->
+            preferences.remove(SUPPORT_TEAM_KEY)
         }
     }
 }
