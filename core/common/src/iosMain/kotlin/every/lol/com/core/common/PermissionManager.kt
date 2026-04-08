@@ -18,6 +18,7 @@ actual fun rememberPermissionManager(
                     PermissionType.GALLERY -> currentCallback(type, true)
                     // TODO: 기반 실제 권한 요청 구현 필요
                     PermissionType.LOCATION -> currentCallback(type, false)
+                    PermissionType.AlARM -> currentCallback(type, true) //Todo: 알람 권한 요청 구현 필요
                 }
             }
 
@@ -25,6 +26,7 @@ actual fun rememberPermissionManager(
                 return when (type) {
                     PermissionType.GALLERY -> true
                     PermissionType.LOCATION -> false
+                    PermissionType.AlARM -> true //Todo: 알람 권한 요청 구현 필요
                 }
             }
         }

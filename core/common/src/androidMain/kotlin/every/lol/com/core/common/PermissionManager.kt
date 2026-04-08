@@ -30,6 +30,12 @@ actual fun rememberPermissionManager(
         onPermissionResult(PermissionType.GALLERY, isGranted)
     }
 
+    val alarmLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ){ isGranted ->
+        onPermissionResult(PermissionType.ALARM, isGranted)
+    }
+
     return remember {
         object : PermissionHandler {
             override fun askPermission(type: PermissionType) {
@@ -50,6 +56,13 @@ actual fun rememberPermissionManager(
                         }
                         galleryLauncher.launch(permission)
                     }
+                    PermissionType.ALARM -> {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            alarmLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        } else {
+                            onPermissionResult(PermissionType.ALARM, true)
+                        }
+                    }
                 }
             }
 
@@ -64,6 +77,13 @@ actual fun rememberPermissionManager(
                             context.hasPermission(Manifest.permission.READ_MEDIA_IMAGES)
                         } else {
                             context.hasPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
+                        }
+                    }
+                    PermissionType.ALARM -> {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            context.hasPermission(Manifest.permission.POST_NOTIFICATIONS)
+                        } else {
+                            true
                         }
                     }
                 }
