@@ -197,6 +197,11 @@ class MatchesViewModel(
                                 (voteRate?.team1?.voteRate ?: 0.0) > (voteRate?.team2?.voteRate ?: 0.0) -> match.team1.teamName
                                 (voteRate?.team2?.voteRate ?: 0.0) > (voteRate?.team1?.voteRate ?: 0.0) -> match.team2.teamName
                                 else -> null
+                            },
+                            actualWinnerTeamName = when {
+                                match.team1.winner -> match.team1.teamName
+                                match.team2.winner -> match.team2.teamName
+                                else -> null
                             }
                         )
                     }

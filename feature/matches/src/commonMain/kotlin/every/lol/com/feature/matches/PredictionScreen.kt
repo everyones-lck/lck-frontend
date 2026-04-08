@@ -22,6 +22,7 @@ import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.core.model.MatchCardModel
 import every.lol.com.core.model.MatchPogCandidate
 import every.lol.com.core.model.MatchStatus
+import every.lol.com.core.model.PogCandidateCandidate
 import every.lol.com.core.model.SetPogVoteItem
 import every.lol.com.feature.matches.component.CompactMatchCard
 import every.lol.com.feature.matches.component.IncompletePogVoteDialog
@@ -93,8 +94,11 @@ fun PredictionScreen(
                         PogVoteItem(
                             title = "${setDetail.setIndex}세트 POG를 선택해주세요",
                             options = setDetail.candidates.map { it.playerName } + "해당없음",
-                            isExpanded = index == 0,
-                            selectedOption = null
+                            isExpanded = false,
+                            selectedOption = resolveSelectedOption(
+                                myVotedPlayerId = setDetail.myVotedPlayerId,
+                                candidates = setDetail.candidates
+                            )
                         )
                     )
                 }
@@ -105,7 +109,10 @@ fun PredictionScreen(
                             title = "POM을 선택해주세요",
                             options = matchPog.candidates.map { it.playerName } + "해당없음",
                             isExpanded = false,
-                            selectedOption = null
+                            selectedOption = resolveSelectedOption(
+                                myVotedPlayerId = matchPog.myVotedPlayerId,
+                                candidates = matchPog.candidates
+                            )
                         )
                     )
                 }
@@ -119,6 +126,9 @@ fun PredictionScreen(
         val prefix = if (index == voteItems.lastIndex) "POM" else "${index + 1}세트"
         "$prefix : ${item.selectedOption ?: "투표 안 함"}"
     }
+
+    val hasSavedVote = state.setPogData.orEmpty().any { it.myVotedPlayerId != null } ||
+            (state.matchPogData?.myVotedPlayerId != null)
 
     Column(
         modifier = modifier
@@ -174,8 +184,8 @@ fun PredictionScreen(
 
             item {
                 val currentMode = when {
-                    state.setPogData.isNullOrEmpty() -> PogSectionMode.WAITING
-                    state.isPogSaved -> PogSectionMode.SAVED
+                    state.setPogData.isNullOrEmpty() && state.matchPogData == null -> PogSectionMode.WAITING
+                    state.isPogSaved || hasSavedVote -> PogSectionMode.SAVED
                     else -> PogSectionMode.VOTING
                 }
                 PogSection(
@@ -205,7 +215,7 @@ fun PredictionScreen(
                             val selectedOption = voteItems.getOrNull(index)?.selectedOption
 
                             val playerId: Long? = when (selectedOption) {
-                                null, "해당없음" -> null
+                                null, "해당없음" -> if (selectedOption == "해당없음") -1L else null
                                 else -> setDetail.candidates
                                     .find { it.playerName == selectedOption }
                                     ?.playerId
@@ -220,7 +230,7 @@ fun PredictionScreen(
 
                         val pomSelectedOption = voteItems.lastOrNull()?.selectedOption
                         val pomPlayerId: Long? = when (pomSelectedOption) {
-                            null, "해당없음" -> null
+                            null, "해당없음" -> if (pomSelectedOption == "해당없음") -1L else null
                             else -> state.matchPogData?.candidates
                                 ?.find { it.playerName == pomSelectedOption }
                                 ?.playerId
@@ -277,5 +287,16 @@ fun PredictionScreen(
                 onSavePogVotes(setVotes, pomPlayerId)
             }
         )
+    }
+}
+
+private fun resolveSelectedOption(
+    myVotedPlayerId: Long?,
+    candidates: List<PogCandidateCandidate>
+): String? {
+    return when (myVotedPlayerId) {
+        null -> null
+        -1L -> "해당없음"
+        else -> candidates.firstOrNull { it.playerId.toLong() == myVotedPlayerId }?.playerName
     }
 }

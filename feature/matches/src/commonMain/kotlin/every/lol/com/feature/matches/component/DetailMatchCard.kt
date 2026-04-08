@@ -39,6 +39,10 @@ fun DetailMatchCard(
     onOpenTalkClick: () -> Unit = {},
     onPredictionClick: () -> Unit = {}
 ) {
+    val displayWinnerTeamName = when (item.matchStatus) {
+        MatchStatus.FINISHED -> item.actualWinnerTeamName
+        else -> item.predictedWinnerTeamName
+    }
     Column(
         modifier = modifier
             .width(328.dp)
@@ -68,12 +72,12 @@ fun DetailMatchCard(
                         }
                     MatchCardTag(text = item.roundName)
 
-                    item.predictedWinnerTeamName
+                    displayWinnerTeamName
                         ?.takeIf { it.isNotBlank() }
-                        ?.let { predictedWinner ->
+                        ?.let { winnerTeamName ->
                             MatchCardTag(
-                                text = "$predictedWinner win",
-                                backgroundColor = getTeamColor(predictedWinner),
+                                text = "$winnerTeamName win",
+                                backgroundColor = getTeamColor(winnerTeamName),
                                 textColor = EveryLoLTheme.color.black900
                             )
                         }
@@ -118,13 +122,13 @@ fun DetailMatchCard(
                 team2Rate = item.team2VoteRate,
                 team1Name = item.team1Name,
                 team2Name = item.team2Name,
-                predictedWinnerTeamName = item.predictedWinnerTeamName
+                predictedWinnerTeamName = displayWinnerTeamName
             )
 
             TeamNameRow(
                 team1Name = item.team1Name,
                 team2Name = item.team2Name,
-                predictedWinnerTeamName = item.predictedWinnerTeamName,
+                predictedWinnerTeamName = displayWinnerTeamName,
                 status = item.matchStatus
             )
         }
