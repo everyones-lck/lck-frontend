@@ -89,6 +89,7 @@ fun AboutLCKScreen(
     val ranking = aboutLCKState?.ranking?.groups?.firstOrNull()?.teams ?: emptyList()
     val matches = aboutLCKState?.match?.matches ?: emptyList()
     var showCalender =  remember { mutableStateOf(false) }
+    val supportTeams = aboutLCKState?.supportTeam ?: emptyList()
 
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
@@ -156,7 +157,7 @@ fun AboutLCKScreen(
                 item {
                     LckRankingSection(
                         standings = ranking,
-                        //favoriteTeamId = myFavoriteTeamId,
+                        supportTeams = supportTeams,
                         modifier = Modifier.padding(top = 24.dp),
                         onTeamClick = { teamId ->
                             // TODO

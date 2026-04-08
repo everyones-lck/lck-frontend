@@ -143,8 +143,10 @@ fun CommunityContentWriteBlock(
                         },
                         modifier = Modifier.fillMaxWidth(),
                         hint = if (textIndex == 0 && state.content.isEmpty()) {
-                            "- 사진은 최대 10장, 영상은 최대 2개 까지 첨부가능합니다\n" +
-                                    "- 공백 포함 최대 2000자 작성가능합니다"
+                            "· 공백 포함 최대 2000자 작성가능합니다\n" +
+                            "· 과도한 비방 및 욕설이 포함된 게시물은 신고에 의해 무통보 삭제될 수 있습니다\n" +
+                            "· 초상권, 저작권 침해 및 기타 위법한 게시물은 관리자에 의해 무통보 삭제될 수 있습니다.\n" +
+                            "· 사진은 최대 10장, 영상은 최대 2개 까지 첨부가능합니다"
                         } else null
                     )
                 } else {

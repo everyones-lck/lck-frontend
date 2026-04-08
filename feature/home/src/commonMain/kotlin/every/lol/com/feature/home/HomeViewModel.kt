@@ -5,6 +5,8 @@ import every.lol.com.core.domain.usecase.GetHomeNewsUseCase
 import every.lol.com.core.domain.usecase.GetHomeRankingUseCase
 import every.lol.com.core.domain.usecase.GetHomeTodayMatchUseCase
 import every.lol.com.core.domain.usecase.GetMatchVoteRateUseCase
+import every.lol.com.core.domain.usecase.GetSupportTeamUseCase
+import every.lol.com.core.model.HomeAlerts
 import every.lol.com.feature.home.model.HomeIntent
 import every.lol.com.feature.home.model.HomeUiState
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -23,6 +25,7 @@ sealed interface HomeEvent{
 class HomeViewModel(
     private val getHomeTodayMatchUseCase: GetHomeTodayMatchUseCase,
     private val getHomeRankingUseCase: GetHomeRankingUseCase,
+    private val getSupportTeamUseCase: GetSupportTeamUseCase,
     private val getHomeNewsUseCase: GetHomeNewsUseCase,
     private val getHomeAlertsUseCase: GetHomeAlertsUseCase,
     private val getMatchVotestUseCase: GetMatchVoteRateUseCase
@@ -41,6 +44,7 @@ class HomeViewModel(
     fun onIntent(intent: HomeIntent) {
         when (intent) {
             HomeIntent.LoadInitial -> loadInitial()
+            is HomeIntent.CloseAlarm -> dismissAlarm(intent.matchId)
             HomeIntent.RefreshHome -> refreshHome()
             HomeIntent.LoadTodayMatchHome -> loadTodayMatchHome()
             else -> {}
@@ -128,13 +132,15 @@ class HomeViewModel(
     private fun loadRanking() {
         viewModelScope.launch {
             getHomeRankingUseCase().onSuccess { result ->
-                _uiState.update { state ->
-                    val currentState = state as? HomeUiState.Home ?: HomeUiState.Home()
-                    currentState.copy(
-                        isLoading = false,
-                        ranking = result,
-                        isRefreshing = false
-                    )
+                getSupportTeamUseCase().onSuccess { supportTeam ->
+                    _uiState.update { state ->
+                        val currentState = state as? HomeUiState.Home ?: HomeUiState.Home()
+                        currentState.copy(
+                            isLoading = false,
+                            ranking = result,
+                            supportTeam = supportTeam
+                        )
+                    }
                 }
             }.onFailure { error ->
                 _uiState.update { state ->
@@ -172,27 +178,38 @@ class HomeViewModel(
         }
     }
 
-    private fun loadAlerts(){
+    private fun loadAlerts() {
         viewModelScope.launch {
             getHomeAlertsUseCase().onSuccess { result ->
-                _uiState.update { state ->
-                    val currentState = state as? HomeUiState.Home ?: HomeUiState.Home()
-                    currentState.copy(
-                        isLoading = false,
-                        alerts = result,
-                        isRefreshing = false,
-                        alertsMessage = result.alerts.firstOrNull()?.message.orEmpty()
-                    )
-                }
+                rawAlerts = result
+                updateAlertsState()
             }.onFailure {
-                _uiState.update {
-                    val currentState = it as? HomeUiState.Home ?: HomeUiState.Home()
-                    currentState.copy(isLoading = false)
-                }
-                isInitialLoaded = false
-                println(it)
+
             }
         }
+    }
+
+    private fun updateAlertsState() {
+        _uiState.update { state ->
+            val currentState = state as? HomeUiState.Home ?: return@update state
+            val alertsData = rawAlerts ?: return@update state
+
+            val filteredList = alertsData.alerts.filter { it.matchId !in dismissedMatchIds }
+
+            currentState.copy(
+                alerts = alertsData.copy(
+                    alerts = filteredList,
+                    alertCount = filteredList.size
+                )
+            )
+        }
+    }
+    private val dismissedMatchIds = mutableSetOf<Int>()
+    private var rawAlerts: HomeAlerts? = null
+
+    private fun dismissAlarm(matchId: Int) {
+        dismissedMatchIds.add(matchId)
+        updateAlertsState()
     }
 
 }

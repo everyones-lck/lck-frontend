@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -53,7 +54,7 @@ fun CommunityItem(
             )
             Text(
                 text = post.postContent,
-                style = EveryLoLTheme.typography.body02,
+                style = EveryLoLTheme.typography.pretendardBody02,
                 color = EveryLoLTheme.color.community600,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
@@ -81,10 +82,13 @@ fun CommunityItem(
 
         }
         CommunityPostActions(
+            isList = true,
             type = type,
+            postType = post.postType,
             commentCount = post.commentCounts,
-            likeCount = 0,
-            viewCount = 0
+            likeCount = post.likeCount,
+            viewCount = post.viewCount,
+            isLiked = post.isLiked
         )
     }
 }
@@ -107,7 +111,7 @@ private fun postThumbnail(
             contentDescription = null,
             contentScale = ContentScale.Crop
         )
-        /*Text(
+        Text(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(3.dp)
@@ -117,6 +121,6 @@ private fun postThumbnail(
             text = "1/${totalCounts}",
             style = EveryLoLTheme.typography.caption02,
             color = EveryLoLTheme.color.grayScale800,
-        )*/
+        )
     }
 }

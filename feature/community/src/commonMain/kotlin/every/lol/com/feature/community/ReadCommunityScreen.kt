@@ -103,7 +103,9 @@ fun ReadRoute(
             postId = postId,
             state = currentState,
             onBackClick = onBackClick,
-            onIntent = viewModel::onIntent
+            onIntent = viewModel::onIntent,
+            isLiked = currentState.isLiked,
+            likeCount = currentState.likeCount
         )
     } else {
         Box(
@@ -129,7 +131,9 @@ fun ReadCommunityScreen(
     postId: Int,
     state: CommunityUiState.Read,
     onBackClick: () -> Unit,
-    onIntent: (CommunityIntent) -> Unit
+    onIntent: (CommunityIntent) -> Unit,
+    isLiked: Boolean = false,
+    likeCount: Int = 0
 ) {
 
     val snackbarHostState = remember { SnackbarHostState() }
@@ -284,8 +288,8 @@ fun ReadCommunityScreen(
                                 onVideoClick = { url -> selectedMedia = url to true },
                                 onLikeClick = { onIntent(CommunityIntent.LikePost(postId)) },
                                 isCommented = isCommented,
-                                isLiked = state.isLiked,
-                                likeCount = state.likeCount
+                                isLiked = isLiked,
+                                likeCount = likeCount
                             )
                         }
 

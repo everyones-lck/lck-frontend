@@ -17,7 +17,7 @@ enum class Team(
     NONE(0, "선택 안함");
 
     companion object {
-        fun fromId(id: Int?): Team =
+        fun fromTeamId(id: Int?): Team =
             entries.find { it.id == id } ?: NONE
 
         fun fromTeamName(teamName: String?): Team =

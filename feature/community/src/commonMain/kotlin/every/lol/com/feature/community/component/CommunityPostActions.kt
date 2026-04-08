@@ -1,6 +1,5 @@
 package every.lol.com.feature.community.component
 
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -14,6 +13,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.feature.community.model.CommunityUiState
@@ -25,7 +29,9 @@ import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun CommunityPostActions(
+    isList: Boolean = false,
     type: CommunityUiState.CommunityTab?=null,
+    postType: String?=null,
     commentCount: Int,
     likeCount: Int,
     viewCount: Int,
@@ -35,21 +41,23 @@ fun CommunityPostActions(
 ){
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(14.dp, Alignment.End),
+        horizontalArrangement = Arrangement.spacedBy(if (isList) 14.dp else 8.dp, Alignment.End),
         verticalAlignment = Alignment.CenterVertically
     ){
         if(type == CommunityUiState.CommunityTab.ALL){
-            //CategoryBox(category = type.toString()) //Todo: 카테고리 반영
+            if(postType == null) return
+            CategoryBox(category = postType)
         }
-        //CountBox(type = 0, count = likeCount, isActive = isLiked, onCountClick = {onLikeClick()}) //Todo: 좋아요 개수
-        //CountBox(type = 1, count = viewCount, isActive = false, onCountClick = {}) //Todo: 조회수 개수
-        CountBox(type = 2, count = commentCount, isActive = isCommented, onCountClick = {})
+        CountBox(isList = isList, type = 0, count = likeCount, isActive = isLiked, onCountClick = {onLikeClick()})
+        CountBox(isList = isList, type = 1, count = viewCount, isActive = false, onCountClick = {})
+        CountBox(isList = isList, type = 2, count = commentCount, isActive = isCommented, onCountClick = {})
     }
 }
 
 
 @Composable
 fun CountBox(
+    isList: Boolean = false,
     type: Int, //0: 좋아요, 1: 조회수, 2: 댓글
     count: Int,
     isActive:Boolean,
@@ -77,12 +85,23 @@ fun CountBox(
     Row(
         modifier = Modifier
             .clip(RoundedCornerShape(7.dp))
-            .border(
-                width = 1.dp,
-                color = borderColor,
-                shape = RoundedCornerShape(7.dp)
-            )
-            .padding(8.dp, 4.dp)
+            .drawWithContent {
+                drawContent()
+                val strokeWidth = 1.dp.toPx()
+                val halfStrokeWidth = strokeWidth / 2
+
+                drawRoundRect(
+                    color = borderColor,
+                    topLeft = Offset(halfStrokeWidth, halfStrokeWidth),
+                    size = Size(
+                        size.width - strokeWidth,
+                        size.height - strokeWidth
+                    ),
+                    cornerRadius = CornerRadius(7.dp.toPx()),
+                    style = Stroke(width = strokeWidth)
+                )
+            }
+            .padding(if (isList) 8.dp else 12.dp,if(isList) 4.dp else 8.dp)
             .clickable { onCountClick(type) } ,
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically,

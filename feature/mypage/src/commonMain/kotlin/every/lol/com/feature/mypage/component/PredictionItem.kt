@@ -97,7 +97,7 @@ private fun TeamText(
     isWinner: Boolean = false,
     isMyVote: Boolean = false
 ){
-    val team = Team.fromId(teamId)
+    val team = Team.fromTeamId(teamId)
     Text(
         modifier = modifier
             .clip(RoundedCornerShape(4.dp))
