@@ -306,9 +306,13 @@ class CommunityViewModel(
     private fun handleWritePost(platformContext: Any, title: String, content: String) {
         val currentState = _uiState.value as? CommunityUiState.Write ?: return
 
+        viewModelScope.launch {
+            _event.emit(CommunityEvent.WriteSuccess)
+            onIntent(CommunityIntent.Loading)
+        }
+
         uploadScope.launch {
             try {
-                _uiState.update { if (it is CommunityUiState.Write) it.copy(isLoading = true) else it }
 
                 withContext(NonCancellable + Dispatchers.IO) {
                     val fileInputs = currentState.selectedMedias.map { media ->
@@ -328,8 +332,6 @@ class CommunityViewModel(
                             }
                     }
 
-                    println("UPLOAD_DEBUG: Start Network Request with PlatformContext")
-
                     val result = postCommunityPostUseCase(
                         platformContext = platformContext,
                         files = fileInputs,
@@ -338,19 +340,12 @@ class CommunityViewModel(
                         blocks = postBlocks
                     )
 
-                    result.onSuccess {
-                        _event.emit(CommunityEvent.WriteSuccess)
-                        onIntent(CommunityIntent.Loading)
-                    }.onFailure { e ->
-                        println("UPLOAD_DEBUG: Failure! Type: ${e::class.simpleName}, Message: ${e.message}")
-                        _uiState.update { if (it is CommunityUiState.Write) it.copy(isLoading = false) else it }
-                        _event.emit(CommunityEvent.ShowToast("업로드 실패: ${e.message}"))
+                    result.onFailure { e ->
+                        println("UPLOAD_DEBUG: Failure! Message: ${e.message}")
                     }
                 }
             } catch (e: Exception) {
                 println("UPLOAD_DEBUG: Caught Exception = $e")
-                _uiState.update { if (it is CommunityUiState.Write) it.copy(isLoading = false) else it }
-                _event.emit(CommunityEvent.ShowToast("에러 발생: ${e.message}"))
             }
         }
     }

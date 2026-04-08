@@ -27,11 +27,9 @@ import io.ktor.client.request.get
 import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
-import io.ktor.client.statement.bodyAsText
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import io.ktor.http.isSuccess
-import io.ktor.utils.io.core.Input
 import io.ktor.utils.io.writePacket
 import io.ktor.utils.io.writer
 import kotlinx.coroutines.Dispatchers
@@ -39,6 +37,7 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import kotlin.time.Clock
 
 class CommunityDataSourceImpl(
     private val platformContext: Any,
@@ -49,9 +48,13 @@ class CommunityDataSourceImpl(
 
     override suspend fun postPost(request: PostPostRequest): ApiResponse<PostIdResponse> =
         withContext(NonCancellable + Dispatchers.IO) {
+
+            val firstFileName = "게시글 업로드"
+            var lastNotificationTime = 0L
+            val notificationInterval = 10_000L
+
             runCatching {
                 val jsonString = Json.encodeToString(request.request)
-                val firstFileName = request.files?.firstOrNull()?.uriString ?: "미디어 파일"
 
                 uploadNotification.startService(firstFileName)
 
@@ -62,14 +65,13 @@ class CommunityDataSourceImpl(
                         socketTimeoutMillis = 900_000L
                     }
 
-                    var lastNotifiedProgress = -1
-
                     onUpload { bytesSentTotal, contentLength ->
                         if (contentLength != null && contentLength > 0) {
+                            val currentTime = Clock.System.now().toEpochMilliseconds()
                             val progress = (bytesSentTotal.toDouble() / contentLength * 100).toInt()
 
-                            if (progress >= lastNotifiedProgress + 1 || progress == 0 || progress == 100) {
-                                lastNotifiedProgress = progress
+                            if (currentTime - lastNotificationTime >= notificationInterval || progress == 100) {
+                                lastNotificationTime = currentTime
                                 notifier.showProgress(progress, firstFileName)
                             }
                         }
@@ -83,7 +85,8 @@ class CommunityDataSourceImpl(
                                 })
 
                                 request.files?.forEachIndexed { index, mediaFile ->
-                                    val contentType = if (mediaFile.isVideo) "video/mp4" else "image/jpeg"
+                                    val contentType =
+                                        if (mediaFile.isVideo) "video/mp4" else "image/jpeg"
                                     val extension = if (mediaFile.isVideo) "mp4" else "jpg"
                                     val fileName = "file_$index.$extension"
 
@@ -91,17 +94,20 @@ class CommunityDataSourceImpl(
                                         key = "files",
                                         value = ChannelProvider(size = mediaFile.fileSize) {
                                             writer(Dispatchers.IO) {
-                                                val input: Input = openFileStream(platformContext, mediaFile.uriString)
+                                                val input = openFileStream(platformContext, mediaFile.uriString)
                                                 try {
                                                     channel.writePacket(input)
                                                 } finally {
-                                                    input.close() // Input 자원 해제 필수
+                                                    input.close()
                                                 }
                                             }.channel
                                         },
                                         headers = Headers.build {
                                             append(HttpHeaders.ContentType, contentType)
-                                            append(HttpHeaders.ContentDisposition, "filename=\"$fileName\"")
+                                            append(
+                                                HttpHeaders.ContentDisposition,
+                                                "filename=\"$fileName\""
+                                            )
                                         }
                                     )
                                 }
@@ -109,23 +115,17 @@ class CommunityDataSourceImpl(
                         )
                     )
                 }
-
                 if (response.status.isSuccess()) {
                     notifier.showSuccess(firstFileName)
                 } else {
-                    val errorBody = response.bodyAsText()
-                    notifier.showError(firstFileName, "서버 오류: ${response.status.value}")
-                    println("UPLOAD_DEBUG: 서버 에러 내용 -> $errorBody")
+                    notifier.showError(firstFileName, "서버 오류가 발생했습니다 (${response.status.value})")
                 }
-
                 response
-            }.also { result ->
-                uploadNotification.stopService()
 
-                if (result.isFailure) {
-                    val exception = result.exceptionOrNull()
-                    notifier.showError("업로드", exception?.message ?: "알 수 없는 에러")
-                }
+            }.onFailure { exception ->
+                notifier.showError(firstFileName, exception.message ?: "네트워크 연결 확인 필요")
+            }.also {
+                uploadNotification.stopService()
             }
         }.asApiResponse()
 

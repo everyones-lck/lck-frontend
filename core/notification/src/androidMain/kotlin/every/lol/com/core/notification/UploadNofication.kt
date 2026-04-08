@@ -35,8 +35,8 @@ class AndroidUploadNotification(private val context: Context) : UploadNotificati
     override fun showSuccess(fileName: String) {
         val notification = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(android.R.drawable.stat_sys_upload_done)
-            .setContentTitle(fileName)
-            .setContentText("업로드 완료!")
+            .setContentTitle("게시글 업로드가 완료되었습니다")
+            .setContentText("게시글로 바로 가기") // 클릭 시 게시글로 이동하는 로직 추가 필요
             .setOngoing(false)
             .build()
         notificationManager.notify(notificationId, notification)
@@ -45,7 +45,7 @@ class AndroidUploadNotification(private val context: Context) : UploadNotificati
     override fun showError(fileName: String, message: String) {
         val notification = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(android.R.drawable.stat_notify_error)
-            .setContentTitle("업로드 실패: $fileName")
+            .setContentTitle("업로드 실패")
             .setContentText(message)
             .setOngoing(false)
             .build()
