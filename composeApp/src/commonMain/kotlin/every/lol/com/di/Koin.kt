@@ -62,6 +62,7 @@ import every.lol.com.core.network.datasource.MatchesDataSource
 import every.lol.com.core.network.datasource.MyPagesDataSource
 import every.lol.com.core.network.di.dataSourceModule
 import every.lol.com.core.network.di.networkModule
+import every.lol.com.core.notification.di.notificationModule
 import every.lol.com.core.network.remote.AboutLCKDataSourceImpl
 import every.lol.com.core.network.remote.AuthDataSourceImpl
 import every.lol.com.core.network.remote.CommunityDataSourceImpl
@@ -90,7 +91,7 @@ val appDependenciesModule = module {
     single<AuthDataSource> { AuthDataSourceImpl(get(named("noAuth"))) }
     single<HomeDataSource> { HomeDataSourceImpl(get(named("auth"))) }
     single<MyPagesDataSource> { MyPagesDataSourceImpl(get(named("auth"))) }
-    single<CommunityDataSource> { CommunityDataSourceImpl( get(), get(named("auth"))) }
+    single<CommunityDataSource> { CommunityDataSourceImpl( get(), get(named("auth")), get(), get()) }
     single<AboutLCKDataSource> { AboutLCKDataSourceImpl(get(named("auth"))) }
     single<MatchesDataSource> { MatchesDataSourceImpl(get(named("auth"))) }
 
@@ -161,6 +162,7 @@ fun initKoin(
         modules(
             networkModule,
             dataSourceModule,
+            notificationModule,
             repositoryModule,
             appDependenciesModule,
             *platformModules.toTypedArray()

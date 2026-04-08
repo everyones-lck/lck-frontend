@@ -39,6 +39,7 @@ kotlin {
             implementation(libs.koin.core)
             implementation(projects.core.domain)
             implementation(projects.core.common)
+            implementation(projects.core.notification)
             implementation(project(":core:datastore"))
         }
         iosMain.dependencies {

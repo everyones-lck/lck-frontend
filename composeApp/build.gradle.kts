@@ -50,6 +50,7 @@ kotlin {
             implementation(projects.core.domain)
             implementation(projects.core.model)
             implementation(projects.core.navigation)
+            implementation(projects.core.notification)
             implementation(projects.core.network)
             implementation(projects.core.ui)
 

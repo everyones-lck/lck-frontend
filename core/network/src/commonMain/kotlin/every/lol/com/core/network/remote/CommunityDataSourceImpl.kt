@@ -14,6 +14,8 @@ import every.lol.com.core.network.model.response.PostIdResponse
 import every.lol.com.core.network.model.response.PostLikeResponse
 import every.lol.com.core.network.model.response.PostListResponse
 import every.lol.com.core.network.util.asApiResponse
+import every.lol.com.core.notification.NotificationServiceController
+import every.lol.com.core.notification.UploadNotification
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.onUpload
 import io.ktor.client.plugins.timeout
@@ -40,13 +42,18 @@ import kotlinx.serialization.json.Json
 
 class CommunityDataSourceImpl(
     private val platformContext: Any,
-    private val httpClient: HttpClient
+    private val httpClient: HttpClient,
+    private val notifier: UploadNotification,
+    private val uploadNotification: NotificationServiceController
 ): CommunityDataSource {
 
     override suspend fun postPost(request: PostPostRequest): ApiResponse<PostIdResponse> =
         withContext(NonCancellable + Dispatchers.IO) {
             runCatching {
                 val jsonString = Json.encodeToString(request.request)
+                val firstFileName = request.files?.firstOrNull()?.uriString ?: "미디어 파일"
+
+                uploadNotification.startService(firstFileName)
 
                 val response = httpClient.post("/post/create") {
                     timeout {
@@ -55,11 +62,15 @@ class CommunityDataSourceImpl(
                         socketTimeoutMillis = 900_000L
                     }
 
+                    var lastNotifiedProgress = -1
+
                     onUpload { bytesSentTotal, contentLength ->
                         if (contentLength != null && contentLength > 0) {
                             val progress = (bytesSentTotal.toDouble() / contentLength * 100).toInt()
-                            if (progress % 10 == 0) {
-                                println("UPLOAD_DEBUG: Progress = $progress% ($bytesSentTotal / $contentLength)")
+
+                            if (progress >= lastNotifiedProgress + 1 || progress == 0 || progress == 100) {
+                                lastNotifiedProgress = progress
+                                notifier.showProgress(progress, firstFileName)
                             }
                         }
                     }
@@ -81,14 +92,10 @@ class CommunityDataSourceImpl(
                                         value = ChannelProvider(size = mediaFile.fileSize) {
                                             writer(Dispatchers.IO) {
                                                 val input: Input = openFileStream(platformContext, mediaFile.uriString)
-
                                                 try {
                                                     channel.writePacket(input)
-                                                } catch (e: Exception) {
-                                                    println("UPLOAD_DEBUG: Streaming Error = ${e.message}")
-                                                    throw e
                                                 } finally {
-
+                                                    input.close() // Input 자원 해제 필수
                                                 }
                                             }.channel
                                         },
@@ -103,14 +110,22 @@ class CommunityDataSourceImpl(
                     )
                 }
 
-                // 4. 로깅 시 bodyAsText()는 대용량 응답일 경우 메모리를 먹으므로 상태코드 먼저 확인
-                println("UPLOAD_DEBUG: Status = ${response.status}")
-                if (!response.status.isSuccess()) {
+                if (response.status.isSuccess()) {
+                    notifier.showSuccess(firstFileName)
+                } else {
                     val errorBody = response.bodyAsText()
-                    println("UPLOAD_DEBUG: Error Body = $errorBody")
+                    notifier.showError(firstFileName, "서버 오류: ${response.status.value}")
+                    println("UPLOAD_DEBUG: 서버 에러 내용 -> $errorBody")
                 }
 
                 response
+            }.also { result ->
+                uploadNotification.stopService()
+
+                if (result.isFailure) {
+                    val exception = result.exceptionOrNull()
+                    notifier.showError("업로드", exception?.message ?: "알 수 없는 에러")
+                }
             }
         }.asApiResponse()
 

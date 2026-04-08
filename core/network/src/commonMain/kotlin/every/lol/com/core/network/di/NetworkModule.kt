@@ -48,9 +48,9 @@ fun Scope.createHttpClient(
     withAuth: Boolean
 ) = HttpClient(engine) {
     install(HttpTimeout) {
-        requestTimeoutMillis = 300_000L
-        connectTimeoutMillis = 300_000L
-        socketTimeoutMillis = 300_000L
+        requestTimeoutMillis = 900_000L
+        connectTimeoutMillis = 900_000L
+        socketTimeoutMillis = 900_000L
     }
 
     install(ContentNegotiation) {
