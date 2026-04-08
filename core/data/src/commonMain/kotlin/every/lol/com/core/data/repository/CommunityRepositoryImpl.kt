@@ -1,5 +1,6 @@
 package every.lol.com.core.data.repository
 
+import every.lol.com.core.common.getFileSize
 import every.lol.com.core.data.mapper.toResult
 import every.lol.com.core.datastore.AuthLocalDataSource
 import every.lol.com.core.domain.repository.CommunityRepository
@@ -28,7 +29,7 @@ class CommunityRepositoryImpl(
     private val local: AuthLocalDataSource
 ): CommunityRepository {
 
-    override suspend fun postPost(files: List<MediaFile>?, type: String, title: String, blocks: List<PostBlock>): Result<Unit> {
+    override suspend fun postPost(files: List<MediaFile>?, type: String, title: String, blocks: List<PostBlock>, platformContext: Any): Result<Unit> {
         val networkBlocks = blocks.mapIndexed { index, block ->
             when (block) {
                 is PostBlock.Text -> BlocksRequest(
@@ -49,9 +50,12 @@ class CommunityRepositoryImpl(
             }
         }
 
-        // 2. 파일 리스트 변환 (Remote 전달용)
         val networkMediaFiles = files?.map {
-            MediaFileRequst(uriString = it.uriString, isVideo = it.isVideo)
+            MediaFileRequst(
+                uriString = it.uriString,
+                isVideo = it.isVideo,
+                fileSize = getFileSize(platformContext, it.uriString)
+            )
         }
 
         val requestBody = PostPostRequest(

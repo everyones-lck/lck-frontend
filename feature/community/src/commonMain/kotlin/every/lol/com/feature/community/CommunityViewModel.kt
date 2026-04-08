@@ -89,7 +89,7 @@ class CommunityViewModel(
                 }
             }
             is CommunityIntent.WritePost -> {
-                handleWritePost(intent.title, intent.content)
+                handleWritePost(intent.platformContext, intent.title, intent.content)
             }
             is CommunityIntent.AddMedias -> handleAddMedias(intent.medias)
             is CommunityIntent.RemoveMedia -> handleRemoveMedia(intent.index)
@@ -303,15 +303,14 @@ class CommunityViewModel(
         }
     }
 
-    private fun handleWritePost(title: String, content: String) {
+    private fun handleWritePost(platformContext: Any, title: String, content: String) {
         val currentState = _uiState.value as? CommunityUiState.Write ?: return
 
         uploadScope.launch {
             try {
+                _uiState.update { if (it is CommunityUiState.Write) it.copy(isLoading = true) else it }
 
                 withContext(NonCancellable + Dispatchers.IO) {
-                    _uiState.update { if (it is CommunityUiState.Write) it.copy(isLoading = true) else it }
-
                     val fileInputs = currentState.selectedMedias.map { media ->
                         MediaFile(uriString = media.uriString, isVideo = media.isVideo)
                     }
@@ -328,8 +327,11 @@ class CommunityViewModel(
                                 postBlocks.add(block)
                             }
                     }
-                    println("UPLOAD_DEBUG: Start Network Request")
+
+                    println("UPLOAD_DEBUG: Start Network Request with PlatformContext")
+
                     val result = postCommunityPostUseCase(
+                        platformContext = platformContext,
                         files = fileInputs,
                         type = currentState.selectedTab.displayName,
                         title = title,
@@ -340,17 +342,15 @@ class CommunityViewModel(
                         _event.emit(CommunityEvent.WriteSuccess)
                         onIntent(CommunityIntent.Loading)
                     }.onFailure { e ->
-                        println("UPLOAD_DEBUG: Failure!")
-                        println("UPLOAD_DEBUG: Exception Type: ${e::class.simpleName}")
-                        println("UPLOAD_DEBUG: Message: ${e.message}")
-                        println("UPLOAD_DEBUG: Cause: ${e.cause}")
+                        println("UPLOAD_DEBUG: Failure! Type: ${e::class.simpleName}, Message: ${e.message}")
                         _uiState.update { if (it is CommunityUiState.Write) it.copy(isLoading = false) else it }
-                    }            }        } catch (e: Exception) {
-                println("UPLOAD_DEBUG: Caught Exception in launch block")
-                println("UPLOAD_DEBUG: Exception: $e")
-                e.printStackTrace()
+                        _event.emit(CommunityEvent.ShowToast("업로드 실패: ${e.message}"))
+                    }
+                }
+            } catch (e: Exception) {
+                println("UPLOAD_DEBUG: Caught Exception = $e")
                 _uiState.update { if (it is CommunityUiState.Write) it.copy(isLoading = false) else it }
-                _event.emit(CommunityEvent.ShowToast("업로드에 실패했습니다: ${e.message}"))
+                _event.emit(CommunityEvent.ShowToast("에러 발생: ${e.message}"))
             }
         }
     }

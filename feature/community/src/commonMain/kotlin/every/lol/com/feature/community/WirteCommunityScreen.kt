@@ -250,6 +250,7 @@ fun WriteCommunityScreen(
                     onConfirm = {
                         onIntent(
                             CommunityIntent.WritePost(
+                                context,
                                 state.title,
                                 state.content,
                                 state.selectedMedias

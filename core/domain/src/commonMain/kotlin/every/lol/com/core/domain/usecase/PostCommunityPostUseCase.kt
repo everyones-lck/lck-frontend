@@ -6,13 +6,14 @@ import every.lol.com.core.model.PostBlock
 
 
 class PostCommunityPostUseCase(
-    private val communityRepository: CommunityRepository
+    private val communityRepository: CommunityRepository,
 ) {
     suspend operator fun invoke(
         files: List<MediaFile>? = null,
         type: String,
         title: String,
-        blocks: List<PostBlock>
+        blocks: List<PostBlock>,
+        platformContext: Any
     ): Result<Unit> =
-        communityRepository.postPost(files, type, title, blocks)
+        communityRepository.postPost(files, type, title, blocks, platformContext)
 }

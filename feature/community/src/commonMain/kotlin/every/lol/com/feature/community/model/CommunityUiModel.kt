@@ -72,6 +72,7 @@ sealed interface CommunityIntent{
     data class ChangeTitle(val title: String) : CommunityIntent
     data class ChangeContent(val content: String) : CommunityIntent
     data class WritePost(
+        val platformContext: Any,
         val title: String,
         val content: String,
         val medias: List<CommunityUiState.MediaItem>

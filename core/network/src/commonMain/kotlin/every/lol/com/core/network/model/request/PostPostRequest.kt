@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 
 data class MediaFileRequst(
     val uriString: String,
+    val fileSize: Long,
     val isVideo: Boolean
 )
 
