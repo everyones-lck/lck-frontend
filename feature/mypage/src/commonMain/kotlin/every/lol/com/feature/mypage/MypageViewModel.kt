@@ -3,6 +3,7 @@ package every.lol.com.feature.mypage
 import every.lol.com.core.common.compressImage
 import every.lol.com.core.domain.usecase.GetMyCommentsUseCase
 import every.lol.com.core.domain.usecase.GetMyPostsUseCase
+import every.lol.com.core.domain.usecase.GetMyPredictionsUseCase
 import every.lol.com.core.domain.usecase.GetProfileUseCase
 import every.lol.com.core.domain.usecase.LogoutUseCase
 import every.lol.com.core.domain.usecase.NicknameUseCase
@@ -50,7 +51,8 @@ class MypageViewModel(
     private val getMyPostsUseCase: GetMyPostsUseCase,
     private val getMyCommentsUseCase: GetMyCommentsUseCase,
     private val logoutUseCase: LogoutUseCase,
-    private val withdrawalUseCase: WithdrawalUseCase
+    private val withdrawalUseCase: WithdrawalUseCase,
+    private val getMyPredictionsUseCase: GetMyPredictionsUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<MypageUiState>(MypageUiState.Loading)
@@ -346,29 +348,23 @@ class MypageViewModel(
     private fun loadPredictionData() {
         _uiState.value = MypageUiState.Prediction(isLoading = true)
         viewModelScope.launch {
-            val dummyPredictions = listOf(
-                MypageUiState.PredictionItem(
-                    id = 101,
-                    matchDate = "2024.03.16",
-                    homeTeamId = 3, // T1
-                    awayTeamId = 2, // GEN
-                    myVoteTeamId = 3, // 내가 T1 투표
-                    winnerTeamId = 3,
-                ),
-                MypageUiState.PredictionItem(
-                    id = 102,
-                    matchDate = "2024.03.17",
-                    homeTeamId = 1, // HLE
-                    awayTeamId = 10, // KT
-                    myVoteTeamId = 1, // 내가 HLE 투표
-                    winnerTeamId = null,
+            getMyPredictionsUseCase().onSuccess { response ->
+                _uiState.value = MypageUiState.Prediction(
+                    rank = response.topPercent.toInt(),
+                    data = response.predictionDetails.map { detail ->
+                        MypageUiState.PredictionItem(
+                            detail.matchId,
+                            detail.matchDate,
+                            detail.team1Name,
+                            detail.team2Name,
+                            detail.predictedTeamName,
+                            detail.isPredictionSuccessful
+                        ) },
+                    isLoading = false
                 )
-            )
-            _uiState.value = MypageUiState.Prediction(
-                rank = 10,
-                predictions = dummyPredictions,
-                isLoading = false
-            )
+            }.onFailure { error ->
+                _event.emit(MypageEvent.ShowErrorSnackbar(error))
+            }
         }
     }
 

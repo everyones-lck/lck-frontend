@@ -50,7 +50,8 @@ fun MypagePredictionScreen(
 ){
     val snackbarHostState = remember { SnackbarHostState() }
     val predictionState = state as? MypageUiState.Prediction
-    val rank = 10
+    val rank = predictionState?.rank ?: 0
+
     val rankImage = when {
         rank <= 1 -> Res.drawable.img_top_001
         rank <= 3 -> Res.drawable.img_top_003
@@ -63,6 +64,7 @@ fun MypagePredictionScreen(
         rank <= 90 -> Res.drawable.img_top_090
         else -> Res.drawable.img_top_100
     }
+
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             modifier = Modifier
@@ -134,13 +136,15 @@ fun MypagePredictionScreen(
                         .padding(top=12.dp)
                 ) {
                     predictionState?.let { data ->
-                        if (data.predictions.isEmpty()) {
+                        val predictionList = data.data ?: emptyList()
+
+                        if (predictionList.isEmpty()) {
                             DefaultScreen(
                                 title = "투표 내역이 아직 없습니다",
                                 description = "첫 승부 예측 투표를 해보세요"
                             )
                         } else {
-                            data.predictions.forEach { prediction ->
+                            predictionList.forEach { prediction ->
                                 Predictions(prediction = prediction)
                             }
                         }

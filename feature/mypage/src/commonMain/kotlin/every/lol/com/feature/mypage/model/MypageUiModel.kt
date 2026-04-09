@@ -13,7 +13,7 @@ sealed interface MypageUiState {
     ): MypageUiState
     data class Prediction(
         val rank: Int = 0,
-        val predictions: List<PredictionItem> = emptyList(),
+        val data: List<PredictionItem>?= null,
         val isLoading: Boolean = false
     ) : MypageUiState
 
@@ -30,12 +30,12 @@ sealed interface MypageUiState {
     )
 
     data class PredictionItem(
-        val id: Int,
+        val matchId: Int,
         val matchDate: String,
-        val homeTeamId: Int,
-        val awayTeamId: Int,
-        val winnerTeamId: Int?,
-        val myVoteTeamId: Int,
+        val team1Name: String,
+        val team2Name: String,
+        val predictionTeamName: String,
+        val isPredictionSuccessful: Boolean
     )
 
     data class Community(

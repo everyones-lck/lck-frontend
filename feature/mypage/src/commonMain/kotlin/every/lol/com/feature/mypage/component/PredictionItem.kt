@@ -18,12 +18,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.core.model.Team
+import every.lol.com.core.model.Team.Companion.fromTeamName
 import every.lol.com.feature.mypage.model.MypageUiState
 
 @Composable
 fun Predictions(
     prediction: MypageUiState.PredictionItem
 ) {
+    val winnerTeamName = if (prediction.isPredictionSuccessful) {
+        prediction.predictionTeamName
+    } else {
+        if (prediction.predictionTeamName == prediction.team1Name) prediction.team2Name else prediction.team1Name
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -49,9 +56,9 @@ fun Predictions(
                 ){
                     TeamText(
                         modifier = Modifier.padding(bottom=4.dp),
-                        teamId = prediction.awayTeamId,
-                        isWinner = prediction.homeTeamId == prediction.winnerTeamId,
-                        isMyVote = prediction.homeTeamId == prediction.myVoteTeamId
+                        teamId = fromTeamName(prediction.team1Name).id,
+                        isWinner = prediction.team1Name == winnerTeamName,
+                        isMyVote = prediction.team1Name == prediction.predictionTeamName
                     )
 
                     Text(
@@ -61,9 +68,9 @@ fun Predictions(
                     )
 
                     TeamText(
-                        teamId = prediction.homeTeamId,
-                        isWinner = prediction.awayTeamId == prediction.winnerTeamId,
-                        isMyVote = prediction.awayTeamId == prediction.myVoteTeamId
+                        teamId =  fromTeamName(prediction.team2Name).id,
+                        isWinner = prediction.team2Name == winnerTeamName,
+                        isMyVote = prediction.team2Name == prediction.predictionTeamName
                     )
                 }
                 Text(
@@ -71,14 +78,14 @@ fun Predictions(
                         .clip(RoundedCornerShape(4.dp))
                         .border(
                             width = 1.dp,
-                            color = if(prediction.myVoteTeamId == prediction.winnerTeamId) EveryLoLTheme.color.semanticCheck else EveryLoLTheme.color.grayScale800,
+                            color = if(prediction.isPredictionSuccessful) EveryLoLTheme.color.semanticCheck else EveryLoLTheme.color.grayScale800,
                             shape = RoundedCornerShape(4.dp)
                         )
                         .background(EveryLoLTheme.color.grayScale1000)
                         .padding(4.dp),
-                    text = if(prediction.myVoteTeamId == prediction.winnerTeamId) "예측 성공" else "예측 실패",
+                    text = if(prediction.isPredictionSuccessful) "예측 성공" else "예측 실패",
                     style = EveryLoLTheme.typography.label03,
-                    color = if(prediction.myVoteTeamId == prediction.winnerTeamId) EveryLoLTheme.color.white200 else EveryLoLTheme.color.gray800
+                    color = if(prediction.isPredictionSuccessful) EveryLoLTheme.color.white200 else EveryLoLTheme.color.gray800
                 )
             }
             HorizontalDivider(
