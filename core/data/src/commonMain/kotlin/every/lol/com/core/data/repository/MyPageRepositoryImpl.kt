@@ -8,6 +8,8 @@ import every.lol.com.core.model.CommentsDetail
 import every.lol.com.core.model.Posts
 import every.lol.com.core.model.PostsDetail
 import every.lol.com.core.model.UserInform
+import every.lol.com.core.model.mypage.MypagePredictionDetail
+import every.lol.com.core.model.mypage.MypagePredictions
 import every.lol.com.core.network.datasource.MyPagesDataSource
 import every.lol.com.core.network.model.request.PatchMyTeamRequest
 import every.lol.com.core.network.model.request.PatchProfileData
@@ -96,4 +98,22 @@ class MyPageRepositoryImpl(
             Unit
         }
     }
+
+    override suspend fun getPredictions(): Result<MypagePredictions> =
+        remote.getPredictions().toResult().map{
+            MypagePredictions(
+                correctCount = it.correctCount,
+                topPercent = it.topPercent,
+                predictionDetails = it.predictionDetails.map{detail ->
+                    MypagePredictionDetail(
+                        matchId = detail.matchId,
+                        matchDate = detail.matchDate,
+                        team1Name = detail.team1Name,
+                        team2Name = detail.team2Name,
+                        predictedTeamName = detail.predictedTeamName,
+                        isPredictionSuccessful = detail.isPredictionSuccessful
+                        )
+                }
+            )
+        }
 }

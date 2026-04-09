@@ -33,6 +33,7 @@ import every.lol.com.core.domain.usecase.GetMatchesCandidateUseCase
 import every.lol.com.core.domain.usecase.GetMatchesUseCase
 import every.lol.com.core.domain.usecase.GetMyCommentsUseCase
 import every.lol.com.core.domain.usecase.GetMyPostsUseCase
+import every.lol.com.core.domain.usecase.GetMyPredictionsUseCase
 import every.lol.com.core.domain.usecase.GetProfileUseCase
 import every.lol.com.core.domain.usecase.GetReadPostUseCase
 import every.lol.com.core.domain.usecase.GetSetPogCandidateUseCase
@@ -136,12 +137,11 @@ val appDependenciesModule = module {
     factory { PostMatchPogVoteUseCase(get()) }
     factory { GetSetPogResultUseCase(get()) }
     factory { GetMatchPogResultUseCase(get()) }
-
     factory { GetMatchPogCandidateUseCase(get()) }
     factory { GetMatchesCandidateUseCase(get()) }
     factory { GetSetPogCandidateUseCase(get()) }
-
     factory { GetAboutLCKMatchUseCase(get())  }
+    factory { GetMyPredictionsUseCase(get()) }
 
     factoryOf(::IntroViewModel)
     factoryOf(::HomeViewModel)

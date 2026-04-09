@@ -8,6 +8,7 @@ import every.lol.com.core.network.model.response.CommentsResponse
 import every.lol.com.core.network.model.response.PatchProfileResponse
 import every.lol.com.core.network.model.response.PostsResponse
 import every.lol.com.core.network.model.response.ProfileResponse
+import every.lol.com.core.network.model.response.mypage.GetPredictionsRespponse
 import every.lol.com.core.network.util.asApiResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.request.delete
@@ -90,5 +91,9 @@ class MyPagesDataSourceImpl(
                 append("Refresh", refreshToken)
             }
         }
+    }.asApiResponse()
+
+    override suspend fun getPredictions(): ApiResponse<GetPredictionsRespponse> = runCatching {
+        httpClient.get("/my-pages/votes/predictions")
     }.asApiResponse()
 }
