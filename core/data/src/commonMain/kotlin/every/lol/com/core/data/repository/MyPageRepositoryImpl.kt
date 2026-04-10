@@ -111,7 +111,7 @@ class MyPageRepositoryImpl(
                 predictionDetails = it.predictionDetails.map{detail ->
                     MypagePredictionDetail(
                         matchId = detail.matchId,
-                        matchDate = detail.matchDate,
+                        matchDate = detail.matchDate.toFormattedDate() ,
                         team1Name = detail.team1Name,
                         team2Name = detail.team2Name,
                         predictedTeamName = detail.predictedTeamName,
@@ -131,7 +131,7 @@ class MyPageRepositoryImpl(
                         playerId = detail.playerId,
                         playerName = detail.playerName,
                         position = detail.position,
-                        voteDate = detail.voteDate
+                        voteDate = detail.voteDate.toFormattedDate()
                     )
                 }
             )
@@ -146,10 +146,20 @@ class MyPageRepositoryImpl(
                         playerId = detail.playerId,
                         playerName = detail.playerName,
                         position = detail.position,
-                        voteDate = detail.voteDate
+                        voteDate = detail.voteDate.toFormattedDate()
                     )
                 }
             )
         }
 
+}
+
+private fun String.toFormattedDate(): String {
+    return try {
+        val datePart = this.split("T")[0]
+        val parts = datePart.split("-")
+        "${parts[0].substring(2)}.${parts[1]}.${parts[2]}"
+    } catch (e: Exception) {
+        this
+    }
 }

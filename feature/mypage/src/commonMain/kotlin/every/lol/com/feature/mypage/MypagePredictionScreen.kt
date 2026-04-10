@@ -112,6 +112,7 @@ fun MypagePredictionScreen(
                             verticalAlignment = Alignment.Bottom
                         ) {
                             Text(
+                                modifier = Modifier.padding(bottom = 4.dp),
                                 text = "TOP",
                                 style = EveryLoLTheme.typography.pretendardBody01,
                                 color = EveryLoLTheme.color.community600
