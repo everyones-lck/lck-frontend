@@ -328,25 +328,32 @@ class MypageViewModel(
     private fun loadMVPData() {
         _uiState.value = MypageUiState.MVP(isLoading = true)
         viewModelScope.launch {
-            val dummyMvpList = listOf(
-                MypageUiState.MVPItem(
-                    id = 1,
-                    matchDate = "2024.03.15",
-                    playerName = "Faker",
-                    playerTeam = 1
-                ),
-                MypageUiState.MVPItem(
-                    id = 2,
-                    matchDate = "2024.03.14",
-                    playerName = "Chovy",
-                    playerTeam = 2
+            getMyPomUseCase().onSuccess { response ->
+                _uiState.value = MypageUiState.MVP(
+                    mvpList = response.mvpVoteDetails.map { detail ->
+                        MypageUiState.MVPItem(
+                            detail.matchId,
+                            detail.voteDate,
+                            detail.playerName,
+                            detail.playerId
+                        )
+                    },
+                    isLoading = false
                 )
-            )
-            _uiState.value = MypageUiState.MVP(
-                mvpList = dummyMvpList,
-                isLoading = false
-            )
-
+            }
+            getMyPogUseCase().onSuccess { response ->
+                _uiState.value = MypageUiState.MVP(
+                    mvpList = response.setPogVoteDetails.map { detail ->
+                        MypageUiState.MVPItem(
+                            detail.matchId,
+                            detail.voteDate,
+                            detail.playerName,
+                            detail.playerId
+                        )
+                    },
+                    isLoading = false
+                )
+            }
         }
     }
 

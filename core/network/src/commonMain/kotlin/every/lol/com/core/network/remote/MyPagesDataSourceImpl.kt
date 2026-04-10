@@ -104,7 +104,7 @@ class MyPagesDataSourceImpl(
     }.asApiResponse()
 
     override suspend fun getPom(): ApiResponse<GetPomResponse> = runCatching {
-        httpClient.get("/my-pages/votes/mvp")
+        httpClient.get("/my-pages/votes/mvps")
     }.asApiResponse()
 
 }
