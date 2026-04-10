@@ -8,6 +8,8 @@ import every.lol.com.core.network.model.response.CommentsResponse
 import every.lol.com.core.network.model.response.PatchProfileResponse
 import every.lol.com.core.network.model.response.PostsResponse
 import every.lol.com.core.network.model.response.ProfileResponse
+import every.lol.com.core.network.model.response.mypage.GetPogResponse
+import every.lol.com.core.network.model.response.mypage.GetPomResponse
 import every.lol.com.core.network.model.response.mypage.GetPredictionsRespponse
 import every.lol.com.core.network.util.asApiResponse
 import io.ktor.client.HttpClient
@@ -96,4 +98,13 @@ class MyPagesDataSourceImpl(
     override suspend fun getPredictions(): ApiResponse<GetPredictionsRespponse> = runCatching {
         httpClient.get("/my-pages/votes/predictions")
     }.asApiResponse()
+
+    override suspend fun getPog(): ApiResponse<GetPogResponse> = runCatching {
+        httpClient.get("/my-pages/votes/set-pog")
+    }.asApiResponse()
+
+    override suspend fun getPom(): ApiResponse<GetPomResponse> = runCatching {
+        httpClient.get("/my-pages/votes/mvp")
+    }.asApiResponse()
+
 }

@@ -7,6 +7,8 @@ import every.lol.com.core.network.model.response.CommentsResponse
 import every.lol.com.core.network.model.response.PatchProfileResponse
 import every.lol.com.core.network.model.response.PostsResponse
 import every.lol.com.core.network.model.response.ProfileResponse
+import every.lol.com.core.network.model.response.mypage.GetPogResponse
+import every.lol.com.core.network.model.response.mypage.GetPomResponse
 import every.lol.com.core.network.model.response.mypage.GetPredictionsRespponse
 
 interface MyPagesDataSource {
@@ -18,4 +20,6 @@ interface MyPagesDataSource {
     suspend fun withdrawal(): ApiResponse<Unit?>
     suspend fun logout(refreshToken: String): ApiResponse<Unit?>
     suspend fun getPredictions(): ApiResponse<GetPredictionsRespponse>
+    suspend fun getPog(): ApiResponse<GetPogResponse>
+    suspend fun getPom(): ApiResponse<GetPomResponse>
 }

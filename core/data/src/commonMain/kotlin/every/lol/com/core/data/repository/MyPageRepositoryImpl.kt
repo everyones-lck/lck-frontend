@@ -8,6 +8,10 @@ import every.lol.com.core.model.CommentsDetail
 import every.lol.com.core.model.Posts
 import every.lol.com.core.model.PostsDetail
 import every.lol.com.core.model.UserInform
+import every.lol.com.core.model.mypage.MypagePog
+import every.lol.com.core.model.mypage.MypagePogDetail
+import every.lol.com.core.model.mypage.MypagePom
+import every.lol.com.core.model.mypage.MypagePomDetail
 import every.lol.com.core.model.mypage.MypagePredictionDetail
 import every.lol.com.core.model.mypage.MypagePredictions
 import every.lol.com.core.network.datasource.MyPagesDataSource
@@ -116,4 +120,36 @@ class MyPageRepositoryImpl(
                 }
             )
         }
+
+    override suspend fun getPog(): Result<MypagePog> =
+        remote.getPog().toResult().map {
+            MypagePog(
+                setPogVoteDetails = it.setPogVoteDetails.map { detail ->
+                    MypagePogDetail(
+                        matchId = detail.matchId,
+                        setIndex = detail.setIndex,
+                        playerId = detail.playerId,
+                        playerName = detail.playerName,
+                        position = detail.position,
+                        voteDate = detail.voteDate
+                    )
+                }
+            )
+        }
+
+    override suspend fun getPom(): Result<MypagePom> =
+        remote.getPom().toResult().map {
+            MypagePom(
+                mvpVoteDetails = it.mvpVoteDetails.map {detail ->
+                    MypagePomDetail(
+                        matchId = detail.matchId,
+                        playerId = detail.playerId,
+                        playerName = detail.playerName,
+                        position = detail.position,
+                        voteDate = detail.voteDate
+                    )
+                }
+            )
+        }
+
 }

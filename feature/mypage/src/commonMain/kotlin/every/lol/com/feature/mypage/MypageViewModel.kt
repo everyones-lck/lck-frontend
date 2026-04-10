@@ -3,13 +3,15 @@ package every.lol.com.feature.mypage
 import every.lol.com.core.common.compressImage
 import every.lol.com.core.domain.usecase.GetMyCommentsUseCase
 import every.lol.com.core.domain.usecase.GetMyPostsUseCase
-import every.lol.com.core.domain.usecase.GetMyPredictionsUseCase
 import every.lol.com.core.domain.usecase.GetProfileUseCase
 import every.lol.com.core.domain.usecase.LogoutUseCase
 import every.lol.com.core.domain.usecase.NicknameUseCase
 import every.lol.com.core.domain.usecase.PatchMyTeamUseCase
 import every.lol.com.core.domain.usecase.PatchProfileUseCase
 import every.lol.com.core.domain.usecase.WithdrawalUseCase
+import every.lol.com.core.domain.usecase.mypage.GetMyPogUseCase
+import every.lol.com.core.domain.usecase.mypage.GetMyPomUseCase
+import every.lol.com.core.domain.usecase.mypage.GetMyPredictionsUseCase
 import every.lol.com.core.model.Team
 import every.lol.com.feature.mypage.model.MypageIntent
 import every.lol.com.feature.mypage.model.MypageUiState
@@ -52,8 +54,10 @@ class MypageViewModel(
     private val getMyCommentsUseCase: GetMyCommentsUseCase,
     private val logoutUseCase: LogoutUseCase,
     private val withdrawalUseCase: WithdrawalUseCase,
-    private val getMyPredictionsUseCase: GetMyPredictionsUseCase
-) : ViewModel() {
+    private val getMyPredictionsUseCase: GetMyPredictionsUseCase,
+    private val getMyPomUseCase: GetMyPomUseCase,
+    private val getMyPogUseCase: GetMyPogUseCase,
+    ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<MypageUiState>(MypageUiState.Loading)
     val uiState = _uiState.asStateFlow()
@@ -342,6 +346,7 @@ class MypageViewModel(
                 mvpList = dummyMvpList,
                 isLoading = false
             )
+
         }
     }
 
