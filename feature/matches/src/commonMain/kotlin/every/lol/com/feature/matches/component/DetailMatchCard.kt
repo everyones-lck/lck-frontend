@@ -39,10 +39,8 @@ fun DetailMatchCard(
     onOpenTalkClick: () -> Unit = {},
     onPredictionClick: () -> Unit = {}
 ) {
-    val displayWinnerTeamName = when (item.matchStatus) {
-        MatchStatus.FINISHED -> item.actualWinnerTeamName
-        else -> item.predictedWinnerTeamName
-    }
+    val displayWinnerTeamName = item.actualWinnerTeamName
+
     Column(
         modifier = modifier
             .width(328.dp)
