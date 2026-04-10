@@ -39,6 +39,12 @@ actual fun rememberPermissionManager(
     return remember {
         object : PermissionHandler {
             override fun askPermission(type: PermissionType) {
+
+                if (isPermissionGranted(type)) {
+                    onPermissionResult(type, true)
+                    return
+                }
+
                 when (type) {
                     PermissionType.LOCATION -> {
                         locationLauncher.launch(
