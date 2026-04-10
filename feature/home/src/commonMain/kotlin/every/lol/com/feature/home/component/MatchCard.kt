@@ -132,8 +132,21 @@ fun MatchCard(
         return
     }
 
-    val team1Progress = voteRate?.team1?.voteRate?.toFloat()?.div(100f) ?: 0.5f
-    val team2Progress = voteRate?.team2?.voteRate?.toFloat()?.div(100f) ?: 0.5f
+    val minVisibleProgress = 0.1f
+
+    val team1Progress = when {
+        voteRate == null -> 0.5f
+        voteRate.totalVoteCount == 0 -> 0.5f
+        voteRate.team1.voteRate == 0.0 -> minVisibleProgress
+        else -> (voteRate.team1.voteRate.toFloat() / 100f).coerceIn(minVisibleProgress, 1f)
+    }
+
+    val team2Progress = when {
+        voteRate == null -> 0.5f
+        voteRate.totalVoteCount == 0 -> 0.5f
+        voteRate.team2.voteRate == 0.0 -> minVisibleProgress
+        else -> (voteRate.team2.voteRate.toFloat() / 100f).coerceIn(minVisibleProgress, 1f)
+    }
 
     val statusColor = when(matchCard.matchStatus){
         "LIVE" -> EveryLoLTheme.color.semanticWarning
