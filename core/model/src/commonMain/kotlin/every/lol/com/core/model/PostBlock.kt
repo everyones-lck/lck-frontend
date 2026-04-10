@@ -13,9 +13,8 @@ sealed class PostBlock{
 }
 
 fun mapToUiState(serverPost: PostDetail): List<PostBlock> {
-    // 서버에서 준 blocks 리스트를 순회하며 PostBlock으로 변환
     return serverPost.blocks
-        .sortedBy { it.sequence } // 혹시 모르니 순서대로 정렬
+        .sortedBy { it.sequence }
         .mapNotNull { block ->
             when (block.type) {
                 "TEXT" -> {
@@ -30,7 +29,7 @@ fun mapToUiState(serverPost: PostDetail): List<PostBlock> {
                     block.fileUrl?.let {
                         PostBlock.Video(
                             videoUrl = it,
-                            thumbnailUrl = null // 서버에서 안 주므로 null 처리
+                            thumbnailUrl = block.thumbnailUrl
                         )
                     }
                 }

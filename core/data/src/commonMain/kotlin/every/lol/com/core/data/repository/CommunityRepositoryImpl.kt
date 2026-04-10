@@ -45,7 +45,8 @@ class CommunityRepositoryImpl(
                 is PostBlock.Video -> BlocksRequest(
                     sequence = index + 1,
                     type = "VIDEO",
-                    fileIndex = files?.indexOfFirst { it.uriString == block.videoUrl } ?: -1
+                    fileIndex = files?.indexOfFirst { it.uriString == block.videoUrl } ?: -1,
+                    thumbnailFileIndex = files?.indexOfFirst { it.uriString == block.thumbnailUrl } ?: -1
                 )
             }
         }

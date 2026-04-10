@@ -25,7 +25,8 @@ data class PostDetailBlocks(
     val type: String,
     val content: String?=null,
     val fileUrl: String?=null,
-    val fileName: String?=null
+    val fileName: String?=null,
+    val thumbnailUrl: String?=null
 )
 
 data class CommentList(

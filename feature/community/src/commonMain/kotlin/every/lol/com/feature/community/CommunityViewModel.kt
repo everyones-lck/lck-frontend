@@ -1,5 +1,6 @@
 package every.lol.com.feature.community
 
+import every.lol.com.core.common.saveCompressedImageToFile
 import every.lol.com.core.domain.usecase.DeleteCommentUseCase
 import every.lol.com.core.domain.usecase.DeletePostUseCase
 import every.lol.com.core.domain.usecase.GetCommunityPopularPostsUseCase
@@ -313,21 +314,36 @@ class CommunityViewModel(
 
         uploadScope.launch {
             try {
-
                 withContext(NonCancellable + Dispatchers.IO) {
-                    val fileInputs = currentState.selectedMedias.map { media ->
-                        MediaFile(uriString = media.uriString, isVideo = media.isVideo)
+                    val fileInputs = mutableListOf<MediaFile>()
+                    val videoThumbnailMap = mutableMapOf<String, String>()
+                    currentState.selectedMedias.forEach { media ->
+                        fileInputs.add(MediaFile(uriString = media.uriString, isVideo = media.isVideo))
+
+                        if (media.isVideo && media.thumbnail != null) {
+                            val savedPath = saveCompressedImageToFile(media.thumbnail)
+                            val thumbUri = "file://$savedPath"
+                            videoThumbnailMap[media.uriString] = thumbUri
+                            fileInputs.add(MediaFile(uriString = thumbUri, isVideo = false))
+                        }
                     }
 
                     val postBlocks = mutableListOf<PostBlock>()
                     val lines = content.split("\n")
+
                     lines.forEachIndexed { index, lineText ->
                         if (lineText.isNotBlank()) postBlocks.add(PostBlock.Text(text = lineText))
                         currentState.selectedMedias
                             .filter { it.order == index }
                             .forEach { media ->
-                                val block = if (media.isVideo) PostBlock.Video(media.uriString)
-                                else PostBlock.Image(media.uriString)
+                                val block = if (media.isVideo) {
+                                    PostBlock.Video(
+                                        videoUrl = media.uriString,
+                                        thumbnailUrl = videoThumbnailMap[media.uriString] ?: ""
+                                    )
+                                } else {
+                                    PostBlock.Image(media.uriString)
+                                }
                                 postBlocks.add(block)
                             }
                     }

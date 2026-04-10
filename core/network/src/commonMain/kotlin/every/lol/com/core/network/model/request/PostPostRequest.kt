@@ -25,5 +25,6 @@ data class BlocksRequest(
     val sequence: Int,
     val type: String,
     val content: String?=null,
-    val fileIndex: Int?=null
+    val fileIndex: Int?=null,
+    val thumbnailFileIndex: Int?=null
 )
