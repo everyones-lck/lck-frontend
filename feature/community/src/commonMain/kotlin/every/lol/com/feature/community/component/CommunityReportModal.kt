@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -57,6 +58,7 @@ fun CommunityReportModal (
     )
 ) {
     var internalValue by remember { mutableStateOf("") }
+    var detailReason by remember { mutableStateOf("") }
     val displayValue = if (value.isNullOrEmpty()) internalValue else value
     var expanded by remember { mutableStateOf(false) }
     Box(
@@ -136,11 +138,39 @@ fun CommunityReportModal (
                         }
                     }
                 }
+
+                if (displayValue == "기타" && !expanded) {
+                    BasicTextField(
+                        value = detailReason,
+                        onValueChange = {
+                            if (it.length <= 200) {
+                                detailReason = it
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(EveryLoLTheme.color.grayScale200)
+                            .heightIn(min = 168.dp)
+                            .padding(16.dp, 16.dp, 16.dp, 12.dp),
+                        textStyle = EveryLoLTheme.typography.body01.copy(
+                            color = EveryLoLTheme.color.gray800
+                        ),
+                        decorationBox = { innerTextField ->
+                            if (detailReason.isEmpty()) {
+                                Text(
+                                    text = "선택 사유를 알려주세요 (최대 200자)",
+                                    style = EveryLoLTheme.typography.body01,
+                                    color = EveryLoLTheme.color.community600
+                                )
+                            }
+                            innerTextField()
+                        }
+                    )
+                }
             }
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 12.dp),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 dismissText?.let {
@@ -166,7 +196,13 @@ fun CommunityReportModal (
                             .clip(RoundedCornerShape(12.dp))
                             .background(EveryLoLTheme.color.grayScale800)
                             .clickable(
-                                onClick = onReport
+                                onClick = {
+                                    val finalReason = if (displayValue == "기타") detailReason else displayValue
+                                    if (finalReason.isNotBlank()) {
+                                        onValueChange(finalReason)
+                                        onReport()
+                                    }
+                                }
                             )
                             .padding(12.dp),
                         text = confirmText,
