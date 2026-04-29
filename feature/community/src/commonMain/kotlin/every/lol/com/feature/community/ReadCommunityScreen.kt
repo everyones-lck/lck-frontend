@@ -65,6 +65,7 @@ import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.core.model.CommentList
 import every.lol.com.core.model.mapToUiState
 import every.lol.com.core.ui.ext.everylolDefault
+import every.lol.com.feature.community.component.CommunityReportModal
 import every.lol.com.feature.community.component.ReadComment
 import every.lol.com.feature.community.component.ReadPost
 import every.lol.com.feature.community.component.VideoPlayerView
@@ -136,6 +137,11 @@ fun ReadCommunityScreen(
     likeCount: Int = 0
 ) {
 
+    var showReportModal by remember { mutableStateOf(false) }
+    var reportTargetType by remember { mutableStateOf("") }
+    var reportTargetId by remember { mutableStateOf(0) }
+    var reportReason by remember { mutableStateOf("") }
+
     val snackbarHostState = remember { SnackbarHostState() }
     var selectedMedia by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
     var isPostMenuExpanded by remember { mutableStateOf(false) }
@@ -165,6 +171,7 @@ fun ReadCommunityScreen(
             isPostMenuExpanded = false
         }
     }
+
     LaunchedEffect(state.isLoading) {
         if (!state.isLoading) {
             isRefreshing = false
@@ -302,7 +309,11 @@ fun ReadCommunityScreen(
                                     isReply = false,
                                     onClick = { replyingTo = parentComment },
                                     onDelete = { onIntent(CommunityIntent.DeleteComment(parentComment.commentId)) },
-                                    onReport = { onIntent(CommunityIntent.ReportComment(parentComment.commentId, "신고")) }
+                                    onReport = {
+                                        reportTargetType = "댓글"
+                                        reportTargetId = parentComment.commentId
+                                        showReportModal = true
+                                    }
                                 )
                             }
 
@@ -315,7 +326,11 @@ fun ReadCommunityScreen(
                                     isReply = true,
                                     onClick = { },
                                     onDelete = { onIntent(CommunityIntent.DeleteComment(reply.commentId)) },
-                                    onReport = { onIntent(CommunityIntent.ReportComment(reply.commentId, "신고")) }
+                                    onReport = {
+                                        reportTargetType = "댓글"
+                                        reportTargetId = reply.commentId
+                                        showReportModal = true
+                                    }
                                 )
                                 Spacer(Modifier.height(8.dp))
                             }
@@ -332,7 +347,12 @@ fun ReadCommunityScreen(
                 isMine = state.isMine,
                 onDismiss = { isPostMenuExpanded = false },
                 onDelete = { onIntent(CommunityIntent.DeletePost(postId)) },
-                onReport = { onIntent(CommunityIntent.ReportPost(postId, "신고")) }
+                onReport = {
+                    reportTargetType = "게시글"
+                    reportTargetId = postId
+                    showReportModal = true
+                    isPostMenuExpanded = false
+                }
             )
         }
         selectedMedia?.let { (url, isVideo) ->
@@ -340,6 +360,29 @@ fun ReadCommunityScreen(
                 mediaUrl = url,
                 isVideo = isVideo,
                 onDismiss = { selectedMedia = null }
+            )
+        }
+
+        if (showReportModal) {
+            CommunityReportModal(
+                reportType = reportTargetType,
+                value = reportReason,
+                onValueChange = { reportReason = it },
+                onDismiss = {
+                    showReportModal = false
+                    reportReason = ""
+                },
+                onReport = {
+                    if (reportReason.isNotBlank()) {
+                        if (reportTargetType == "게시글") {
+                            onIntent(CommunityIntent.ReportPost(reportTargetId, reportReason))
+                        } else {
+                            onIntent(CommunityIntent.ReportComment(reportTargetId, reportReason))
+                        }
+                        showReportModal = false
+                        reportReason = ""
+                    }
+                }
             )
         }
     }
@@ -406,7 +449,7 @@ fun PostMenu(
                                     textAlign = TextAlign.Center
                                 )
                             }
-                               },
+                        },
                         onClick = { onReport(); onDismiss() }
                     )
                 }
