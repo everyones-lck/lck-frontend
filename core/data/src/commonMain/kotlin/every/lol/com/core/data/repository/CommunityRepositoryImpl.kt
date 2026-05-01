@@ -16,6 +16,9 @@ import every.lol.com.core.model.PostList
 import every.lol.com.core.model.PostListDetail
 import every.lol.com.core.network.datasource.CommunityDataSource
 import every.lol.com.core.network.model.request.BlocksRequest
+import every.lol.com.core.network.model.request.EditBlocksRequest
+import every.lol.com.core.network.model.request.EditPostDetailRequest
+import every.lol.com.core.network.model.request.EditPostRequest
 import every.lol.com.core.network.model.request.MediaFileRequst
 import every.lol.com.core.network.model.request.PostCommentRequest
 import every.lol.com.core.network.model.request.PostPostDetailRequest
@@ -68,8 +71,52 @@ class CommunityRepositoryImpl(
             .map { }
     }
 
-/*    override suspend fun editPost(postId: Int, type: String, title: String, content: String): Result<Unit> =
-        remote.editPost(postId, PostPostDetailRequest(type, title, blocks)).toResult().map{it.postId}*/
+    override suspend fun editPost(postId: Int, newFiles: List<MediaFile>?, type: String, title: String, blocks: List<PostBlock>): Result<Unit> {
+        val networkBlocks = blocks.mapIndexed { index, block ->
+            when (block) {
+                is PostBlock.Text -> EditBlocksRequest(
+                    sequence = index + 1,
+                    type = "TEXT",
+                    content = block.text
+                )
+                is PostBlock.Image -> {
+                    val isExisting = block.imageUrl.startsWith("http")
+                    EditBlocksRequest(
+                        sequence = index + 1,
+                        type = "IMAGE",
+                        fileIndex = if (!isExisting) newFiles?.indexOfFirst { it.uriString == block.imageUrl } else null,
+                        existingFileUrl = if (isExisting) block.imageUrl else null
+                    )
+                }
+                is PostBlock.Video -> {
+                    val isExisting = block.videoUrl.startsWith("http")
+                    EditBlocksRequest(
+                        sequence = index + 1,
+                        type = "VIDEO",
+                        fileIndex = if (!isExisting) newFiles?.indexOfFirst { it.uriString == block.videoUrl } else null,
+                        existingFileUrl = if (isExisting) block.videoUrl else null
+                    )
+                }
+            }
+        }
+
+        val networkNewFiles = newFiles?.map {
+            MediaFileRequst(uriString = it.uriString, isVideo = it.isVideo)
+        }
+
+        val requestBody = EditPostRequest(
+            newFiles = networkNewFiles,
+            request = EditPostDetailRequest(
+                postType = type,
+                postTitle = title,
+                blocks = networkBlocks
+            )
+        )
+
+        return remote.editPost(postId, requestBody)
+            .toResult()
+            .map { }
+    }
 
     override suspend fun detailPost(postId: Int): Result<PostDetail> =
         remote.detailPost(postId).toResult().map {response ->

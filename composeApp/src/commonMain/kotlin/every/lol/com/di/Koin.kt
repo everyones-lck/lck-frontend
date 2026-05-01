@@ -40,6 +40,7 @@ import every.lol.com.core.domain.usecase.GetSetPogResultUseCase
 import every.lol.com.core.domain.usecase.GetSupportTeamUseCase
 import every.lol.com.core.domain.usecase.LogoutUseCase
 import every.lol.com.core.domain.usecase.NicknameUseCase
+import every.lol.com.core.domain.usecase.PatchCommunityPostUseCase
 import every.lol.com.core.domain.usecase.PatchMyTeamUseCase
 import every.lol.com.core.domain.usecase.PatchProfileUseCase
 import every.lol.com.core.domain.usecase.PostCommunityCommentUseCase
@@ -122,6 +123,7 @@ val appDependenciesModule = module {
     factory { GetCommunityPopularPostsUseCase(get()) }
     factory { GetReadPostUseCase(get())}
     factory { PostCommunityPostUseCase(get()) }
+    factory { PatchCommunityPostUseCase(get()) }
     factory { DeletePostUseCase(get()) }
     factory { ReportPostUseCase(get()) }
     factory { PostCommunityCommentUseCase(get()) }

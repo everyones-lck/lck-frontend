@@ -178,7 +178,7 @@ fun App() {
                             navController.navigate(Route.Read(postId))
                         },
                         onWriteClick = {
-                            navController.navigate(Route.Write)
+                            navController.navigate(Route.Write())
                         }
                     )
 
@@ -186,6 +186,9 @@ fun App() {
                         innerPadding = innerPadding,
                         onBackClick = {
                             navController.popBackStack()
+                        },
+                        onEditClick = { postId ->
+                            navController.navigate(Route.Write(postId))
                         }
                     )
 

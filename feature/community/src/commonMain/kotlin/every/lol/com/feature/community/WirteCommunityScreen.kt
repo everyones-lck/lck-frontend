@@ -56,6 +56,7 @@ import kotlin.time.Clock
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun WriteRoute(
+    postId: Int?= null,
     innerPadding : PaddingValues,
     viewModel: CommunityViewModel = koinViewModel(CommunityViewModel::class),
     onBackClick: () -> Unit
@@ -65,11 +66,28 @@ fun WriteRoute(
     val focusManager = LocalFocusManager.current
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(Unit) {
-        if (uiState !is CommunityUiState.Write) {
-            viewModel.onIntent(CommunityIntent.ClickWriteTab(CommunityUiState.WriteTab.TALK))
+    // 데이터 증발 방지 로직
+    LaunchedEffect(postId) {
+        val currentState = viewModel.uiState.value // collect 중인 uiState 말고 실제 value 확인
+
+        if (postId != null) {
+            // 수정 모드일 때:
+            // 1. 현재 상태가 Write가 아니거나
+            // 2. Write 상태지만 postId가 다르거나
+            // 3. 데이터(title)가 비어있는 경우에만 서버에서 불러옴
+            if (currentState !is CommunityUiState.Write ||
+                currentState.postId != postId ||
+                currentState.title.isEmpty()) {
+                viewModel.onIntent(CommunityIntent.LoadPostForEdit(postId))
+            }
+        } else {
+            // 새 글 작성 모드일 때:
+            if (currentState !is CommunityUiState.Write) {
+                viewModel.onIntent(CommunityIntent.ClickWriteTab(CommunityUiState.WriteTab.TALK))
+            }
         }
     }
+
 
     LaunchedEffect(viewModel.event) {
         viewModel.event.collect { event ->
@@ -87,9 +105,9 @@ fun WriteRoute(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        if (currentState is CommunityUiState.Write) {
+        (uiState as? CommunityUiState.Write)?.let { state ->
             WriteCommunityScreen(
-                state = currentState,
+                state = state,
                 onBackClick = onBackClick,
                 onIntent = viewModel::onIntent,
                 snackbarHostState = snackbarHostState
@@ -106,6 +124,7 @@ fun WriteCommunityScreen(
     snackbarHostState: SnackbarHostState
 ) {
 
+    val isEditMode = state.postId != null
     val scope = rememberCoroutineScope()
     val isFormValid = state.title.isNotBlank() && state.content.isNotBlank()
     var showWritePostModal by remember { mutableStateOf(false) }
@@ -170,7 +189,7 @@ fun WriteCommunityScreen(
             contentWindowInsets = WindowInsets(0, 0, 0, 0),
             snackbarHost = { EverylolToastHost(snackbarHostState) },
             topBar = {
-                EverylolTopAppBar(onBackClick = onBackClick, title = "글 작성하기")
+                EverylolTopAppBar(onBackClick = onBackClick, title = if(isEditMode) "글 수정하기" else "글 작성하기")
             },
             bottomBar = {
                 if (isKeyboardVisible) {
@@ -239,23 +258,20 @@ fun WriteCommunityScreen(
                     .align(Alignment.BottomCenter)
                     .padding(horizontal = 24.dp, vertical = 24.dp)
                     .fillMaxWidth(),
-                text = "게시글 올리기",
+                text = if(isEditMode) "수정 완료" else "게시글 올리기",
                 enabled = isFormValid,
                 onClick = { showWritePostModal = true }
             )
             if (showWritePostModal) {
                 EverylolModal(
-                    title = "게시글이 완성되었어요",
-                    context = "게시글을 올리겠습니까?",
+                    title = if(isEditMode) "게시글을 수정할까요?" else "게시글이 완성되었어요",
+                    context = if (isEditMode) "수정된 내용은 즉시 반영됩니다." else "게시글을 올리겠습니까?",
                     onConfirm = {
-                        onIntent(
-                            CommunityIntent.WritePost(
+                            onIntent(CommunityIntent.WritePost(
                                 state.title,
                                 state.content,
                                 state.selectedMedias
-                            )
-                        )
-                        // showWritePostModal = false
+                            ))
                     },
                     onDismiss = { showWritePostModal = false }
                 )
