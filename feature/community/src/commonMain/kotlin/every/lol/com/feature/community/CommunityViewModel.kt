@@ -389,18 +389,20 @@ class CommunityViewModel(
             try {
                 _uiState.update { if (it is CommunityUiState.Write) it.copy(isLoading = true) else it }
 
+
                 val fileInputs = currentState.selectedMedias
                     .filter { if (isEditMode) !it.uriString.startsWith("http") else true }
                     .map { MediaFile(uriString = it.uriString, isVideo = it.isVideo) }
 
                 val postBlocks = mutableListOf<PostBlock>()
                 val lines = content.split("\n")
-                lines.forEachIndexed { index, lineText ->
-                    if (lineText.isNotBlank()) {
-                        postBlocks.add(PostBlock.Text(text = lineText))
-                    }
 
-                    currentState.selectedMedias.filter { it.order == index }.forEach { media ->
+                val maxIndex = maxOf(
+                    lines.lastIndex,
+                    currentState.selectedMedias.maxOfOrNull { it.order } ?: 0
+                )
+                for (i in 0..maxIndex) {
+                    currentState.selectedMedias.filter { it.order == i }.forEach { media ->
                         val block = if (media.isVideo) {
                             PostBlock.Video(media.uriString)
                         } else {
@@ -408,8 +410,14 @@ class CommunityViewModel(
                         }
                         postBlocks.add(block)
                     }
-                }
 
+                    if (i <= lines.lastIndex) {
+                        val lineText = lines[i]
+                        if (lineText.isNotBlank()) {
+                            postBlocks.add(PostBlock.Text(text = lineText))
+                        }
+                    }
+                }
                 val result = if (isEditMode) {
                     patchCommunityPostUseCase(
                         postId = currentState.postId!!,
@@ -426,7 +434,6 @@ class CommunityViewModel(
                         blocks = postBlocks
                     )
                 }
-
                 result.onSuccess {
                     _uiState.value = CommunityUiState.Loading
                     isFetching = false
