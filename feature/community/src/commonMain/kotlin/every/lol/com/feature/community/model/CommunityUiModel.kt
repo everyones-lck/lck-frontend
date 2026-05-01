@@ -84,7 +84,8 @@ sealed interface CommunityIntent{
         val postId: Int,
         val title: String,
         val content: String,
-        val medias: List<CommunityUiState.MediaItem>
+        val medias: List<CommunityUiState.MediaItem>,
+        val tab:CommunityUiState.WriteTab
     ) : CommunityIntent
 
     data object OpenGallery : CommunityIntent

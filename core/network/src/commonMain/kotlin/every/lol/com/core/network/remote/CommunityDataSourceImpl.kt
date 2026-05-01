@@ -97,7 +97,7 @@ class CommunityDataSourceImpl(
                                 val fileName = "file_$index.$extension"
 
                                 appendInput(
-                                    key = "files",
+                                    key = "newFiles",
                                     headers = Headers.build {
                                         append(HttpHeaders.ContentType, contentType)
                                         append(HttpHeaders.ContentDisposition, "filename=\"$fileName\"")

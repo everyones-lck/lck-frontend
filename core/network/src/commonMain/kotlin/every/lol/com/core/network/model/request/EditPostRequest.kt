@@ -3,9 +3,9 @@ package every.lol.com.core.network.model.request
 import kotlinx.serialization.Serializable
 
 data class EditPostRequest(
-    val newFiles: List<MediaFileRequst>?=null,
-    val request: EditPostDetailRequest
-)
+    val request: EditPostDetailRequest,
+    val newFiles: List<MediaFileRequst>?=null
+    )
 
 @Serializable
 data class EditPostDetailRequest(

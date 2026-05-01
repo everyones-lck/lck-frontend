@@ -72,12 +72,16 @@ class CommunityViewModel(
     fun onIntent(intent: CommunityIntent){
         when(intent){
             is CommunityIntent.Loading -> {
-                if (_uiState.value is CommunityUiState.Write) return
+                val currentState = _uiState.value
+
+                 if (currentState is CommunityUiState.Write && !currentState.isLoading) {
+                    return
+                }
 
                 _uiState.value = CommunityUiState.Loading
+                isFetching = false // 플래그 초기화
                 loadCommunityData(tab = CommunityUiState.CommunityTab.ALL)
             }
-
             is CommunityIntent.ClickTab -> handleTabClick(intent.tab)
             is CommunityIntent.ClickWriteTab -> {
                 communityLoadJob?.cancel()
@@ -377,7 +381,7 @@ class CommunityViewModel(
         }
     }
 
-    private fun handleSavePost(title: String, content: String){
+    private fun handleSavePost(title: String, content: String) {
         val currentState = _uiState.value as? CommunityUiState.Write ?: return
         val isEditMode = currentState.postId != null
 
@@ -424,17 +428,23 @@ class CommunityViewModel(
                 }
 
                 result.onSuccess {
+                    _uiState.value = CommunityUiState.Loading
+                    isFetching = false
                     _event.emit(CommunityEvent.WriteSuccess)
+                    loadCommunityData(isNextPage = false)
                 }.onFailure { e ->
+                    println("DEBUG_LOG: 저장 실패 원인: ${e.message}")
                     _uiState.update { if (it is CommunityUiState.Write) it.copy(isLoading = false) else it }
                     _event.emit(CommunityEvent.ShowToast("저장에 실패했습니다: ${e.message}"))
                 }
             } catch (e: Exception) {
+                println("DEBUG_LOG: 예외 발생: ${e.stackTraceToString()}")
                 _uiState.update { if (it is CommunityUiState.Write) it.copy(isLoading = false) else it }
-                _event.emit(CommunityEvent.ShowToast("저장에 실패했습니다: ${e.message}"))
+                _event.emit(CommunityEvent.ShowToast("오류가 발생했습니다."))
             }
         }
     }
+
     private fun handleDeletePost(postId: Int) {
         viewModelScope.launch {
             deletePostUseCase(postId).onSuccess {

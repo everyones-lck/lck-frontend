@@ -373,7 +373,10 @@ fun ReadCommunityScreen(
                                 postId = postId,
                                 title = post.postTitle,
                                 content = combinedContent,
-                                medias = mediaItems
+                                medias = mediaItems,
+                                tab = CommunityUiState.WriteTab.entries.find {
+                                    it.displayName == post.postType
+                                } ?: CommunityUiState.WriteTab.TALK
                             )
                         )
                         onEditClick(postId)
