@@ -62,26 +62,18 @@ fun WriteRoute(
     onBackClick: () -> Unit
 ){
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val currentState = uiState
     val focusManager = LocalFocusManager.current
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // 데이터 증발 방지 로직
     LaunchedEffect(postId) {
-        val currentState = viewModel.uiState.value // collect 중인 uiState 말고 실제 value 확인
-
+        val currentState = viewModel.uiState.value
         if (postId != null) {
-            // 수정 모드일 때:
-            // 1. 현재 상태가 Write가 아니거나
-            // 2. Write 상태지만 postId가 다르거나
-            // 3. 데이터(title)가 비어있는 경우에만 서버에서 불러옴
             if (currentState !is CommunityUiState.Write ||
                 currentState.postId != postId ||
                 currentState.title.isEmpty()) {
                 viewModel.onIntent(CommunityIntent.LoadPostForEdit(postId))
             }
         } else {
-            // 새 글 작성 모드일 때:
             if (currentState !is CommunityUiState.Write) {
                 viewModel.onIntent(CommunityIntent.ClickWriteTab(CommunityUiState.WriteTab.TALK))
             }

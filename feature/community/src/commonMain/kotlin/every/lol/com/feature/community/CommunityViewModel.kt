@@ -72,7 +72,9 @@ class CommunityViewModel(
     fun onIntent(intent: CommunityIntent){
         when(intent){
             is CommunityIntent.Loading -> {
-                _uiState.value = CommunityUiState.Community(isLoading = true)
+                if (_uiState.value is CommunityUiState.Write) return
+
+                _uiState.value = CommunityUiState.Loading
                 loadCommunityData(tab = CommunityUiState.CommunityTab.ALL)
             }
 
@@ -198,10 +200,14 @@ class CommunityViewModel(
         communityLoadJob?.cancel()
         communityLoadJob = viewModelScope.launch {
             getCommunityPostsUseCase(currentTab.displayName, currentPage, 10).onSuccess { response ->
+                val currentStateBeforeUpdate = _uiState.value
+
+                if (currentStateBeforeUpdate is CommunityUiState.Write) {
+                    isFetching = false
+                    return@launch
+                }
+
                 _uiState.update { state ->
-                    if (state !is CommunityUiState.Community && !isNextPage && state !is CommunityUiState.Loading) {
-                        return@update state
-                    }
 
                     val currentState = when (state) {
                         is CommunityUiState.Community -> state
@@ -228,11 +234,8 @@ class CommunityViewModel(
             }.onFailure {
                 isFetching = false
                 _uiState.update { state ->
-                    val currentState = state as? CommunityUiState.Community ?: CommunityUiState.Community()
-                    currentState.copy(
-                        isLoading = false,
-                        posts = if (currentPage == 0) emptyList() else currentState.posts
-                    )
+                    if (state !is CommunityUiState.Community && state !is CommunityUiState.Loading) state
+                    else (state as? CommunityUiState.Community ?: CommunityUiState.Community()).copy(isLoading = false)
                 }
             }
         }
@@ -389,14 +392,18 @@ class CommunityViewModel(
                 val postBlocks = mutableListOf<PostBlock>()
                 val lines = content.split("\n")
                 lines.forEachIndexed { index, lineText ->
-                    if (lineText.isNotBlank()) postBlocks.add(PostBlock.Text(text = lineText))
-                    currentState.selectedMedias
-                        .filter { it.order == index }
-                        .forEach { media ->
-                            val block = if (media.isVideo) PostBlock.Video(media.uriString)
-                            else PostBlock.Image(media.uriString)
-                            postBlocks.add(block)
+                    if (lineText.isNotBlank()) {
+                        postBlocks.add(PostBlock.Text(text = lineText))
+                    }
+
+                    currentState.selectedMedias.filter { it.order == index }.forEach { media ->
+                        val block = if (media.isVideo) {
+                            PostBlock.Video(media.uriString)
+                        } else {
+                            PostBlock.Image(media.uriString)
                         }
+                        postBlocks.add(block)
+                    }
                 }
 
                 val result = if (isEditMode) {
