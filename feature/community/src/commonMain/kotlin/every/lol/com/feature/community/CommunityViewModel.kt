@@ -71,7 +71,11 @@ class CommunityViewModel(
 
     fun onIntent(intent: CommunityIntent){
         when(intent){
-            CommunityIntent.Loading -> loadCommunityData(tab = CommunityUiState.CommunityTab.ALL)
+            is CommunityIntent.Loading -> {
+                _uiState.value = CommunityUiState.Community(isLoading = true)
+                loadCommunityData(tab = CommunityUiState.CommunityTab.ALL)
+            }
+
             is CommunityIntent.ClickTab -> handleTabClick(intent.tab)
             is CommunityIntent.ClickWriteTab -> {
                 communityLoadJob?.cancel()
@@ -199,7 +203,11 @@ class CommunityViewModel(
                         return@update state
                     }
 
-                    val currentState = state as? CommunityUiState.Community ?: CommunityUiState.Community()
+                    val currentState = when (state) {
+                        is CommunityUiState.Community -> state
+                        is CommunityUiState.Loading -> CommunityUiState.Community()
+                        else -> return@update state
+                    }
 
                     val updatedPosts = if (isNextPage) {
                         currentState.posts + response.postDetailList
