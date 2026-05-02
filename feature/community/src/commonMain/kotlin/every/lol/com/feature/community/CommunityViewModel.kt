@@ -372,24 +372,26 @@ class CommunityViewModel(
 
             if (processedNewMedias.isEmpty()) return@updateWriteState state
 
-            var currentContent = state.content
-            val lines = if (currentContent.isEmpty()) listOf("") else currentContent.split("\n")
-
+            val currentContent = state.content
             val startContent = if (currentContent.isNotEmpty() && !currentContent.endsWith("\n")) {
                 currentContent + "\n"
             } else {
                 currentContent
             }
 
-            val updatedLines = startContent.split("\n").toMutableList()
-            if (updatedLines.last().isEmpty()) updatedLines.removeAt(updatedLines.size - 1)
-
             val newMediaItems = mutableListOf<CommunityUiState.MediaItem>()
             var tempContent = startContent
 
-            processedNewMedias.forEachIndexed { index, media ->
+            processedNewMedias.forEach { media ->
+
                 val targetOrder = tempContent.count { it == '\n' }
-                newMediaItems.add(media.copy(order = targetOrder))
+
+                newMediaItems.add(
+                    media.copy(
+                        order = targetOrder,
+                        thumbnail = media.thumbnail
+                    )
+                )
 
                 tempContent += "\n"
             }
@@ -400,7 +402,6 @@ class CommunityViewModel(
             )
         }
     }
-
     private fun handleRemoveMedia(index: Int) {
         updateWriteState { state ->
             val newList = state.selectedMedias.toMutableList().apply {
@@ -415,7 +416,6 @@ class CommunityViewModel(
             val medias = state.selectedMedias.toMutableList()
             if (from !in medias.indices || to !in medias.indices) return@updateWriteState state
 
-            // 1. 리스트 순서 변경
             val movedItem = medias.removeAt(from)
             medias.add(to, movedItem)
 

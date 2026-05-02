@@ -62,22 +62,15 @@ fun WriteRoute(
     onBackClick: () -> Unit
 ){
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val currentState = uiState
     val focusManager = LocalFocusManager.current
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(postId) {
-        println(">>> [DEBUG_COMMUNITY] LaunchedEffect Start (postId: $postId)")
-
         val currentState = viewModel.uiState.value
-        println(">>> [DEBUG_COMMUNITY] Current State Type: ${currentState::class.simpleName}")
-
         if (postId != null) {
-            println(">>> [DEBUG_COMMUNITY] Calling LoadPostForEdit($postId)")
             viewModel.onIntent(CommunityIntent.LoadPostForEdit(postId))
         } else {
             if (currentState !is CommunityUiState.Write) {
-                println(">>> [DEBUG_COMMUNITY] Setting default WriteTab")
                 viewModel.onIntent(CommunityIntent.ClickWriteTab(CommunityUiState.WriteTab.TALK))
             }
         }
@@ -141,7 +134,6 @@ fun WriteCommunityScreen(
 
             results.forEach { result ->
                 val uriString = result.toString()
-
                 val isVideo = isVideoUri(result, context)
 
                 if (isVideo && (currentVideos.size + videoCountInBatch < 2)) {
