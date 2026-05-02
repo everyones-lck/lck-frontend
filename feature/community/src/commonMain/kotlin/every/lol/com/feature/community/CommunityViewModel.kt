@@ -1,5 +1,6 @@
 package every.lol.com.feature.community
 
+import every.lol.com.core.common.saveCompressedImageToFile
 import every.lol.com.core.domain.usecase.DeleteCommentUseCase
 import every.lol.com.core.domain.usecase.DeletePostUseCase
 import every.lol.com.core.domain.usecase.GetCommunityPopularPostsUseCase
@@ -17,7 +18,9 @@ import every.lol.com.feature.community.model.CommunityIntent
 import every.lol.com.feature.community.model.CommunityUiState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -26,6 +29,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import moe.tlaster.precompose.viewmodel.ViewModel
 import moe.tlaster.precompose.viewmodel.viewModelScope
 
@@ -471,36 +475,54 @@ class CommunityViewModel(
             try {
                 _uiState.update { if (it is CommunityUiState.Write) it.copy(isLoading = true) else it }
 
-                val fileInputs = currentState.selectedMedias
-                    .filter { if (isEditMode) !it.uriString.startsWith("http") else true }
-                    .map { MediaFile(uriString = it.uriString, isVideo = it.isVideo) }
+                val finalData = withContext(NonCancellable + Dispatchers.IO) {
+                    val fileInputs = mutableListOf<MediaFile>()
+                    val videoThumbnailMap = mutableMapOf<String, String>()
 
-                val finalPostBlocks = mutableListOf<PostBlock>()
-                val lines = content.split("\n")
+                    currentState.selectedMedias.forEach { media ->
+                        val isAlreadyUploaded = isEditMode && media.uriString.startsWith("http")
 
-                println(">>> [DEBUG_SAVE] START - Total Lines: ${lines.size}")
+                        if (!isAlreadyUploaded) {
+                            fileInputs.add(MediaFile(uriString = media.uriString, isVideo = media.isVideo))
 
-                for (i in lines.indices) {
-                    val lineText = lines[i].trim()
-                    val lineMedias = currentState.selectedMedias.filter { it.order == i }
-
-                    if (lineMedias.isNotEmpty()) {
-                        lineMedias.forEach { media ->
-                            val block = if (media.isVideo) {
-                                PostBlock.Video(videoUrl = media.uriString)
-                            } else {
-                                PostBlock.Image(imageUrl = media.uriString)
+                            if (media.isVideo && media.thumbnail != null) {
+                                val savedPath = saveCompressedImageToFile(media.thumbnail)
+                                val thumbUri = "file://$savedPath"
+                                videoThumbnailMap[media.uriString] = thumbUri
+                                fileInputs.add(MediaFile(uriString = thumbUri, isVideo = false))
                             }
-                            finalPostBlocks.add(block)
-                            println(">>> [DEBUG_SAVE] Line $i: Adding MEDIA")
                         }
                     }
 
-                    if (lineText.isNotEmpty()) {
-                        finalPostBlocks.add(PostBlock.Text(text = lineText))
-                        println(">>> [DEBUG_SAVE] Line $i: Adding TEXT - '$lineText'")
+                    val postBlocks = mutableListOf<PostBlock>()
+                    val lines = content.split("\n")
+
+                    for (i in lines.indices) {
+                        val lineText = lines[i].trim()
+                        val lineMedias = currentState.selectedMedias.filter { it.order == i }
+
+                        lineMedias.forEach { media ->
+                            val block = if (media.isVideo) {
+                                PostBlock.Video(
+                                    videoUrl = media.uriString,
+                                    thumbnailUrl = videoThumbnailMap[media.uriString] ?: ""
+                                )
+                            } else {
+                                PostBlock.Image(imageUrl = media.uriString)
+                            }
+                            postBlocks.add(block)
+                        }
+
+                        if (lineText.isNotEmpty()) {
+                            postBlocks.add(PostBlock.Text(text = lineText))
+                        }
                     }
+
+                    Pair(fileInputs, postBlocks)
                 }
+
+                val fileInputs = finalData.first
+                val finalPostBlocks = finalData.second
 
                 if (finalPostBlocks.isEmpty()) {
                     _uiState.update { (it as CommunityUiState.Write).copy(isLoading = false) }
@@ -531,13 +553,12 @@ class CommunityViewModel(
                     _uiState.value = CommunityUiState.Loading
                     _event.emit(CommunityEvent.WriteSuccess)
                 }.onFailure { e ->
-                    println(">>> [DEBUG_SAVE] onFAILED: $e")
                     _uiState.update { if (it is CommunityUiState.Write) it.copy(isLoading = false) else it }
                     _event.emit(CommunityEvent.ShowToast(e.message ?: "저장에 실패했습니다."))
                 }
             } catch (e: Exception) {
-                println(">>> [DEBUG_SAVE] FAILED: $e")
                 _uiState.update { if (it is CommunityUiState.Write) it.copy(isLoading = false) else it }
+                println(">>> [DEBUG_SAVE] FAILED: $e")
             }
         }
     }
