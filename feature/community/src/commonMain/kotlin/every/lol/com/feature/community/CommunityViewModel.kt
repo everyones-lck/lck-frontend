@@ -5,6 +5,7 @@ import every.lol.com.core.domain.usecase.DeletePostUseCase
 import every.lol.com.core.domain.usecase.GetCommunityPopularPostsUseCase
 import every.lol.com.core.domain.usecase.GetCommunityPostsUseCase
 import every.lol.com.core.domain.usecase.GetReadPostUseCase
+import every.lol.com.core.domain.usecase.PatchCommunityPostUseCase
 import every.lol.com.core.domain.usecase.PostCommunityCommentUseCase
 import every.lol.com.core.domain.usecase.PostCommunityPostLikeUseCase
 import every.lol.com.core.domain.usecase.PostCommunityPostUseCase
@@ -40,6 +41,7 @@ class CommunityViewModel(
     private val getCommunityPopularPostsUseCase: GetCommunityPopularPostsUseCase,
     private val getReadPostUseCase: GetReadPostUseCase,
     private val postCommunityPostUseCase: PostCommunityPostUseCase,
+    private val patchCommunityPostUseCase: PatchCommunityPostUseCase,
     private val deletePostUseCase: DeletePostUseCase,
     private val reportPostUseCase: ReportPostUseCase,
     private val postCommunityCommentUseCase: PostCommunityCommentUseCase,
@@ -56,6 +58,8 @@ class CommunityViewModel(
 
     private val uploadScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
+    private var communityLoadJob: Job? = null
+
     override fun onCleared() {
         super.onCleared()
         uploadScope.cancel()
@@ -67,9 +71,22 @@ class CommunityViewModel(
 
     fun onIntent(intent: CommunityIntent){
         when(intent){
-            CommunityIntent.Loading -> loadCommunityData(tab = CommunityUiState.CommunityTab.ALL)
+            is CommunityIntent.Loading -> {
+                val currentState = _uiState.value
+
+                 if (currentState is CommunityUiState.Write && !currentState.isLoading) {
+                    return
+                }
+
+                _uiState.value = CommunityUiState.Loading
+                isFetching = false // 플래그 초기화
+                loadCommunityData(tab = CommunityUiState.CommunityTab.ALL)
+            }
             is CommunityIntent.ClickTab -> handleTabClick(intent.tab)
-            is CommunityIntent.ClickWriteTab -> handleWriteTabClick(intent.tab)
+            is CommunityIntent.ClickWriteTab -> {
+                communityLoadJob?.cancel()
+                handleWriteTabClick(intent.tab)
+            }
             is CommunityIntent.DetailPost -> loadReadPost(intent.postId, intent.isRefresh)
             is CommunityIntent.ChangeTitle -> {
                 val currentState = uiState.value
@@ -87,11 +104,33 @@ class CommunityViewModel(
                 }
             }
             is CommunityIntent.WritePost -> {
-                handleWritePost(intent.title, intent.content)
+                handleSavePost(intent.title, intent.content)
+            }
+            is CommunityIntent.EditPost -> {
+                communityLoadJob?.cancel()
+                _uiState.value = CommunityUiState.Write(
+                    postId = intent.postId,
+                    title = intent.title,
+                    content = intent.content,
+                    selectedMedias = intent.medias,
+                    isLoading = false
+                )
+            }
+            is CommunityIntent.LoadPostForEdit -> {
+                val currentState = _uiState.value
+                if (currentState is CommunityUiState.Write &&
+                    currentState.postId == intent.postId &&
+                    currentState.title.isNotEmpty()) {
+                    println(">>> [DEBUG_LOAD] Skip API Call - Data already exists")
+                    println("확인해보기 ${currentState.content}")
+                } else {
+                    handleLoadPostForEdit(intent.postId)
+                }
             }
             is CommunityIntent.AddMedias -> handleAddMedias(intent.medias)
             is CommunityIntent.RemoveMedia -> handleRemoveMedia(intent.index)
             is CommunityIntent.MoveMedia -> handleMoveMedia(intent.from, intent.to)
+            is CommunityIntent.MoveMediatoLine -> handleMoveMediaToLine(intent.mediaId, intent.targetLineIndex)
             is CommunityIntent.LoadNextPage -> {
                 val currentState = uiState.value as? CommunityUiState.Community
                 if (currentState != null) {
@@ -166,11 +205,23 @@ class CommunityViewModel(
             currentPage = 0
             isLastPage = false
         }
-
-        viewModelScope.launch {
+        communityLoadJob?.cancel()
+        communityLoadJob = viewModelScope.launch {
             getCommunityPostsUseCase(currentTab.displayName, currentPage, 10).onSuccess { response ->
+                val currentStateBeforeUpdate = _uiState.value
+
+                if (currentStateBeforeUpdate is CommunityUiState.Write) {
+                    isFetching = false
+                    return@launch
+                }
+
                 _uiState.update { state ->
-                    val currentState = state as? CommunityUiState.Community ?: CommunityUiState.Community()
+
+                    val currentState = when (state) {
+                        is CommunityUiState.Community -> state
+                        is CommunityUiState.Loading -> CommunityUiState.Community()
+                        else -> return@update state
+                    }
 
                     val updatedPosts = if (isNextPage) {
                         currentState.posts + response.postDetailList
@@ -191,16 +242,65 @@ class CommunityViewModel(
             }.onFailure {
                 isFetching = false
                 _uiState.update { state ->
-                    val currentState = state as? CommunityUiState.Community ?: CommunityUiState.Community()
-                    currentState.copy(
-                        isLoading = false,
-                        posts = if (currentPage == 0) emptyList() else currentState.posts
-                    )
+                    if (state !is CommunityUiState.Community && state !is CommunityUiState.Loading) state
+                    else (state as? CommunityUiState.Community ?: CommunityUiState.Community()).copy(isLoading = false)
                 }
             }
         }
     }
 
+    private fun handleLoadPostForEdit(postId: Int) {
+        _uiState.update {
+            if (it is CommunityUiState.Write) it.copy(postId = postId, isLoading = true)
+            else CommunityUiState.Write(postId = postId, isLoading = true)
+        }
+
+        viewModelScope.launch {
+            getReadPostUseCase(postId).onSuccess { post ->
+                val contentBuilder = StringBuilder()
+                val mediaItems = mutableListOf<CommunityUiState.MediaItem>()
+                val sortedBlocks = post.blocks.sortedBy { it.sequence }
+
+                sortedBlocks.forEachIndexed { index, block ->
+                    when (block.type) {
+                        "TEXT" -> {
+                            contentBuilder.append(block.content ?: "")
+                        }
+                        "IMAGE", "VIDEO" -> {
+                            val currentLine = contentBuilder.count { it == '\n' }
+                            mediaItems.add(
+                                CommunityUiState.MediaItem(
+                                    id = block.fileName ?: "media_${mediaItems.size}",
+                                    uriString = block.fileUrl ?: "",
+                                    isVideo = block.type == "VIDEO",
+                                    order = currentLine
+                                )
+                            )
+                        }
+                    }
+                    if (index < sortedBlocks.lastIndex) {
+                        contentBuilder.append("\n")
+                    }
+                }
+
+                val lastBlock = sortedBlocks.lastOrNull()
+                if (lastBlock != null && (lastBlock.type == "IMAGE" || lastBlock.type == "VIDEO")) {
+                    contentBuilder.append("\n")
+                }
+                _uiState.update {
+                    CommunityUiState.Write(
+                        postId = postId,
+                        title = post.postTitle,
+                        content = contentBuilder.toString(),
+                        selectedMedias = mediaItems,
+                        isLoading = false
+                    )
+                }
+            }.onFailure { error ->
+                println(">>> [DEBUG_LOAD] FAILED: $error")
+            }
+        }
+    }
     private fun loadReadPost(postId: Int, isRefresh: Boolean = false) {
 
         val currentState = _uiState.value
@@ -223,7 +323,7 @@ class CommunityViewModel(
                     val baseState = if (current is CommunityUiState.Read && current.postId == postId) current else CommunityUiState.Read(postId = postId)
 
                     baseState.copy(
-                        post = post, // 이 post 객체 안에 List<PostBlock>이 들어있음
+                        post = post,
                         isLoading = false,
                         isMine = post.isWriter
                     )
@@ -267,16 +367,32 @@ class CommunityViewModel(
             val processedNewMedias = (validNewImages + validNewVideos)
 
             if (processedNewMedias.isEmpty()) return@updateWriteState state
-            val lastLineIndex = state.content.split("\n").size - 1
-            val finalNewMedias = processedNewMedias.map {
-                it.copy(order = lastLineIndex.coerceAtLeast(0))
+
+            var currentContent = state.content
+            val lines = if (currentContent.isEmpty()) listOf("") else currentContent.split("\n")
+
+            val startContent = if (currentContent.isNotEmpty() && !currentContent.endsWith("\n")) {
+                currentContent + "\n"
+            } else {
+                currentContent
             }
 
-            val updatedContent = if (state.content.isEmpty()) "\n" else state.content + "\n"
+            val updatedLines = startContent.split("\n").toMutableList()
+            if (updatedLines.last().isEmpty()) updatedLines.removeAt(updatedLines.size - 1)
+
+            val newMediaItems = mutableListOf<CommunityUiState.MediaItem>()
+            var tempContent = startContent
+
+            processedNewMedias.forEachIndexed { index, media ->
+                val targetOrder = tempContent.count { it == '\n' }
+                newMediaItems.add(media.copy(order = targetOrder))
+
+                tempContent += "\n"
+            }
 
             state.copy(
-                content = updatedContent,
-                selectedMedias = currentMedias + finalNewMedias
+                content = tempContent.removeSuffix("\n"),
+                selectedMedias = state.selectedMedias + newMediaItems
             )
         }
     }
@@ -292,57 +408,133 @@ class CommunityViewModel(
 
     private fun handleMoveMedia(from: Int, to: Int) {
         updateWriteState { state ->
-            val newList = state.selectedMedias.toMutableList().apply {
-                if (from in indices && to in indices) {
-                    add(to, removeAt(from))
-                }
+            val medias = state.selectedMedias.toMutableList()
+            if (from !in medias.indices || to !in medias.indices) return@updateWriteState state
+
+            // 1. 리스트 순서 변경
+            val movedItem = medias.removeAt(from)
+            medias.add(to, movedItem)
+
+            val pureTextLines = state.content.split("\n").filter { it.isNotBlank() }
+
+            val updatedMedias = medias.mapIndexed { index, item ->
+                item.copy(order = index)
             }
-            state.copy(selectedMedias = newList)
+
+            val finalLines = mutableListOf<String>()
+
+            repeat(updatedMedias.size) { finalLines.add("") }
+
+            finalLines.addAll(pureTextLines)
+
+            if (finalLines.all { it.isEmpty() } || updatedMedias.isNotEmpty() && pureTextLines.isEmpty()) {
+                if (finalLines.lastOrNull() != "") finalLines.add("")
+            }
+
+            state.copy(
+                content = finalLines.joinToString("\n"),
+                selectedMedias = updatedMedias
+            )
         }
     }
 
-    private fun handleWritePost(title: String, content: String) {
+    private fun handleMoveMediaToLine(mediaId: String, targetLine: Int) {
+        updateWriteState { state ->
+            val medias = state.selectedMedias.toMutableList()
+            val mediaIndex = medias.indexOfFirst { it.id == mediaId }
+            if (mediaIndex == -1) return@updateWriteState state
+
+            val movedMedia = medias[mediaIndex]
+
+            val lines = state.content.split("\n").toMutableList()
+
+            if (movedMedia.order in lines.indices) {
+                lines.removeAt(movedMedia.order)
+            }
+
+            val safeTarget = targetLine.coerceIn(0, lines.size)
+            lines.add(safeTarget, "")
+
+            medias[mediaIndex] = movedMedia.copy(order = safeTarget)
+
+            state.copy(
+                content = lines.joinToString("\n"),
+                selectedMedias = medias
+            )
+        }
+    }
+
+    private fun handleSavePost(title: String, content: String) {
         val currentState = _uiState.value as? CommunityUiState.Write ?: return
+        val isEditMode = currentState.postId != null
 
         uploadScope.launch {
             try {
-                val currentJob = coroutineContext[Job]
                 _uiState.update { if (it is CommunityUiState.Write) it.copy(isLoading = true) else it }
 
-                val fileInputs = currentState.selectedMedias.map { media ->
-                    MediaFile(uriString = media.uriString, isVideo = media.isVideo)
-                }
+                val fileInputs = currentState.selectedMedias
+                    .filter { if (isEditMode) !it.uriString.startsWith("http") else true }
+                    .map { MediaFile(uriString = it.uriString, isVideo = it.isVideo) }
 
-                val postBlocks = mutableListOf<PostBlock>()
+                val finalPostBlocks = mutableListOf<PostBlock>()
                 val lines = content.split("\n")
-                lines.forEachIndexed { index, lineText ->
-                    if (lineText.isNotBlank()) postBlocks.add(PostBlock.Text(text = lineText))
-                    currentState.selectedMedias
-                        .filter { it.order == index }
-                        .forEach { media ->
-                            val block = if (media.isVideo) PostBlock.Video(media.uriString)
-                            else PostBlock.Image(media.uriString)
-                            postBlocks.add(block)
+
+                println(">>> [DEBUG_SAVE] START - Total Lines: ${lines.size}")
+
+                for (i in lines.indices) {
+                    val lineText = lines[i].trim()
+                    val lineMedias = currentState.selectedMedias.filter { it.order == i }
+
+                    if (lineMedias.isNotEmpty()) {
+                        lineMedias.forEach { media ->
+                            val block = if (media.isVideo) {
+                                PostBlock.Video(videoUrl = media.uriString)
+                            } else {
+                                PostBlock.Image(imageUrl = media.uriString)
+                            }
+                            finalPostBlocks.add(block)
+                            println(">>> [DEBUG_SAVE] Line $i: Adding MEDIA")
                         }
+                    }
+
+                    if (lineText.isNotEmpty()) {
+                        finalPostBlocks.add(PostBlock.Text(text = lineText))
+                        println(">>> [DEBUG_SAVE] Line $i: Adding TEXT - '$lineText'")
+                    }
                 }
 
-                val result = postCommunityPostUseCase(
-                    files = fileInputs,
-                    type = currentState.selectedTab.displayName,
-                    title = title,
-                    blocks = postBlocks
-                )
+                if (finalPostBlocks.isEmpty()) {
+                    _uiState.update { (it as CommunityUiState.Write).copy(isLoading = false) }
+                    _event.emit(CommunityEvent.ShowToast("내용을 입력해주세요."))
+                    return@launch
+                }
+
+                val result = if (isEditMode) {
+                    patchCommunityPostUseCase(
+                        postId = currentState.postId!!,
+                        newFiles = fileInputs,
+                        type = currentState.selectedTab.displayName,
+                        title = title,
+                        blocks = finalPostBlocks
+                    )
+                } else {
+                    postCommunityPostUseCase(
+                        files = fileInputs,
+                        type = currentState.selectedTab.displayName,
+                        title = title,
+                        blocks = finalPostBlocks
+                    )
+                }
 
                 result.onSuccess {
+                    _uiState.value = CommunityUiState.Loading
                     _event.emit(CommunityEvent.WriteSuccess)
-                    onIntent(CommunityIntent.Loading)
                 }.onFailure { e ->
                     _uiState.update { if (it is CommunityUiState.Write) it.copy(isLoading = false) else it }
-                    _event.emit(CommunityEvent.ShowToast("업로드에 실패했습니다: ${e.message}"))
+                    _event.emit(CommunityEvent.ShowToast(e.message ?: "저장에 실패했습니다."))
                 }
             } catch (e: Exception) {
                 _uiState.update { if (it is CommunityUiState.Write) it.copy(isLoading = false) else it }
-                _event.emit(CommunityEvent.ShowToast("업로드에 실패했습니다: ${e.message}"))
             }
         }
     }

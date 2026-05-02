@@ -56,20 +56,32 @@ import kotlin.time.Clock
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun WriteRoute(
+    postId: Int?= null,
     innerPadding : PaddingValues,
     viewModel: CommunityViewModel = koinViewModel(CommunityViewModel::class),
     onBackClick: () -> Unit
 ){
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val currentState = uiState
     val focusManager = LocalFocusManager.current
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(Unit) {
-        if (uiState !is CommunityUiState.Write) {
-            viewModel.onIntent(CommunityIntent.ClickWriteTab(CommunityUiState.WriteTab.TALK))
+    LaunchedEffect(postId) {
+        println(">>> [DEBUG_COMMUNITY] LaunchedEffect Start (postId: $postId)")
+
+        val currentState = viewModel.uiState.value
+        println(">>> [DEBUG_COMMUNITY] Current State Type: ${currentState::class.simpleName}")
+
+        if (postId != null) {
+            println(">>> [DEBUG_COMMUNITY] Calling LoadPostForEdit($postId)")
+            viewModel.onIntent(CommunityIntent.LoadPostForEdit(postId))
+        } else {
+            if (currentState !is CommunityUiState.Write) {
+                println(">>> [DEBUG_COMMUNITY] Setting default WriteTab")
+                viewModel.onIntent(CommunityIntent.ClickWriteTab(CommunityUiState.WriteTab.TALK))
+            }
         }
     }
+
 
     LaunchedEffect(viewModel.event) {
         viewModel.event.collect { event ->
@@ -87,9 +99,9 @@ fun WriteRoute(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        if (currentState is CommunityUiState.Write) {
+        (uiState as? CommunityUiState.Write)?.let { state ->
             WriteCommunityScreen(
-                state = currentState,
+                state = state,
                 onBackClick = onBackClick,
                 onIntent = viewModel::onIntent,
                 snackbarHostState = snackbarHostState
@@ -106,6 +118,7 @@ fun WriteCommunityScreen(
     snackbarHostState: SnackbarHostState
 ) {
 
+    val isEditMode = state.postId != null
     val scope = rememberCoroutineScope()
     val isFormValid = state.title.isNotBlank() && state.content.isNotBlank()
     var showWritePostModal by remember { mutableStateOf(false) }
@@ -117,7 +130,9 @@ fun WriteCommunityScreen(
         scope.launch(Dispatchers.Default) {
             val currentImages = state.selectedMedias.filter { !it.isVideo }
             val currentVideos = state.selectedMedias.filter { it.isVideo }
-            val currentOrder = (state.content.split("\n").size - 1).coerceAtLeast(0)
+
+            val lines = state.content.split("\n")
+            val lastLineIndex = lines.lastIndex
 
             val newMediaList = mutableListOf<CommunityUiState.MediaItem>()
             var imageCountInBatch = 0
@@ -125,7 +140,6 @@ fun WriteCommunityScreen(
 
             results.forEach { result ->
                 val uriString = result.toString()
-
                 val isVideo = isVideoUri(result, context)
 
                 if (isVideo && (currentVideos.size + videoCountInBatch < 2)) {
@@ -137,19 +151,19 @@ fun WriteCommunityScreen(
                             thumbnail = metadata.thumbnail,
                             isVideo = true,
                             durationMs = metadata.durationMs,
-                            order = currentOrder
+                            order = lastLineIndex
                         )
                     )
                     videoCountInBatch++
                 } else if (!isVideo && (currentImages.size + imageCountInBatch < 10)) {
                     newMediaList.add(
                         CommunityUiState.MediaItem(
-                            id = "img_${Clock.System.now().toEpochMilliseconds()}",
+                            id = "img_${Clock.System.now().toEpochMilliseconds()}_$imageCountInBatch", // ID 중복 방지
                             uriString = uriString,
                             thumbnail = null,
                             isVideo = false,
                             durationMs = 0L,
-                            order = currentOrder
+                            order = if (state.content.isEmpty()) 0 else lines.size - 1
                         )
                     )
                     imageCountInBatch++
@@ -170,7 +184,7 @@ fun WriteCommunityScreen(
             contentWindowInsets = WindowInsets(0, 0, 0, 0),
             snackbarHost = { EverylolToastHost(snackbarHostState) },
             topBar = {
-                EverylolTopAppBar(onBackClick = onBackClick, title = "글 작성하기")
+                EverylolTopAppBar(onBackClick = onBackClick, title = if(isEditMode) "글 수정하기" else "글 작성하기")
             },
             bottomBar = {
                 if (isKeyboardVisible) {
@@ -239,23 +253,21 @@ fun WriteCommunityScreen(
                     .align(Alignment.BottomCenter)
                     .padding(horizontal = 24.dp, vertical = 24.dp)
                     .fillMaxWidth(),
-                text = "게시글 올리기",
+                text = if(isEditMode) "수정 완료" else "게시글 올리기",
                 enabled = isFormValid,
                 onClick = { showWritePostModal = true }
             )
             if (showWritePostModal) {
                 EverylolModal(
-                    title = "게시글이 완성되었어요",
-                    context = "게시글을 올리겠습니까?",
+                    title = if(isEditMode) "게시글을 수정할까요?" else "게시글이 완성되었어요",
+                    context = if (isEditMode) "수정된 내용은 즉시 반영됩니다." else "게시글을 올리겠습니까?",
                     onConfirm = {
-                        onIntent(
-                            CommunityIntent.WritePost(
-                                state.title,
-                                state.content,
-                                state.selectedMedias
-                            )
-                        )
-                        // showWritePostModal = false
+                        onIntent(CommunityIntent.WritePost(
+                            state.title,
+                            state.content,
+                            state.selectedMedias
+                        ))
+                        showWritePostModal = false
                     },
                     onDismiss = { showWritePostModal = false }
                 )
