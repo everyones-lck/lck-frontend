@@ -5,20 +5,24 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import every.lol.com.core.navigation.Route
 import every.lol.com.feature.community.WriteRoute
 
 
-fun NavController.navigateWrite(navOptions: NavOptions? = null) {
-    navigate(route = Route.Write, navOptions = navOptions)
+fun NavController.navigateWrite(postId: Int?=null, navOptions: NavOptions? = null) {
+    navigate(route = Route.Write(postId = postId), navOptions = navOptions)
 }
 
 fun NavGraphBuilder.writeNavGraph(
     innerPadding: PaddingValues,
     onBackClick: () -> Unit,
 ) {
-    composable<Route.Write> {
+    composable<Route.Write> {backStackEntry ->
+        val writeRoute = backStackEntry.toRoute<Route.Write>()
+
         WriteRoute(
+            postId = writeRoute.postId,
             innerPadding = innerPadding,
             onBackClick = onBackClick,
         )

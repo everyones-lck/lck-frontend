@@ -2,6 +2,7 @@ package every.lol.com.core.navigation
 
 import kotlinx.serialization.Serializable
 
+@Serializable
 sealed interface Route {
 
     @Serializable
@@ -23,7 +24,7 @@ sealed interface Route {
     data object Community : Route
 
     @Serializable
-    data object Write : Route
+    data class Write(val postId: Int? = null) : Route
 
     @Serializable
     data class Read(val postId: Int) : Route

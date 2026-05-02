@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
+import every.lol.com.core.model.PogCandidateCandidate
 import everylol.feature.matches.generated.resources.Res
 import everylol.feature.matches.generated.resources.ic_double_arrow_right
 import everylol.feature.matches.generated.resources.ic_dropdown_down
@@ -71,8 +72,7 @@ fun PogSection(
 
                 PogWaitingCard()
             }
-            PogSectionMode.VOTING,
-            PogSectionMode.SAVED -> {
+            PogSectionMode.VOTING -> {
                 Text(
                     text = title,
                     color = EveryLoLTheme.color.grayScale600,
@@ -97,8 +97,30 @@ fun PogSection(
                 }
 
                 PogBottomButtons(
-                    isSaved = mode == PogSectionMode.SAVED,
-                    isSaveEnabled = mode != PogSectionMode.SAVED,
+                    isSaved = false,
+                    isSaveEnabled = isSaveEnabled,
+                    onSaveClick = onSaveClick,
+                    onResultClick = onResultClick
+                )
+            }
+            PogSectionMode.SAVED -> {
+                Text(
+                    text = title,
+                    color = EveryLoLTheme.color.grayScale600,
+                    style = EveryLoLTheme.typography.subtitle03
+                )
+
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    savedItems.forEach { text ->
+                        PogSavedItemCard(text = text)
+                    }
+                }
+
+                PogBottomButtons(
+                    isSaved = true,
+                    isSaveEnabled = false,
                     onSaveClick = onSaveClick,
                     onResultClick = onResultClick
                 )
@@ -398,5 +420,27 @@ fun IncompletePogVoteDialog(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun PogSavedItemCard(
+    text: String,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .width(328.dp)
+            .height(44.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(EveryLoLTheme.color.grayScale1000)
+            .padding(horizontal = 16.dp),
+        contentAlignment = Alignment.CenterStart
+    ) {
+        Text(
+            text = text,
+            color = EveryLoLTheme.color.grayScale100,
+            style = EveryLoLTheme.typography.body01
+        )
     }
 }

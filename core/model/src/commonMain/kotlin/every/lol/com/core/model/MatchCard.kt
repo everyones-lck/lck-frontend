@@ -14,7 +14,8 @@ data class MatchCardModel(
     val team1VoteRate: Double = 0.0,
     val team2VoteRate: Double = 0.0,
     val totalVoteCount: Int = 0,
-    val predictedWinnerTeamName: String? = null
+    val predictedWinnerTeamName: String? = null,
+    val actualWinnerTeamName: String? = null
 )
 
 data class MatchInfo(

@@ -3,8 +3,8 @@ package every.lol.com.core.network.remote
 import every.lol.com.core.common.openFileStream
 import every.lol.com.core.network.datasource.CommunityDataSource
 import every.lol.com.core.network.model.ApiResponse
+import every.lol.com.core.network.model.request.EditPostRequest
 import every.lol.com.core.network.model.request.PostCommentRequest
-import every.lol.com.core.network.model.request.PostPostDetailRequest
 import every.lol.com.core.network.model.request.PostPostRequest
 import every.lol.com.core.network.model.request.ReportCommentRequest
 import every.lol.com.core.network.model.request.ReportPostRequest
@@ -129,9 +129,43 @@ class CommunityDataSourceImpl(
             }
         }.asApiResponse()
 
-    override suspend fun editPost(postId: Int, request: PostPostDetailRequest): ApiResponse<PostIdResponse> = runCatching {
-        httpClient.patch("/post/$postId/modify"){
-            setBody(request)
+    override suspend fun editPost(postId: Int, request: EditPostRequest): ApiResponse<PostIdResponse> =
+        withContext(NonCancellable) {
+        runCatching {
+            val jsonString = Json.encodeToString(request.request)
+            httpClient.patch("/post/$postId/modify") {
+                timeout {
+                    requestTimeoutMillis = 300_000L
+                    connectTimeoutMillis = 30_000L
+                    socketTimeoutMillis = 300_000L
+                }
+
+                setBody(
+                    MultiPartFormDataContent(
+                        formData {
+                            append("request", jsonString, Headers.build {
+                                append(HttpHeaders.ContentType, "application/json")
+                            })
+                            request.newFiles?.forEachIndexed { index, mediaFile ->
+                                val contentType = if (mediaFile.isVideo) "video/mp4" else "image/jpeg"
+                                val extension = if (mediaFile.isVideo) "mp4" else "jpg"
+                                val fileName = "file_$index.$extension"
+
+                                appendInput(
+                                    key = "newFiles",
+                                    headers = Headers.build {
+                                        append(HttpHeaders.ContentType, contentType)
+                                        append(HttpHeaders.ContentDisposition, "filename=\"$fileName\"")
+                                    },
+                                    block = {
+                                        openFileStream(platformContext, mediaFile.uriString)
+                                    }
+                                )
+                            }
+                        }
+                    )
+                )
+            }
         }
     }.asApiResponse()
 

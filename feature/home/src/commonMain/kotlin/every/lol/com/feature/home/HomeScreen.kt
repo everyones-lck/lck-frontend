@@ -145,6 +145,7 @@ fun HomeScreen(
 
             MatchCardRow(
                 matchCards = matchData,
+                matchRate = homeState?.matchRates ?: emptyMap(),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 24.dp)

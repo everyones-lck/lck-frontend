@@ -65,6 +65,7 @@ import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.core.model.CommentList
 import every.lol.com.core.model.mapToUiState
 import every.lol.com.core.ui.ext.everylolDefault
+import every.lol.com.feature.community.component.CommunityReportModal
 import every.lol.com.feature.community.component.ReadComment
 import every.lol.com.feature.community.component.ReadPost
 import every.lol.com.feature.community.component.VideoPlayerView
@@ -84,6 +85,7 @@ fun ReadRoute(
     innerPadding : PaddingValues,
     viewModel: CommunityViewModel = koinViewModel(CommunityViewModel::class),
     onBackClick: () -> Unit,
+    onEditClick: (Int) -> Unit
 ){
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -103,6 +105,7 @@ fun ReadRoute(
             postId = postId,
             state = currentState,
             onBackClick = onBackClick,
+            onEditClick = onEditClick,
             onIntent = viewModel::onIntent,
             isLiked = currentState.isLiked,
             likeCount = currentState.likeCount
@@ -131,10 +134,15 @@ fun ReadCommunityScreen(
     postId: Int,
     state: CommunityUiState.Read,
     onBackClick: () -> Unit,
+    onEditClick: (Int) -> Unit,
     onIntent: (CommunityIntent) -> Unit,
     isLiked: Boolean = false,
     likeCount: Int = 0
 ) {
+    var showReportModal by remember { mutableStateOf(false) }
+    var reportTargetType by remember { mutableStateOf("") }
+    var reportTargetId by remember { mutableStateOf(0) }
+    var reportReason by remember { mutableStateOf("") }
 
     val snackbarHostState = remember { SnackbarHostState() }
     var selectedMedia by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
@@ -165,6 +173,7 @@ fun ReadCommunityScreen(
             isPostMenuExpanded = false
         }
     }
+
     LaunchedEffect(state.isLoading) {
         if (!state.isLoading) {
             isRefreshing = false
@@ -302,7 +311,11 @@ fun ReadCommunityScreen(
                                     isReply = false,
                                     onClick = { replyingTo = parentComment },
                                     onDelete = { onIntent(CommunityIntent.DeleteComment(parentComment.commentId)) },
-                                    onReport = { onIntent(CommunityIntent.ReportComment(parentComment.commentId, "신고")) }
+                                    onReport = {
+                                        reportTargetType = "댓글"
+                                        reportTargetId = parentComment.commentId
+                                        showReportModal = true
+                                    }
                                 )
                             }
 
@@ -315,7 +328,11 @@ fun ReadCommunityScreen(
                                     isReply = true,
                                     onClick = { },
                                     onDelete = { onIntent(CommunityIntent.DeleteComment(reply.commentId)) },
-                                    onReport = { onIntent(CommunityIntent.ReportComment(reply.commentId, "신고")) }
+                                    onReport = {
+                                        reportTargetType = "댓글"
+                                        reportTargetId = reply.commentId
+                                        showReportModal = true
+                                    }
                                 )
                                 Spacer(Modifier.height(8.dp))
                             }
@@ -332,7 +349,65 @@ fun ReadCommunityScreen(
                 isMine = state.isMine,
                 onDismiss = { isPostMenuExpanded = false },
                 onDelete = { onIntent(CommunityIntent.DeletePost(postId)) },
-                onReport = { onIntent(CommunityIntent.ReportPost(postId, "신고")) }
+                onEdit = {
+                    state.post?.let { post ->
+                        val sortedBlocks = post.blocks.sortedBy { it.sequence }
+
+                        val mediaItems = mutableListOf<CommunityUiState.MediaItem>()
+                        val contentBuilder = StringBuilder()
+
+                        sortedBlocks.forEachIndexed { index, block ->
+                            if (index > 0) {
+                                contentBuilder.append("\n")
+                            }
+
+                            when (block.type) {
+                                "TEXT" -> {
+                                    contentBuilder.append(block.content ?: "")
+                                }
+                                "IMAGE", "VIDEO" -> {
+                                    val currentLineIndex =
+                                        if (contentBuilder.isEmpty()) {
+                                            0
+                                        } else {
+                                            contentBuilder.toString().split("\n").lastIndex
+                                        }
+
+                                    mediaItems.add(
+                                        CommunityUiState.MediaItem(
+                                            id = block.fileName ?: block.fileUrl ?: "media_${block.sequence}",
+                                            uriString = block.fileUrl ?: "",
+                                            isVideo = block.type == "VIDEO",
+                                            order = currentLineIndex.coerceAtLeast(0)
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                        if (sortedBlocks.lastOrNull()?.type != "TEXT") {
+                            contentBuilder.append("\n")
+                        }
+                        onIntent(
+                            CommunityIntent.EditPost(
+                                postId = postId,
+                                title = post.postTitle,
+                                content = contentBuilder.toString(),
+                                medias = mediaItems,
+                                tab = CommunityUiState.WriteTab.entries.find {
+                                    it.displayName == post.postType
+                                } ?: CommunityUiState.WriteTab.TALK
+                            )
+                        )
+                        onEditClick(postId)
+                    }
+                    isPostMenuExpanded = false
+                },
+                onReport = {
+                    reportTargetType = "게시글"
+                    reportTargetId = postId
+                    showReportModal = true
+                    isPostMenuExpanded = false
+                }
             )
         }
         selectedMedia?.let { (url, isVideo) ->
@@ -342,6 +417,29 @@ fun ReadCommunityScreen(
                 onDismiss = { selectedMedia = null }
             )
         }
+
+        if (showReportModal) {
+            CommunityReportModal(
+                reportType = reportTargetType,
+                value = reportReason,
+                onValueChange = { reportReason = it },
+                onDismiss = {
+                    showReportModal = false
+                    reportReason = ""
+                },
+                onReport = {
+                    if (reportReason.isNotBlank()) {
+                        if (reportTargetType == "게시글") {
+                            onIntent(CommunityIntent.ReportPost(reportTargetId, reportReason))
+                        } else {
+                            onIntent(CommunityIntent.ReportComment(reportTargetId, reportReason))
+                        }
+                        showReportModal = false
+                        reportReason = ""
+                    }
+                }
+            )
+        }
     }
 }
 
@@ -349,6 +447,7 @@ fun ReadCommunityScreen(
 fun PostMenu(
     isMine: Boolean,
     onDismiss: () -> Unit,
+    onEdit: () -> Unit,
     onDelete: () -> Unit,
     onReport: () -> Unit
 ) {
@@ -373,7 +472,23 @@ fun PostMenu(
                     DropdownMenuItem(
                         modifier = Modifier
                             .width(80.dp)
-                            .height(24.dp),
+                            .height(36.dp),
+                        text = {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Text(
+                                    "수정하기",
+                                    style = EveryLoLTheme.typography.subtitle03,
+                                    color = EveryLoLTheme.color.community600,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        },
+                        onClick = { onEdit(); onDismiss() }
+                    )
+                    DropdownMenuItem(
+                        modifier = Modifier
+                            .width(80.dp)
+                            .height(36.dp),
                         text = {
                             Box(
                                 modifier = Modifier.fillMaxSize(),
@@ -406,7 +521,7 @@ fun PostMenu(
                                     textAlign = TextAlign.Center
                                 )
                             }
-                               },
+                        },
                         onClick = { onReport(); onDismiss() }
                     )
                 }

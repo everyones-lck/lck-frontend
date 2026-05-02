@@ -8,6 +8,12 @@ import every.lol.com.core.model.CommentsDetail
 import every.lol.com.core.model.Posts
 import every.lol.com.core.model.PostsDetail
 import every.lol.com.core.model.UserInform
+import every.lol.com.core.model.mypage.MypagePog
+import every.lol.com.core.model.mypage.MypagePogDetail
+import every.lol.com.core.model.mypage.MypagePom
+import every.lol.com.core.model.mypage.MypagePomDetail
+import every.lol.com.core.model.mypage.MypagePredictionDetail
+import every.lol.com.core.model.mypage.MypagePredictions
 import every.lol.com.core.network.datasource.MyPagesDataSource
 import every.lol.com.core.network.model.request.PatchMyTeamRequest
 import every.lol.com.core.network.model.request.PatchProfileData
@@ -95,5 +101,65 @@ class MyPageRepositoryImpl(
             local.clearAuthData()
             Unit
         }
+    }
+
+    override suspend fun getPredictions(): Result<MypagePredictions> =
+        remote.getPredictions().toResult().map{
+            MypagePredictions(
+                correctCount = it.correctCount,
+                topPercent = it.topPercent,
+                predictionDetails = it.predictionDetails.map{detail ->
+                    MypagePredictionDetail(
+                        matchId = detail.matchId,
+                        matchDate = detail.matchDate.toFormattedDate() ,
+                        team1Name = detail.team1Name,
+                        team2Name = detail.team2Name,
+                        predictedTeamName = detail.predictedTeamName,
+                        isPredictionSuccessful = detail.isPredictionSuccessful
+                        )
+                }
+            )
+        }
+
+    override suspend fun getPog(): Result<MypagePog> =
+        remote.getPog().toResult().map {
+            MypagePog(
+                setPogVoteDetails = it.setPogVoteDetails.map { detail ->
+                    MypagePogDetail(
+                        matchId = detail.matchId,
+                        setIndex = detail.setIndex,
+                        playerId = detail.playerId,
+                        playerName = detail.playerName,
+                        position = detail.position,
+                        voteDate = detail.voteDate.toFormattedDate()
+                    )
+                }
+            )
+        }
+
+    override suspend fun getPom(): Result<MypagePom> =
+        remote.getPom().toResult().map {
+            MypagePom(
+                mvpVoteDetails = it.mvpVoteDetails.map {detail ->
+                    MypagePomDetail(
+                        matchId = detail.matchId,
+                        playerId = detail.playerId,
+                        playerName = detail.playerName,
+                        position = detail.position,
+                        voteDate = detail.voteDate.toFormattedDate()
+                    )
+                }
+            )
+        }
+
+}
+
+private fun String.toFormattedDate(): String {
+    return try {
+        val datePart = this.split("T")[0]
+        val parts = datePart.split("-")
+        "${parts[0].substring(2)}.${parts[1]}.${parts[2]}"
+    } catch (e: Exception) {
+        this
     }
 }

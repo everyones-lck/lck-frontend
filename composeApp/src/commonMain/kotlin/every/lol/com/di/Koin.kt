@@ -40,6 +40,7 @@ import every.lol.com.core.domain.usecase.GetSetPogResultUseCase
 import every.lol.com.core.domain.usecase.GetSupportTeamUseCase
 import every.lol.com.core.domain.usecase.LogoutUseCase
 import every.lol.com.core.domain.usecase.NicknameUseCase
+import every.lol.com.core.domain.usecase.PatchCommunityPostUseCase
 import every.lol.com.core.domain.usecase.PatchMyTeamUseCase
 import every.lol.com.core.domain.usecase.PatchProfileUseCase
 import every.lol.com.core.domain.usecase.PostCommunityCommentUseCase
@@ -54,6 +55,9 @@ import every.lol.com.core.domain.usecase.SignupUseCase
 import every.lol.com.core.domain.usecase.SocialLoginUseCase
 import every.lol.com.core.domain.usecase.WithdrawalUseCase
 import every.lol.com.core.domain.usecase.aboutlck.GetAboutLCKMatchUseCase
+import every.lol.com.core.domain.usecase.mypage.GetMyPogUseCase
+import every.lol.com.core.domain.usecase.mypage.GetMyPomUseCase
+import every.lol.com.core.domain.usecase.mypage.GetMyPredictionsUseCase
 import every.lol.com.core.network.datasource.AboutLCKDataSource
 import every.lol.com.core.network.datasource.AuthDataSource
 import every.lol.com.core.network.datasource.CommunityDataSource
@@ -120,6 +124,7 @@ val appDependenciesModule = module {
     factory { GetCommunityPopularPostsUseCase(get()) }
     factory { GetReadPostUseCase(get())}
     factory { PostCommunityPostUseCase(get()) }
+    factory { PatchCommunityPostUseCase(get()) }
     factory { DeletePostUseCase(get()) }
     factory { ReportPostUseCase(get()) }
     factory { PostCommunityCommentUseCase(get()) }
@@ -137,12 +142,13 @@ val appDependenciesModule = module {
     factory { PostMatchPogVoteUseCase(get()) }
     factory { GetSetPogResultUseCase(get()) }
     factory { GetMatchPogResultUseCase(get()) }
-
     factory { GetMatchPogCandidateUseCase(get()) }
     factory { GetMatchesCandidateUseCase(get()) }
     factory { GetSetPogCandidateUseCase(get()) }
-
     factory { GetAboutLCKMatchUseCase(get())  }
+    factory { GetMyPredictionsUseCase(get()) }
+    factory { GetMyPogUseCase(get()) }
+    factory { GetMyPomUseCase(get()) }
 
     factoryOf(::IntroViewModel)
     factoryOf(::HomeViewModel)

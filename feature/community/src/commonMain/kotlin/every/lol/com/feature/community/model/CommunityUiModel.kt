@@ -41,6 +41,7 @@ sealed interface CommunityUiState {
     ) : CommunityUiState
 
     data class Write(
+        val postId: Int? = null,
         val isLoading: Boolean = false,
         val selectedTab: WriteTab = WriteTab.TALK,
         val title: String = "",
@@ -77,10 +78,22 @@ sealed interface CommunityIntent{
         val content: String,
         val medias: List<CommunityUiState.MediaItem>
     ) : CommunityIntent
+
+    data class LoadPostForEdit(val postId: Int) : CommunityIntent
+
+    data class EditPost(
+        val postId: Int,
+        val title: String,
+        val content: String,
+        val medias: List<CommunityUiState.MediaItem>,
+        val tab:CommunityUiState.WriteTab
+    ) : CommunityIntent
+
     data object OpenGallery : CommunityIntent
     data class AddMedias(val medias: List<CommunityUiState.MediaItem>) : CommunityIntent
     data class RemoveMedia(val index: Int) : CommunityIntent
     data class MoveMedia(val from: Int, val to: Int) : CommunityIntent
+    data class MoveMediatoLine(val mediaId: String, val targetLineIndex: Int) : CommunityIntent
     data class UpdateMediaOrder(val mediaId: String, val newOrder: Int) : CommunityIntent
     data class WriteComment(val postId: Int, val content: String) : CommunityIntent
     data class WriteReply(val postId: Int, val parentCommentId: Long, val content: String) : CommunityIntent
