@@ -353,26 +353,45 @@ fun ReadCommunityScreen(
                     state.post?.let { post ->
                         val sortedBlocks = post.blocks.sortedBy { it.sequence }
 
-                        val combinedContent = sortedBlocks
-                            .filter { it.type == "TEXT" }
-                            .joinToString("\n") { it.content ?: "" }
+                        val mediaItems = mutableListOf<CommunityUiState.MediaItem>()
+                        val contentBuilder = StringBuilder()
 
-                        val mediaItems = sortedBlocks
-                            .filter { it.type == "IMAGE" || it.type == "VIDEO" }
-                            .mapIndexed { index, block ->
-                                CommunityUiState.MediaItem(
-                                    id = block.fileName ?: block.fileUrl ?: "media_$index",
-                                    uriString = block.fileUrl ?: "",
-                                    isVideo = block.type == "VIDEO",
-                                    order = block.sequence
-                                )
+                        sortedBlocks.forEachIndexed { index, block ->
+                            if (index > 0) {
+                                contentBuilder.append("\n")
                             }
 
+                            when (block.type) {
+                                "TEXT" -> {
+                                    contentBuilder.append(block.content ?: "")
+                                }
+                                "IMAGE", "VIDEO" -> {
+                                    val currentLineIndex =
+                                        if (contentBuilder.isEmpty()) {
+                                            0
+                                        } else {
+                                            contentBuilder.toString().split("\n").lastIndex
+                                        }
+
+                                    mediaItems.add(
+                                        CommunityUiState.MediaItem(
+                                            id = block.fileName ?: block.fileUrl ?: "media_${block.sequence}",
+                                            uriString = block.fileUrl ?: "",
+                                            isVideo = block.type == "VIDEO",
+                                            order = currentLineIndex.coerceAtLeast(0)
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                        if (sortedBlocks.lastOrNull()?.type != "TEXT") {
+                            contentBuilder.append("\n")
+                        }
                         onIntent(
                             CommunityIntent.EditPost(
                                 postId = postId,
                                 title = post.postTitle,
-                                content = combinedContent,
+                                content = contentBuilder.toString(),
                                 medias = mediaItems,
                                 tab = CommunityUiState.WriteTab.entries.find {
                                     it.displayName == post.postType
@@ -380,7 +399,6 @@ fun ReadCommunityScreen(
                             )
                         )
                         onEditClick(postId)
-                        println("DEBUG_LOG: 수정하기 클릭됨, postId: $postId")
                     }
                     isPostMenuExpanded = false
                 },

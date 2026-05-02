@@ -67,8 +67,8 @@ fun CommunityContentWriteBlock(
     val allItems = remember(textLines, state.selectedMedias) {
         val list = mutableListOf<String>()
         textLines.forEachIndexed { index, _ ->
-            list.add("text_block_$index")
             state.selectedMedias.filter { it.order == index }.forEach { list.add(it.id) }
+            list.add("text_block_$index")
         }
         val assignedIds = list.toSet()
         state.selectedMedias.filter { it.id !in assignedIds }.forEach { list.add(it.id) }
@@ -94,7 +94,13 @@ fun CommunityContentWriteBlock(
         list = allItems,
         onSettle = { from, to ->
             val fromId = allItems.getOrNull(from) ?: ""
-            if (state.selectedMedias.any { it.id == fromId }) {
+            val toId = allItems.getOrNull(to) ?: ""
+            val fromMediaIndex = state.selectedMedias.indexOfFirst { it.id == fromId }
+            val toMediaIndex = state.selectedMedias.indexOfFirst { it.id == toId }
+
+            if (fromMediaIndex != -1 && toMediaIndex != -1) {
+                onIntent(CommunityIntent.MoveMedia(fromMediaIndex, toMediaIndex))
+            } else if (fromMediaIndex != -1) {
                 val nearestTextIndex = allItems.subList(0, (to + 1).coerceAtMost(allItems.size))
                     .filter { it.startsWith("text_block_") }
                     .lastOrNull()
