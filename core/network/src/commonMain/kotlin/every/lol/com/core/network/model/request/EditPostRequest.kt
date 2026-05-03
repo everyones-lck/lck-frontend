@@ -20,5 +20,7 @@ data class EditBlocksRequest(
     val type: String,
     val content: String?=null,
     val fileIndex: Int?=null,
-    val existingFileUrl: String?=null
+    val existingFileUrl: String?=null,
+    val thumbnailFileIndex: Int?=null,
+    val existingThumbnailUrl: String?=null
 )

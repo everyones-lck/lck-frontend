@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -145,7 +146,7 @@ fun ReadCommunityScreen(
     var reportReason by remember { mutableStateOf("") }
 
     val snackbarHostState = remember { SnackbarHostState() }
-    var selectedMedia by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
+    var selectedMedia by remember { mutableStateOf<Triple<String, Boolean, String?>?>(null) }
     var isPostMenuExpanded by remember { mutableStateOf(false) }
     var commentText by remember { mutableStateOf("") }
     val isKeyboardOpen = WindowInsets.ime.asPaddingValues().calculateBottomPadding() > 0.dp
@@ -293,8 +294,12 @@ fun ReadCommunityScreen(
                                 postDetail = postDetail,
                                 contentBlocks = mapToUiState(postDetail),
                                 onMoreClick = { isPostMenuExpanded = true },
-                                onImageClick = { url -> selectedMedia = url to false },
-                                onVideoClick = { url -> selectedMedia = url to true },
+                                onImageClick = { url ->
+                                    selectedMedia = Triple(url, false, null)
+                                },
+                                onVideoClick = { url, thumb ->
+                                    selectedMedia = Triple(url, true, thumb)
+                                },
                                 onLikeClick = { onIntent(CommunityIntent.LikePost(postId)) },
                                 isCommented = isCommented,
                                 isLiked = isLiked,
@@ -411,11 +416,12 @@ fun ReadCommunityScreen(
                 }
             )
         }
-        selectedMedia?.let { (url, isVideo) ->
+        selectedMedia?.let { (url, isVideo, thumbnailUrl) ->
             FullScreenMediaViewer(
                 mediaUrl = url,
                 isVideo = isVideo,
-                onDismiss = { selectedMedia = null }
+                onDismiss = { selectedMedia = null },
+                thumbnailUrl = thumbnailUrl
             )
         }
 
@@ -532,10 +538,12 @@ fun PostMenu(
 }
 @Composable
 fun FullScreenMediaViewer(
+    thumbnailUrl: String?=null,
     mediaUrl: String,
     isVideo: Boolean,
     onDismiss: () -> Unit
 ) {
+    var isVideoLoading by remember { mutableStateOf(true) }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -547,13 +555,35 @@ fun FullScreenMediaViewer(
         contentAlignment = Alignment.Center
     ) {
         if (isVideo) {
-            VideoPlayerView(
-                url = mediaUrl,
+            Box(
+                contentAlignment = Alignment.Center,
                 modifier = Modifier
                     .padding(20.dp)
                     .fillMaxWidth()
+                    .aspectRatio(16/9f)
                     .clip(RoundedCornerShape(8.dp))
-            )
+                    .background(EveryLoLTheme.color.grayScale900)
+            ) {
+                VideoPlayerView(
+                    url = mediaUrl,
+                    modifier = Modifier.fillMaxSize(),
+                    onReady = { isVideoLoading = false }
+                )
+
+                if (isVideoLoading) {
+                    AsyncImage(
+                        model = thumbnailUrl,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+
+                    CircularProgressIndicator(
+                        color = EveryLoLTheme.color.community600,
+                        strokeWidth = 3.dp
+                    )
+                }
+            }
         } else {
             AsyncImage(
                 model = mediaUrl,

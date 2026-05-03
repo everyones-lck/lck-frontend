@@ -489,11 +489,13 @@ class CommunityViewModel(
 
                             if (media.isVideo && media.thumbnail != null) {
                                 if (media.thumbnail is ByteArray) {
+                                    println("media.thumbnail is ByteArray")
                                     val savedPath = saveCompressedImageToFile(media.thumbnail as ByteArray)
                                     val thumbUri = "file://$savedPath"
                                     videoThumbnailMap[media.uriString] = thumbUri
                                     fileInputs.add(MediaFile(uriString = thumbUri, isVideo = false))
                                 } else if (media.thumbnail is String) {
+                                    println("media.thumbnail is String")
                                     videoThumbnailMap[media.uriString] = media.thumbnail as String
                                 }
                             }
@@ -503,7 +505,6 @@ class CommunityViewModel(
                             }
                         }
                     }
-
                     val postBlocks = mutableListOf<PostBlock>()
                     val lines = content.split("\n")
 

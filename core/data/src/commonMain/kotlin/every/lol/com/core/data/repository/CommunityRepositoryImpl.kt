@@ -99,7 +99,9 @@ class CommunityRepositoryImpl(
                         sequence = index + 1,
                         type = "VIDEO",
                         fileIndex = if (!isExisting) newFiles?.indexOfFirst { it.uriString == block.videoUrl } else null,
-                        existingFileUrl = if (isExisting) block.videoUrl else null
+                        existingFileUrl = if (isExisting) block.videoUrl else null,
+                        thumbnailFileIndex = if (!isExisting) newFiles?.indexOfFirst { it.uriString == block.thumbnailUrl } else null,
+                        existingThumbnailUrl = if (isExisting) block.thumbnailUrl else null
                     )
                 }
             }
