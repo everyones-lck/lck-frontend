@@ -127,7 +127,7 @@ class CommunityRepositoryImpl(
         remote.detailPost(postId).toResult().map {response ->
             PostDetail(response.postId, response.postType, response.writerProfileUrl, response.writerNickname, response.writerTeams, response.postTitle, response.postCreatedAt, response.isModified, response.isWriter, response.isLiked, response.likeCount, response.viewCount, response.commentCount, response.imageCounts, response.videoCounts,
                 blocks = response.blocks.map {
-                    PostDetailBlocks(it.sequence, it.type, it.content, it.fileUrl, it.fileName)
+                    PostDetailBlocks(it.sequence, it.type, it.content, it.fileUrl, it.fileName, it.thumbnailUrl)
                 },
                 commentList = response.commentList!!.map {
                     CommentList(it.commentId, it.parentCommentId, it.profileImageUrl, it.nickname, it.supportTeams, it.content, it.createdAt, it.isDeleted, it.isWriter,

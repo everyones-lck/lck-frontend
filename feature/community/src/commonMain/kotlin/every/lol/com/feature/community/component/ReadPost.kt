@@ -91,7 +91,9 @@ fun ReadPost(
                     )
                 }
                 is PostBlock.Video -> {
+                    println("block.thumbnailUrl : ${block.thumbnailUrl}")
                     CommunityVideo(
+                        thumbnailUrl = block.thumbnailUrl,
                         videoUrl = block.videoUrl,
                         onVideoClick = onVideoClick
                     )

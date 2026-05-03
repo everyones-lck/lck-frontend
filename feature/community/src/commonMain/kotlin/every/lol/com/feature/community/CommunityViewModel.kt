@@ -277,6 +277,7 @@ class CommunityViewModel(
                                     id = block.fileName ?: "media_${mediaItems.size}",
                                     uriString = block.fileUrl ?: "",
                                     isVideo = block.type == "VIDEO",
+                                    thumbnail = block.thumbnailUrl,
                                     order = currentLine
                                 )
                             )
@@ -483,13 +484,22 @@ class CommunityViewModel(
                         val isAlreadyUploaded = isEditMode && media.uriString.startsWith("http")
 
                         if (!isAlreadyUploaded) {
+
                             fileInputs.add(MediaFile(uriString = media.uriString, isVideo = media.isVideo))
 
                             if (media.isVideo && media.thumbnail != null) {
-                                val savedPath = saveCompressedImageToFile(media.thumbnail)
-                                val thumbUri = "file://$savedPath"
-                                videoThumbnailMap[media.uriString] = thumbUri
-                                fileInputs.add(MediaFile(uriString = thumbUri, isVideo = false))
+                                if (media.thumbnail is ByteArray) {
+                                    val savedPath = saveCompressedImageToFile(media.thumbnail as ByteArray)
+                                    val thumbUri = "file://$savedPath"
+                                    videoThumbnailMap[media.uriString] = thumbUri
+                                    fileInputs.add(MediaFile(uriString = thumbUri, isVideo = false))
+                                } else if (media.thumbnail is String) {
+                                    videoThumbnailMap[media.uriString] = media.thumbnail as String
+                                }
+                            }
+                        } else {
+                            if (media.isVideo && media.thumbnail is String) {
+                                videoThumbnailMap[media.uriString] = media.thumbnail as String
                             }
                         }
                     }

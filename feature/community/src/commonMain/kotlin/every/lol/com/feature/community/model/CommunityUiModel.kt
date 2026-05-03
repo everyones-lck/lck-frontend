@@ -53,7 +53,7 @@ sealed interface CommunityUiState {
         val id: String,
         val uriString: String,
         val isVideo: Boolean = false,
-        val thumbnail: ByteArray? = null,
+        val thumbnail: Any? = null,
         val durationMs: Long = 0L,
         val order: Int = -1
     )
