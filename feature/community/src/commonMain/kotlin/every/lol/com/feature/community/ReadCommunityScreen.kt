@@ -378,6 +378,7 @@ fun ReadCommunityScreen(
                                             id = block.fileName ?: block.fileUrl ?: "media_${block.sequence}",
                                             uriString = block.fileUrl ?: "",
                                             isVideo = block.type == "VIDEO",
+                                            thumbnail = block.thumbnailUrl,
                                             order = currentLineIndex.coerceAtLeast(0)
                                         )
                                     )
