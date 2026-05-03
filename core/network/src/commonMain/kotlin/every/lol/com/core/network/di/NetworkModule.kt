@@ -48,9 +48,9 @@ fun Scope.createHttpClient(
     withAuth: Boolean
 ) = HttpClient(engine) {
     install(HttpTimeout) {
-        requestTimeoutMillis = 30_000L
-        connectTimeoutMillis = 30_000L
-        socketTimeoutMillis = 30_000L
+        requestTimeoutMillis = 900_000L
+        connectTimeoutMillis = 900_000L
+        socketTimeoutMillis = 900_000L
     }
 
     install(ContentNegotiation) {
@@ -58,10 +58,11 @@ fun Scope.createHttpClient(
     }
 
     install(Logging) {
-        level = if (BuildConfig.DEBUG) LogLevel.HEADERS else LogLevel.INFO
+        level = if (BuildConfig.DEBUG) LogLevel.INFO else LogLevel.NONE
 
         logger = object : Logger {
             override fun log(message: String) {
+                if (message.length > 1000) return
                 println("Ktor Log: $message")
             }
         }

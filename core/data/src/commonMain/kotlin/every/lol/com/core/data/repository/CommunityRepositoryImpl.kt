@@ -1,5 +1,6 @@
 package every.lol.com.core.data.repository
 
+import every.lol.com.core.common.getFileSize
 import every.lol.com.core.data.mapper.toResult
 import every.lol.com.core.datastore.AuthLocalDataSource
 import every.lol.com.core.domain.repository.CommunityRepository
@@ -31,7 +32,7 @@ class CommunityRepositoryImpl(
     private val local: AuthLocalDataSource
 ): CommunityRepository {
 
-    override suspend fun postPost(files: List<MediaFile>?, type: String, title: String, blocks: List<PostBlock>): Result<Unit> {
+    override suspend fun postPost(files: List<MediaFile>?, type: String, title: String, blocks: List<PostBlock>, platformContext: Any): Result<Unit> {
         val networkBlocks = blocks.mapIndexed { index, block ->
             when (block) {
                 is PostBlock.Text -> BlocksRequest(
@@ -47,14 +48,18 @@ class CommunityRepositoryImpl(
                 is PostBlock.Video -> BlocksRequest(
                     sequence = index + 1,
                     type = "VIDEO",
-                    fileIndex = files?.indexOfFirst { it.uriString == block.videoUrl } ?: -1
+                    fileIndex = files?.indexOfFirst { it.uriString == block.videoUrl } ?: -1,
+                    thumbnailFileIndex = files?.indexOfFirst { it.uriString == block.thumbnailUrl } ?: -1
                 )
             }
         }
 
-        // 2. 파일 리스트 변환 (Remote 전달용)
         val networkMediaFiles = files?.map {
-            MediaFileRequst(uriString = it.uriString, isVideo = it.isVideo)
+            MediaFileRequst(
+                uriString = it.uriString,
+                isVideo = it.isVideo,
+                fileSize = getFileSize(platformContext, it.uriString)
+            )
         }
 
         val requestBody = PostPostRequest(
@@ -71,7 +76,7 @@ class CommunityRepositoryImpl(
             .map { }
     }
 
-    override suspend fun editPost(postId: Int, newFiles: List<MediaFile>?, type: String, title: String, blocks: List<PostBlock>): Result<Unit> {
+    override suspend fun editPost(postId: Int, newFiles: List<MediaFile>?, type: String, title: String, blocks: List<PostBlock>,platformContext: Any): Result<Unit> {
         val networkBlocks = blocks.mapIndexed { index, block ->
             when (block) {
                 is PostBlock.Text -> EditBlocksRequest(
@@ -94,14 +99,16 @@ class CommunityRepositoryImpl(
                         sequence = index + 1,
                         type = "VIDEO",
                         fileIndex = if (!isExisting) newFiles?.indexOfFirst { it.uriString == block.videoUrl } else null,
-                        existingFileUrl = if (isExisting) block.videoUrl else null
+                        existingFileUrl = if (isExisting) block.videoUrl else null,
+                        thumbnailFileIndex = if (!isExisting) newFiles?.indexOfFirst { it.uriString == block.thumbnailUrl } else null,
+                        existingThumbnailUrl = if (isExisting) block.thumbnailUrl else null
                     )
                 }
             }
         }
 
         val networkNewFiles = newFiles?.map {
-            MediaFileRequst(uriString = it.uriString, isVideo = it.isVideo)
+            MediaFileRequst(uriString = it.uriString, isVideo = it.isVideo, fileSize = getFileSize(platformContext, it.uriString))
         }
 
         val requestBody = EditPostRequest(
@@ -122,7 +129,7 @@ class CommunityRepositoryImpl(
         remote.detailPost(postId).toResult().map {response ->
             PostDetail(response.postId, response.postType, response.writerProfileUrl, response.writerNickname, response.writerTeams, response.postTitle, response.postCreatedAt, response.isModified, response.isWriter, response.isLiked, response.likeCount, response.viewCount, response.commentCount, response.imageCounts, response.videoCounts,
                 blocks = response.blocks.map {
-                    PostDetailBlocks(it.sequence, it.type, it.content, it.fileUrl, it.fileName)
+                    PostDetailBlocks(it.sequence, it.type, it.content, it.fileUrl, it.fileName, it.thumbnailUrl)
                 },
                 commentList = response.commentList!!.map {
                     CommentList(it.commentId, it.parentCommentId, it.profileImageUrl, it.nickname, it.supportTeams, it.content, it.createdAt, it.isDeleted, it.isWriter,

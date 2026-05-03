@@ -30,7 +30,7 @@ fun ReadPost(
     contentBlocks: List<PostBlock>,
     onMoreClick: () -> Unit,
     onImageClick: (String) -> Unit,
-    onVideoClick: (String) -> Unit,
+    onVideoClick: (String, String?) -> Unit,
     onLikeClick: () -> Unit = {},
     isCommented: Boolean = false,
     isLiked: Boolean = false,
@@ -91,9 +91,13 @@ fun ReadPost(
                     )
                 }
                 is PostBlock.Video -> {
+                    println("block.thumbnailUrl : ${block.thumbnailUrl}")
                     CommunityVideo(
+                        thumbnailUrl = block.thumbnailUrl,
                         videoUrl = block.videoUrl,
-                        onVideoClick = onVideoClick
+                        onVideoClick = { url ->
+                            onVideoClick(url, block.thumbnailUrl)
+                        }
                     )
                 }
             }

@@ -29,7 +29,7 @@ fun mapToUiState(serverPost: PostDetail): List<PostBlock> {
                     block.fileUrl?.let {
                         PostBlock.Video(
                             videoUrl = it,
-                            thumbnailUrl = null
+                            thumbnailUrl = block.thumbnailUrl
                         )
                     }
                 }

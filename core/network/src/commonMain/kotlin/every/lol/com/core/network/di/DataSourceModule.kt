@@ -21,7 +21,7 @@ val dataSourceModule = module {
     single<AuthDataSource> { AuthDataSourceImpl(get()) }
     single<MyPagesDataSource> { MyPagesDataSourceImpl(get()) }
     single<HomeDataSource> { HomeDataSourceImpl(get()) }
-    single<CommunityDataSource> { CommunityDataSourceImpl(get(), get()) }
+    single<CommunityDataSource> { CommunityDataSourceImpl(get(), get(), get(), get()) }
     single<AboutLCKDataSource> { AboutLCKDataSourceImpl(get()) }
     single<MatchesDataSource> { MatchesDataSourceImpl(get()) }
 

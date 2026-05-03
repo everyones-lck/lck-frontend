@@ -164,6 +164,7 @@ fun SignupScreen(
 
                     permissionHandler.askPermission(PermissionType.GALLERY)
                     permissionHandler.askPermission(PermissionType.LOCATION)
+                    permissionHandler.askPermission(PermissionType.ALARM)
                 }
             )
         }

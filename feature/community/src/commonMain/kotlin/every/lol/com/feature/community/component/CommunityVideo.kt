@@ -1,6 +1,5 @@
 package every.lol.com.feature.community.component
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -18,7 +17,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import every.lol.com.core.common.rememberVideoThumbnail
+import coil3.compose.AsyncImage
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import everylol.feature.community.generated.resources.Res
 import everylol.feature.community.generated.resources.ic_player
@@ -26,11 +25,10 @@ import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun CommunityVideo(
+    thumbnailUrl: String? = null,
     videoUrl: String,
     onVideoClick: (String) -> Unit
 ) {
-    val thumbnail = rememberVideoThumbnail(videoUrl)
-
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -39,9 +37,15 @@ fun CommunityVideo(
             .clickable { onVideoClick(videoUrl) },
         contentAlignment = Alignment.Center
     ) {
-        if (thumbnail != null) {
-            Image(
+        if (thumbnailUrl != null) {
+            /*Image(
                 bitmap = thumbnail,
+                contentDescription = "Video Preview",
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )*/
+            AsyncImage(
+                model = thumbnailUrl,
                 contentDescription = "Video Preview",
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop

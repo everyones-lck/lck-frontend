@@ -53,7 +53,7 @@ sealed interface CommunityUiState {
         val id: String,
         val uriString: String,
         val isVideo: Boolean = false,
-        val thumbnail: ByteArray? = null,
+        val thumbnail: Any? = null,
         val durationMs: Long = 0L,
         val order: Int = -1
     )
@@ -73,6 +73,7 @@ sealed interface CommunityIntent{
     data class ChangeTitle(val title: String) : CommunityIntent
     data class ChangeContent(val content: String) : CommunityIntent
     data class WritePost(
+        val platformContext: Any,
         val title: String,
         val content: String,
         val medias: List<CommunityUiState.MediaItem>

@@ -24,6 +24,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import every.lol.com.core.common.PermissionType
+import every.lol.com.core.common.rememberPermissionManager
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.core.ui.component.LckRankingSection
 import every.lol.com.feature.home.component.MatchCardRow
@@ -90,6 +92,19 @@ fun HomeScreen(
     val currentAlerts = homeState?.alerts?.alerts ?: emptyList()
     val ranking = homeState?.ranking?.groups?.firstOrNull()?.teams ?: emptyList()
     val supportTeams = homeState?.supportTeam ?: emptyList()
+
+    val permissionHandler = rememberPermissionManager { type, isGranted ->
+        if (!isGranted) {
+
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        println("권한 설정 여부 확인")
+        permissionHandler.askPermission(PermissionType.GALLERY)
+        permissionHandler.askPermission(PermissionType.LOCATION)
+        permissionHandler.askPermission(PermissionType.ALARM)
+    }
 
     LazyColumn(
         modifier = Modifier

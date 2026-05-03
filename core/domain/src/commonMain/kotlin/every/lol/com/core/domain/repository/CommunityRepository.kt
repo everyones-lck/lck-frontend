@@ -8,8 +8,8 @@ import every.lol.com.core.model.PostLike
 import every.lol.com.core.model.PostList
 
 interface CommunityRepository {
-    suspend fun postPost(files: List<MediaFile>?=null, type: String, title: String, blocks: List<PostBlock>): Result<Unit>
-    suspend fun editPost(postId: Int, newFiles: List<MediaFile>?=null, type: String, title: String, blocks: List<PostBlock>): Result<Unit>
+    suspend fun postPost(files: List<MediaFile>?=null, type: String, title: String, blocks: List<PostBlock>, platformContext: Any): Result<Unit>
+    suspend fun editPost(postId: Int, newFiles: List<MediaFile>?=null, type: String, title: String, blocks: List<PostBlock>,platformContext: Any): Result<Unit>
     suspend fun detailPost(postId: Int): Result<PostDetail>
     suspend fun postList(postType: String, page: Int, size: Int): Result<PostList>
     suspend fun popularPostList(period: String): Result<PopularPostList>

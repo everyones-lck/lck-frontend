@@ -41,6 +41,7 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import coil3.compose.AsyncImagePainter
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.feature.community.model.CommunityIntent
 import every.lol.com.feature.community.model.CommunityUiState
@@ -252,6 +253,7 @@ fun ContentMediaItem(
     onRemove: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    println(">>> [DEBUG_IMAGE] Load Model: ${media.thumbnail}")
     Box(modifier = modifier.fillMaxWidth()) {
         Box(
             modifier = Modifier
@@ -264,7 +266,12 @@ fun ContentMediaItem(
                 model = if (media.isVideo) media.thumbnail else media.uriString,
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
+                contentScale = ContentScale.Crop,
+                onState = { state ->
+                    if (state is AsyncImagePainter.State.Error) {
+                        println(">>> [DEBUG_IMAGE] Load Error! Model: ${media.thumbnail}")
+                    }
+                }
             )
 
             if (media.isVideo) {

@@ -7,7 +7,7 @@ expect fun rememberPermissionManager(
     onPermissionResult: (PermissionType, Boolean) -> Unit
 ): PermissionHandler
 
-enum class PermissionType { LOCATION, GALLERY }
+enum class PermissionType { LOCATION, GALLERY, ALARM }
 
 interface PermissionHandler {
     fun askPermission(type: PermissionType)

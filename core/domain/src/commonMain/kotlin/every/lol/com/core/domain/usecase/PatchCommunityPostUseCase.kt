@@ -13,7 +13,8 @@ class PatchCommunityPostUseCase(
         newFiles: List<MediaFile>? = null,
         type: String,
         title: String,
-        blocks: List<PostBlock>
+        blocks: List<PostBlock>,
+        platformContext: Any
     ): Result<Unit> =
-        communityRepository.editPost(postId, newFiles, type, title, blocks)
+        communityRepository.editPost(postId, newFiles, type, title, blocks, platformContext)
 }
