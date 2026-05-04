@@ -24,6 +24,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
+import every.lol.com.core.ui.component.EmptyContent
 import every.lol.com.feature.matches.component.CompactMatchDownCard
 import every.lol.com.feature.matches.component.DetailMatchCard
 import every.lol.com.feature.matches.component.TopBar
@@ -87,6 +88,7 @@ fun MatchesRoute(
         }
     }
 }
+
 @Composable
 fun MatchesScreen(
     state: MatchUiState.Matches,
@@ -101,6 +103,8 @@ fun MatchesScreen(
             .padding(bottom = innerPadding.calculateBottomPadding() + 24.dp)
     ) {
         TopBar()
+
+        if(state.matches.isEmpty()) EmptyContent("headset", "오늘은 경기가 없어요 !", Modifier.padding(horizontal = 16.dp))
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),

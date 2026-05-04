@@ -303,7 +303,7 @@ private fun NoMatchBarRow(
         Text(
             text = "-",
             style = EveryLoLTheme.typography.body03,
-            color = EveryLoLTheme.color.grayScale700,
+            color = EveryLoLTheme.color.gray800,
             modifier = Modifier.width(57.dp)
         )
 
@@ -312,7 +312,7 @@ private fun NoMatchBarRow(
                 .width(24.dp)
                 .height(12.dp)
                 .clip(RoundedCornerShape(8.dp))
-                .background(EveryLoLTheme.color.grayScale700)
+                .background(EveryLoLTheme.color.gray800)
         )
     }
 }

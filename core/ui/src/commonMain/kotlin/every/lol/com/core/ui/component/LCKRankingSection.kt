@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -31,7 +30,6 @@ import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.core.model.RankingTeam
 import every.lol.com.core.model.Team.Companion.fromTeamName
 import everylol.core.ui.generated.resources.Res
-import everylol.core.ui.generated.resources.ic_headset
 import everylol.core.ui.generated.resources.img_ranking_bfx
 import everylol.core.ui.generated.resources.img_ranking_bro
 import everylol.core.ui.generated.resources.img_ranking_dk
@@ -53,24 +51,7 @@ fun LckRankingSection(
     // cardBackground: @Composable BoxScope.(LckStandingTeamModel) -> Unit = {}
 ) {
     if (standings.isEmpty()) {
-        Column(
-            modifier = modifier
-                .fillMaxWidth()
-                .height(284.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(24.dp, Alignment.CenterVertically)
-        ){
-            Icon(
-                painter = painterResource(Res.drawable.ic_headset),
-                contentDescription = null,
-                modifier = Modifier.width(58.dp).height(60.dp)
-            )
-            Text(
-                text = "경기가 아직 진행되지 않았습니다",
-                style = EveryLoLTheme.typography.subtitle03,
-                color = EveryLoLTheme.color.community600
-            )
-        }
+        EmptyContent("headset", "경기가 아직 진행되지 않았습니다")
         return
     }
 
@@ -79,7 +60,7 @@ fun LckRankingSection(
         supportTeams.randomOrNull()
     }
 
-    val favoriteTeam = standings.find { fromTeamName(it.teamName).id== favoriteTeamId }
+    val favoriteTeam = standings.find { fromTeamName(it.teamName).id == favoriteTeamId }
 
     val remainingTeams = if (favoriteTeam != null) {
         standings.filter { it.teamName != favoriteTeam.teamName }
@@ -100,46 +81,38 @@ fun LckRankingSection(
         )
 
         Spacer(modifier = Modifier.height(20.dp))
-        if (standings.isEmpty()) {
-            Text(
-                text = "경기가 아직 진행되지 않았습니다",
-                style = EveryLoLTheme.typography.subtitle03,
-                color = EveryLoLTheme.color.white200
-            )
-        } else {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
-            ) {
-                favoriteTeam?.let { team ->
-                    FavoriteRankCard(
-                        team = favoriteTeam,
-                        onClick = onTeamClick
-                    )
-                }
-                top3.forEach { team ->
-                    TopRankCard(
-                        team = team,
-                        onClick = onTeamClick,
-                        //cardBackground = cardBackground
-                    )
-                }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
+        ) {
+            favoriteTeam?.let { team ->
+                FavoriteRankCard(
+                    team = favoriteTeam,
+                    onClick = onTeamClick
+                )
             }
+            top3.forEach { team ->
+                TopRankCard(
+                    team = team,
+                    onClick = onTeamClick,
+                    //cardBackground = cardBackground
+                )
+            }
+        }
 
-            Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                lowerRanks.forEach { team ->
-                    val isMyTeam = supportTeams.contains(fromTeamName(team.teamName).id)
-                    RankListRow(
-                        team = team,
-                        isFavorite = isMyTeam,
-                        onClick = onTeamClick
-                    )
-                }
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            lowerRanks.forEach { team ->
+                val isMyTeam = supportTeams.contains(fromTeamName(team.teamName).id)
+                RankListRow(
+                    team = team,
+                    isFavorite = isMyTeam,
+                    onClick = onTeamClick
+                )
             }
         }
     }

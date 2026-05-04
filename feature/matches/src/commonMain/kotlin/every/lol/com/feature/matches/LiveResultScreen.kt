@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -25,20 +24,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
+import every.lol.com.core.ui.component.EmptyContent
 import every.lol.com.feature.matches.component.MatchesHeaderBar
 import every.lol.com.feature.matches.model.MatchIntent
 import every.lol.com.feature.matches.model.MatchUiState
 import everylol.feature.matches.generated.resources.Res
-import everylol.feature.matches.generated.resources.ic_headset
 import everylol.feature.matches.generated.resources.ic_ranking_five
 import everylol.feature.matches.generated.resources.ic_ranking_four
 import everylol.feature.matches.generated.resources.ic_ranking_one
@@ -161,11 +157,12 @@ fun LiveResultScreen(
 
             isPomTab -> {
                 if (pomRankItems.isEmpty()) {
-                    NoPomResultPlaceholder(
+                    /*NoPomResultPlaceholder(
                         modifier = Modifier
                             .padding(top = 24.dp)
                             .padding(horizontal = 16.dp)
-                    )
+                    )*/
+                    EmptyContent("headset", "해당 경기의 POM 결과가 없어요", Modifier.padding(top = 24.dp))
                 } else {
                     LazyColumn(
                         modifier = Modifier
@@ -192,9 +189,10 @@ fun LiveResultScreen(
                         .padding(top = 24.dp),
                     contentAlignment = Alignment.TopCenter
                 ) {
-                    NoSetResultPlaceholder(
+/*                    NoSetResultPlaceholder(
                         setIndex = selectedSetIndex
-                    )
+                    )*/
+                    EmptyContent("headset", "해당 경기는 ${selectedSetIndex}세트가 없어요", Modifier.padding(top = 24.dp))
                 }
             }
 
@@ -319,7 +317,7 @@ private fun getRankDrawable(rank: Int): DrawableResource {
         else -> Res.drawable.ic_ranking_five
     }
 }
-
+/*
 @Composable
 fun NoSetResultPlaceholder(
     setIndex: Int,
@@ -351,8 +349,9 @@ fun NoSetResultPlaceholder(
             )
         }
     }
-}
+}*/
 
+/*
 @Composable
 fun NoPomResultPlaceholder(
     modifier: Modifier = Modifier
@@ -383,4 +382,4 @@ fun NoPomResultPlaceholder(
             )
         }
     }
-}
+}*/
