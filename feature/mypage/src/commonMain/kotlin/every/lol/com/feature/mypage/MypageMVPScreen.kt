@@ -53,11 +53,13 @@ fun MypageMVPScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 mvpState?.let{
-                    if(it.mvpList.isEmpty()){
-                        DefaultScreen(
-                            title = "MVP 투표 내역이 아직 없습니다",
-                            description = "첫 MVP 투표를 해보세요"
-                        )
+                    if(it.mvpList.isEmpty()) {
+                        Box(modifier = Modifier.fillMaxSize()) {
+                            DefaultScreen(
+                                title = "MVP 투표 내역이 아직 없습니다",
+                                description = "첫 MVP 투표를 해보세요"
+                            )
+                        }
                     }
                     else{
                         it.mvpList.forEach { mvp ->
