@@ -206,11 +206,15 @@ class CommunityDataSourceImpl(
     }.asApiResponse()
 
     override suspend fun reportPost(request: ReportPostRequest): ApiResponse<Unit?> = runCatching {
-        httpClient.post("/report/post")
+        httpClient.post("/report/post"){
+            setBody(request)
+        }
     }.asApiResponse()
 
     override suspend fun reportComment(request: ReportCommentRequest): ApiResponse<Unit?> = runCatching {
-        httpClient.post("/report/comment")
+        httpClient.post("/report/comment"){
+            setBody(request)
+        }
     }.asApiResponse()
 
     override suspend fun postLike(postId: Int): ApiResponse<PostLikeResponse> = runCatching {
