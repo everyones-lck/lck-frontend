@@ -37,6 +37,7 @@ sealed interface CommunityEvent{
     data object NavigateWrite: CommunityEvent
     data object WriteSuccess: CommunityEvent
     data object DeletePostSuccess: CommunityEvent
+    data object ReportSuccess: CommunityEvent
     data class ShowToast(val message: String): CommunityEvent
 }
 
@@ -587,14 +588,13 @@ class CommunityViewModel(
     private fun handleReportPost(postId: Int, reportDetail: String) {
         viewModelScope.launch {
             reportPostUseCase(postId, reportDetail).onSuccess {
-
+                _event.emit(CommunityEvent.ReportSuccess)
             }.onFailure {
                 _event.emit(CommunityEvent.ShowToast("신고에 실패하였습니다."))
             }
         }
     }
 
-    //Todo: 댓글 삭제 서버 수정 후 재확인
     private fun handleDeleteComment(commentId: Int) {
         _uiState.update { state ->
             if (state is CommunityUiState.Read) state.copy(isLoading = true) else state

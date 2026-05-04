@@ -6,5 +6,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ReportPostRequest(
     val postId: Int,
-    val reportDetail: String
+    val reportDetail: String?=null
 )
