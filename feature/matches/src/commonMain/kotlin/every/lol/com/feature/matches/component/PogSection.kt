@@ -22,12 +22,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
-import every.lol.com.core.model.PogCandidateCandidate
+import every.lol.com.core.ui.component.EmptyContent
 import everylol.feature.matches.generated.resources.Res
-import everylol.feature.matches.generated.resources.ic_double_arrow_right
 import everylol.feature.matches.generated.resources.ic_dropdown_down
 import everylol.feature.matches.generated.resources.ic_dropdown_up
-import everylol.feature.matches.generated.resources.ic_waiting_pog
 import org.jetbrains.compose.resources.painterResource
 
 enum class PogSectionMode {
@@ -69,8 +67,7 @@ fun PogSection(
                     color = EveryLoLTheme.color.grayScale600,
                     style = EveryLoLTheme.typography.subtitle03
                 )
-
-                PogWaitingCard()
+                EmptyContent("unfinished", "경기 종료 후,\n 나만의 POG/POM을 뽑아보세요")
             }
             PogSectionMode.VOTING -> {
                 Text(
@@ -129,7 +126,7 @@ fun PogSection(
     }
 }
 
-@Composable
+/*@Composable
 fun PogWaitingCard(
     modifier: Modifier = Modifier
 ) {
@@ -141,6 +138,7 @@ fun PogWaitingCard(
             .background(EveryLoLTheme.color.grayScale1000),
         contentAlignment = Alignment.Center
     ) {
+        EmptyContent("unfinished", "경기 종료 후,\n 나만의 POG/POM을 뽑아보세요")
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(24.dp)
@@ -170,7 +168,7 @@ fun PogWaitingCard(
             }
         }
     }
-}
+}*/
 
 @Composable
 fun PogDropdownItem(

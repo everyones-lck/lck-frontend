@@ -50,14 +50,17 @@ fun LckRankingSection(
     supportTeams : List<Int>,
     // cardBackground: @Composable BoxScope.(LckStandingTeamModel) -> Unit = {}
 ) {
-    if (standings.isEmpty()) return
+    if (standings.isEmpty()) {
+        EmptyContent("headset", "경기가 아직 진행되지 않았습니다")
+        return
+    }
 
 
     val favoriteTeamId = remember(supportTeams) {
         supportTeams.randomOrNull()
     }
 
-    val favoriteTeam = standings.find { fromTeamName(it.teamName).id== favoriteTeamId }
+    val favoriteTeam = standings.find { fromTeamName(it.teamName).id == favoriteTeamId }
 
     val remainingTeams = if (favoriteTeam != null) {
         standings.filter { it.teamName != favoriteTeam.teamName }
@@ -78,46 +81,38 @@ fun LckRankingSection(
         )
 
         Spacer(modifier = Modifier.height(20.dp))
-        if (standings.isEmpty()) {
-            Text(
-                text = "경기가 아직 진행되지 않았습니다",
-                style = EveryLoLTheme.typography.subtitle03,
-                color = EveryLoLTheme.color.white200
-            )
-        } else {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
-            ) {
-                favoriteTeam?.let { team ->
-                    FavoriteRankCard(
-                        team = favoriteTeam,
-                        onClick = onTeamClick
-                    )
-                }
-                top3.forEach { team ->
-                    TopRankCard(
-                        team = team,
-                        onClick = onTeamClick,
-                        //cardBackground = cardBackground
-                    )
-                }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
+        ) {
+            favoriteTeam?.let { team ->
+                FavoriteRankCard(
+                    team = favoriteTeam,
+                    onClick = onTeamClick
+                )
             }
+            top3.forEach { team ->
+                TopRankCard(
+                    team = team,
+                    onClick = onTeamClick,
+                    //cardBackground = cardBackground
+                )
+            }
+        }
 
-            Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                lowerRanks.forEach { team ->
-                    val isMyTeam = supportTeams.contains(fromTeamName(team.teamName).id)
-                    RankListRow(
-                        team = team,
-                        isFavorite = isMyTeam,
-                        onClick = onTeamClick
-                    )
-                }
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            lowerRanks.forEach { team ->
+                val isMyTeam = supportTeams.contains(fromTeamName(team.teamName).id)
+                RankListRow(
+                    team = team,
+                    isFavorite = isMyTeam,
+                    onClick = onTeamClick
+                )
             }
         }
     }

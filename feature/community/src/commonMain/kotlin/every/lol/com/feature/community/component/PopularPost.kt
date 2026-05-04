@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -19,9 +18,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.core.model.PopularPostListDetail
-import everylol.feature.community.generated.resources.Res
-import everylol.feature.community.generated.resources.ic_no_content
-import org.jetbrains.compose.resources.painterResource
+import every.lol.com.core.ui.component.EmptyContent
 
 
 @Composable
@@ -40,22 +37,7 @@ fun PopularPost(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         if (popularPosts.isEmpty()) {
-            Column(
-                modifier = modifier.height(200.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(24.dp)
-            ) {
-                Icon(
-                    painter = painterResource(Res.drawable.ic_no_content),
-                    contentDescription = null,
-                    tint = EveryLoLTheme.color.community600
-                )
-                Text(
-                    text = "아직 인기글이 없습니다",
-                    style = EveryLoLTheme.typography.subtitle03,
-                    color = EveryLoLTheme.color.community600
-                )
-            }
+            EmptyContent("no_content", "인기글이 아직 없습니다.", Modifier.height(200.dp))
         } else {
             popularPosts.forEach { post ->
                 PopularPostItem(
