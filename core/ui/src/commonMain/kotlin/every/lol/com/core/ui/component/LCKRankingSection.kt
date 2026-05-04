@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -30,6 +31,7 @@ import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.core.model.RankingTeam
 import every.lol.com.core.model.Team.Companion.fromTeamName
 import everylol.core.ui.generated.resources.Res
+import everylol.core.ui.generated.resources.ic_headset
 import everylol.core.ui.generated.resources.img_ranking_bfx
 import everylol.core.ui.generated.resources.img_ranking_bro
 import everylol.core.ui.generated.resources.img_ranking_dk
@@ -50,7 +52,27 @@ fun LckRankingSection(
     supportTeams : List<Int>,
     // cardBackground: @Composable BoxScope.(LckStandingTeamModel) -> Unit = {}
 ) {
-    if (standings.isEmpty()) return
+    if (standings.isEmpty()) {
+        Column(
+            modifier = modifier
+                .fillMaxWidth()
+                .height(284.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(24.dp, Alignment.CenterVertically)
+        ){
+            Icon(
+                painter = painterResource(Res.drawable.ic_headset),
+                contentDescription = null,
+                modifier = Modifier.width(58.dp).height(60.dp)
+            )
+            Text(
+                text = "경기가 아직 진행되지 않았습니다",
+                style = EveryLoLTheme.typography.subtitle03,
+                color = EveryLoLTheme.color.community600
+            )
+        }
+        return
+    }
 
 
     val favoriteTeamId = remember(supportTeams) {
