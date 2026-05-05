@@ -11,8 +11,12 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import moe.tlaster.precompose.viewmodel.ViewModel
 import moe.tlaster.precompose.viewmodel.viewModelScope
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 sealed interface AboutLCKEvent{
     data class ShowToast(val message: String): AboutLCKEvent
@@ -39,6 +43,7 @@ class AboutLCKViewModel(
     fun onIntent(intent: AboutLCKIntent) {
         when (intent) {
             AboutLCKIntent.LoadInitial -> loadInitial()
+            is AboutLCKIntent.ChangeDate -> loadDate(intent.date)
             else -> {}
         }
     }
@@ -50,8 +55,27 @@ class AboutLCKViewModel(
         isInitialLoaded = true
 
         println("loadInitial")
-        getMatch("2026-04-05")
+        loadDate()
         loadRanking()
+    }
+
+    private fun loadDate(date: String? = null) {
+        val targetDate = if (date != null) {
+            date
+        } else {
+            val nowMs = Clock.System.now().toEpochMilliseconds()
+            val instant = Instant.fromEpochMilliseconds(nowMs)
+            instant.toLocalDateTime(TimeZone.currentSystemDefault()).date.toString()
+        }
+
+        _uiState.update { state ->
+            val currentState = state as? AboutLCKUiState.AboutLCK ?: AboutLCKUiState.AboutLCK()
+            currentState.copy(
+                isLoading = true,
+                date = targetDate
+            )
+        }
+        getMatch(targetDate)
     }
 
     private fun getMatch(date:String){

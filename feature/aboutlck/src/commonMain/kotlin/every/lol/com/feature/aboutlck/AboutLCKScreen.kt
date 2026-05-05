@@ -40,7 +40,6 @@ import every.lol.com.feature.aboutlck.model.AboutLCKIntent
 import every.lol.com.feature.aboutlck.model.AboutLCKUiState
 import moe.tlaster.precompose.koin.koinViewModel
 
-
 @Composable
 fun AboutLCKRoute(
     viewModel: AboutLCKViewModel = koinViewModel(AboutLCKViewModel ::class)
@@ -68,7 +67,6 @@ fun AboutLCKRoute(
         ) {
             CircularProgressIndicator(color = EveryLoLTheme.color.grayScale200)
         }
-
     }else {
         AboutLCKScreen(
             state = uiState,
@@ -90,6 +88,8 @@ fun AboutLCKScreen(
     val matches = aboutLCKState?.match?.matches ?: emptyList()
     var showCalender =  remember { mutableStateOf(false) }
     val supportTeams = aboutLCKState?.supportTeam ?: emptyList()
+
+    val date = aboutLCKState?.date
 
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
@@ -114,7 +114,7 @@ fun AboutLCKScreen(
                 item {
                     DateSelectSection(
                         modifier = Modifier.padding(top = 24.dp),
-                        date = "2026-04-05",
+                        date = date.toString(),
                         showDatePicker = {
                             showCalender.value = true
                         }

@@ -9,6 +9,7 @@ sealed interface AboutLCKUiState {
     data object Loading : AboutLCKUiState
 
     data class AboutLCK(
+        val date: String?=null,
         val isLoading: Boolean = false,
         val ranking: Ranking?= null,
         val supportTeam: List<Int> = emptyList(),
@@ -19,4 +20,5 @@ sealed interface AboutLCKUiState {
 sealed interface AboutLCKIntent {
     data object LoadInitial : AboutLCKIntent
     data object RefreshHome : AboutLCKIntent
+    data class ChangeDate(val date: String) : AboutLCKIntent
 }

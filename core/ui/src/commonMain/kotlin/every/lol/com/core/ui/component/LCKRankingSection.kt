@@ -51,7 +51,7 @@ fun LckRankingSection(
     // cardBackground: @Composable BoxScope.(LckStandingTeamModel) -> Unit = {}
 ) {
     if (standings.isEmpty()) {
-        EmptyContent("headset", "경기가 아직 진행되지 않았습니다")
+        EmptyContent("headset", "경기가 아직 진행되지 않았습니다", modifier)
         return
     }
 
