@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -23,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import every.lol.com.core.designsystem.component.EverylolTopAppBar
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
@@ -63,6 +65,14 @@ fun MypagePredictionScreen(
         rank <= 70 -> Res.drawable.img_top_070
         rank <= 90 -> Res.drawable.img_top_090
         else -> Res.drawable.img_top_100
+    }
+
+    var rankText = ""
+
+    if(rank >= 99){
+        rankText = "-"
+    }else{
+        rankText = rank.toString()
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -118,13 +128,15 @@ fun MypagePredictionScreen(
                                 color = EveryLoLTheme.color.community600
                             )
                             Text(
-                                text = "${rank.toString()}%",
+                                modifier = Modifier.width(100.dp),
+                                textAlign = TextAlign.Center,
+                                text = "$rankText%",
                                 style = EveryLoLTheme.typography.playname01,
                                 color = EveryLoLTheme.color.white200
                             )
                         }
                         Text(
-                            text = "참여자 중 상위 ${rank.toString()}% 달성",
+                            text = "참여자 중 상위 $rankText% 달성",
                             style = EveryLoLTheme.typography.pretendardBody02,
                             color = EveryLoLTheme.color.community600
                         )
@@ -140,10 +152,12 @@ fun MypagePredictionScreen(
                         val predictionList = data.data ?: emptyList()
 
                         if (predictionList.isEmpty()) {
-                            DefaultScreen(
-                                title = "투표 내역이 아직 없습니다",
-                                description = "첫 승부 예측 투표를 해보세요"
-                            )
+                            Box(modifier = Modifier.fillMaxSize()) {
+                                DefaultScreen(
+                                    title = "투표 내역이 아직 없습니다",
+                                    description = "첫 승부 예측 투표를 해보세요"
+                                )
+                            }
                         } else {
                             predictionList.forEach { prediction ->
                                 Predictions(prediction = prediction)

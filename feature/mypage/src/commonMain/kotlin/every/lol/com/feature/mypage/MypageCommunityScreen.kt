@@ -141,7 +141,8 @@ fun MypageCommunityScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
-                        .padding(horizontal = 20.dp),
+                        .padding(horizontal = 20.dp)
+                        .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     communityState?.let { data ->

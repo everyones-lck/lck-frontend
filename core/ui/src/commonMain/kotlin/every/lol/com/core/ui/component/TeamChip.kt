@@ -72,8 +72,8 @@ fun TeamChip(
 @Composable
 fun Team.getTeamBrush(): Brush {
     return when (this.id) {
-        1 -> SolidColor(EveryLoLTheme.color.teamGen)
-        2 -> SolidColor(EveryLoLTheme.color.teamT1)
+        1 -> SolidColor(EveryLoLTheme.color.teamT1)
+        2 -> SolidColor(EveryLoLTheme.color.teamGen)
         3 -> SolidColor(EveryLoLTheme.color.teamNS)
         4 -> SolidColor(EveryLoLTheme.color.teamDNS)
         5 -> SolidColor(EveryLoLTheme.color.teamBRO)

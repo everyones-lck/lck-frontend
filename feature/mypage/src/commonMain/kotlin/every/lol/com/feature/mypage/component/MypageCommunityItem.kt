@@ -90,8 +90,8 @@ private fun TextSection(
 ){
     Text(
         modifier = Modifier
-            .background(EveryLoLTheme.color.grayScale900)
             .clip(RoundedCornerShape(4.dp))
+            .background(EveryLoLTheme.color.grayScale900)
             .padding(4.dp, 3.dp),
         text = text,
         style = EveryLoLTheme.typography.label03,
