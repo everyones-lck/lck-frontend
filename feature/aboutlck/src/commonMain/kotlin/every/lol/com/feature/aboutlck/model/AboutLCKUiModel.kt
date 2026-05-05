@@ -15,6 +15,21 @@ sealed interface AboutLCKUiState {
         val supportTeam: List<Int> = emptyList(),
         val match: AboutLCKMatch?= null
         ) : AboutLCKUiState
+
+    data class Match(
+        val matchId: Int,
+        val isLoading: Boolean=false
+    ): AboutLCKUiState
+
+    data class Team(
+        val teamId: Int,
+        val isLoading: Boolean=false
+    ): AboutLCKUiState
+
+    data class Player(
+        val playerId: Int,
+        val isLoading: Boolean=false
+    ): AboutLCKUiState
 }
 
 sealed interface AboutLCKIntent {
