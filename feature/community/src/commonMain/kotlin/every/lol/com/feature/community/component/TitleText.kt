@@ -10,10 +10,11 @@ import every.lol.com.core.designsystem.theme.EveryLoLTheme
 
 @Composable
 fun TitleText(
-    text: String
+    text: String,
+    modifier: Modifier = Modifier
 ) {
     Text(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         textAlign = TextAlign.Start,
         text = text,
         style = EveryLoLTheme.typography.subtitle03,

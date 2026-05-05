@@ -157,7 +157,7 @@ fun CommunityScreen(
                 item {
                     Column(
                         modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                        verticalArrangement = Arrangement.spacedBy(20.dp)
                     ) {
                         TabBar(
                             tabItems = CommunityUiState.CommunityTab.entries,
@@ -165,9 +165,8 @@ fun CommunityScreen(
                             onTabSelected = { onIntent(CommunityIntent.ClickTab(it)) },
                             getDisplayName = { it.displayName }
                         )
-
                         if (currentTab == CommunityUiState.CommunityTab.ALL) {
-                            TitleText("주간 인기글")
+                            TitleText("주간 인기글", Modifier.padding(top = 4.dp))
                             PopularPost(
                                 popularPosts = popularPosts,
                                 onPostClick = onReadClick

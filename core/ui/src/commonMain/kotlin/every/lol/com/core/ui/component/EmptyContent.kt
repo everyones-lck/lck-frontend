@@ -32,7 +32,7 @@ fun EmptyContent(
         "headset" -> painterResource(Res.drawable.ic_headset)
         "unfinished" -> painterResource(Res.drawable.ic_unfinished)
         "no_content" -> painterResource(Res.drawable.ic_no_content)
-        else -> null
+        else -> painterResource(Res.drawable.ic_headset) //추후 수정
     }
 
     Column(
@@ -46,7 +46,7 @@ fun EmptyContent(
     ){
         if(icon!=null) {
             Icon(
-                painter = painterResource(Res.drawable.ic_headset),
+                painter = iconPainter,
                 contentDescription = null,
                 modifier = Modifier.width(58.dp).height(60.dp),
                 tint = EveryLoLTheme.color.community600
