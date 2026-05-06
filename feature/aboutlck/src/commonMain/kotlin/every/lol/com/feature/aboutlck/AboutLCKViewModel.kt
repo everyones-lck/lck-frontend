@@ -3,6 +3,9 @@ package every.lol.com.feature.aboutlck
 import every.lol.com.core.domain.usecase.GetHomeRankingUseCase
 import every.lol.com.core.domain.usecase.GetSupportTeamUseCase
 import every.lol.com.core.domain.usecase.aboutlck.GetAboutLCKMatchUseCase
+import every.lol.com.core.model.Ranking
+import every.lol.com.core.model.aboutlck.match.AboutLCKMatch
+import every.lol.com.core.model.aboutlck.match.MatchDetail
 import every.lol.com.feature.aboutlck.model.AboutLCKIntent
 import every.lol.com.feature.aboutlck.model.AboutLCKUiState
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -43,18 +46,36 @@ class AboutLCKViewModel(
     fun onIntent(intent: AboutLCKIntent) {
         when (intent) {
             AboutLCKIntent.LoadInitial -> loadInitial()
+            is AboutLCKIntent.Match -> loadMatchPage(intent.matchId, intent.matchData)
             is AboutLCKIntent.ChangeDate -> loadDate(intent.date)
             else -> {}
         }
     }
 
+    private var cachedRanking: Ranking? = null
+    private var cachedMatch: AboutLCKMatch? = null
+    private var cachedSupportTeam: List<Int>? = null
+    private var cachedDate: String? = null
     private var isInitialLoaded = false
 
     private fun loadInitial() {
-        if (isInitialLoaded) return
-        isInitialLoaded = true
 
-        println("loadInitial")
+        _uiState.update { state ->
+            if (state is AboutLCKUiState.AboutLCK) {
+                state
+            } else {
+                AboutLCKUiState.AboutLCK(
+                    ranking = cachedRanking,
+                    match = cachedMatch,
+                    supportTeam = cachedSupportTeam ?: emptyList(),
+                    date = cachedDate ?: ""
+                )
+            }
+        }
+
+        if (isInitialLoaded) return
+
+        isInitialLoaded = true
         loadDate()
         loadRanking()
     }
@@ -67,6 +88,7 @@ class AboutLCKViewModel(
             val instant = Instant.fromEpochMilliseconds(nowMs)
             instant.toLocalDateTime(TimeZone.currentSystemDefault()).date.toString()
         }
+        cachedDate = targetDate
 
         _uiState.update { state ->
             val currentState = state as? AboutLCKUiState.AboutLCK ?: AboutLCKUiState.AboutLCK()
@@ -78,9 +100,19 @@ class AboutLCKViewModel(
         getMatch(targetDate)
     }
 
+    private fun loadMatchPage(matchId: Int, matchData: MatchDetail) {
+        _uiState.update {
+            AboutLCKUiState.Match(
+                matchId = matchId,
+                matchData = matchData,
+                isLoading = false
+            )
+        }
+    }
     private fun getMatch(date:String){
         viewModelScope.launch {
             getAboutLCKMatchUseCase(date).onSuccess { result ->
+                cachedMatch = result
                 _uiState.update { state ->
                     val currentState = state as? AboutLCKUiState.AboutLCK ?:AboutLCKUiState.AboutLCK()
                     currentState.copy(
@@ -104,6 +136,8 @@ class AboutLCKViewModel(
         viewModelScope.launch {
             getHomeRankingUseCase().onSuccess { result ->
                 getSupportTeamUseCase().onSuccess { supportTeam ->
+                    cachedRanking = result
+                    cachedSupportTeam = supportTeam
                     _uiState.update { state ->
                         val currentState = state as? AboutLCKUiState.AboutLCK ?:AboutLCKUiState.AboutLCK()
                         currentState.copy(

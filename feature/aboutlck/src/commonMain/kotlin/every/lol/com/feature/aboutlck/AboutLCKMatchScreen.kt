@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import every.lol.com.core.designsystem.component.EverylolTopAppBar
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.core.ui.ext.everylolDefault
+import every.lol.com.feature.aboutlck.component.AboutLCKMatchCard
 import every.lol.com.feature.aboutlck.model.AboutLCKIntent
 import every.lol.com.feature.aboutlck.model.AboutLCKUiState
 
@@ -23,10 +24,11 @@ import every.lol.com.feature.aboutlck.model.AboutLCKUiState
 fun AboutLCKMatchScreen(
     state: AboutLCKUiState,
     snackbarHostState: SnackbarHostState,
+    onBackClick: () -> Unit,
     onIntent: (AboutLCKIntent) -> Unit
 ) {
 
-    val aboutLCKState = state as? AboutLCKUiState.AboutLCK
+    val aboutLCKState = state as? AboutLCKUiState.Match
 
         Scaffold(
             modifier = Modifier
@@ -36,7 +38,7 @@ fun AboutLCKMatchScreen(
             contentWindowInsets = WindowInsets(0, 0, 0, 0),
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
             topBar = {
-                EverylolTopAppBar(title = "About LCK")
+                EverylolTopAppBar(onBackClick = onBackClick, title = "About LCK")
             }
         ) { innerPadding ->
             LazyColumn(
@@ -48,7 +50,9 @@ fun AboutLCKMatchScreen(
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
                 item {
-
+                    AboutLCKMatchCard(
+                        item = aboutLCKState!!.matchData
+                    )
                 }
             }
         }

@@ -23,10 +23,10 @@ import every.lol.com.feature.aboutlck.model.AboutLCKUiState
 fun AboutLCKTeamScreen(
     state: AboutLCKUiState,
     snackbarHostState: SnackbarHostState,
+    onBackClick: () -> Unit,
     onIntent: (AboutLCKIntent) -> Unit
 ) {
 
-    val aboutLCKState = state as? AboutLCKUiState.AboutLCK
 
         Scaffold(
             modifier = Modifier

@@ -64,22 +64,48 @@ fun AboutLCKRoute(
         }
     }
 
-    println(aboutLCK)
-    if(aboutLCK == null){
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(EveryLoLTheme.color.newBg),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator(color = EveryLoLTheme.color.grayScale200)
+    when(uiState){
+        is AboutLCKUiState.Loading -> {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(EveryLoLTheme.color.newBg),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = EveryLoLTheme.color.grayScale200)
+            }
         }
-    }else {
-        AboutLCKScreen(
-            state = uiState,
-            snackbarHostState = snackbarHostState,
-            onIntent = viewModel::onIntent
-        )
+        is AboutLCKUiState.AboutLCK -> {
+            AboutLCKScreen(
+                state = uiState,
+                snackbarHostState = snackbarHostState,
+                onIntent = viewModel::onIntent
+            )
+        }
+        is AboutLCKUiState.Match -> {
+            AboutLCKMatchScreen(
+                state = uiState as AboutLCKUiState.Match,
+                snackbarHostState = snackbarHostState,
+                onBackClick = { viewModel.onIntent(AboutLCKIntent.LoadInitial) },
+                onIntent = viewModel::onIntent
+            )
+        }
+        is AboutLCKUiState.Team -> {
+            AboutLCKTeamScreen(
+                state = uiState as AboutLCKUiState.Team,
+                snackbarHostState = snackbarHostState,
+                onBackClick = { viewModel.onIntent(AboutLCKIntent.LoadInitial) },
+                onIntent = viewModel::onIntent
+            )
+        }
+        is AboutLCKUiState.Player -> {
+            AboutLCKPlayerScreen(
+                state = uiState as AboutLCKUiState.Player,
+                snackbarHostState = snackbarHostState,
+                onBackClick = { viewModel.onIntent(AboutLCKIntent.LoadInitial) },
+                onIntent = viewModel::onIntent
+            )
+        }
     }
 }
 
@@ -161,7 +187,11 @@ fun AboutLCKScreen(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             AboutLCKMatchCard(
-                                item = matchItem
+                                item = matchItem,
+                                onClick = {
+                                    onIntent(AboutLCKIntent.Match(matchItem.matchId, matchItem))
+                                    println("matchId: ${matchItem.matchId}")
+                                }
                             )
                         }
                     }

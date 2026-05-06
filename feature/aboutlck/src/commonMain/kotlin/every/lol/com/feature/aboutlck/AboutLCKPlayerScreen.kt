@@ -23,33 +23,31 @@ import every.lol.com.feature.aboutlck.model.AboutLCKUiState
 fun AboutLCKPlayerScreen(
     state: AboutLCKUiState,
     snackbarHostState: SnackbarHostState,
+    onBackClick: () -> Unit,
     onIntent: (AboutLCKIntent) -> Unit
 ) {
-
-    val aboutLCKState = state as? AboutLCKUiState.AboutLCK
-
-        Scaffold(
+    Scaffold(
+        modifier = Modifier
+            .fillMaxSize()
+            .everylolDefault(EveryLoLTheme.color.newBg, false),
+        containerColor = Color.Transparent,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        topBar = {
+            EverylolTopAppBar(onBackClick = onBackClick ,title = "About LCK")
+        }
+    ) { innerPadding ->
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .everylolDefault(EveryLoLTheme.color.newBg, false),
-            containerColor = Color.Transparent,
-            contentWindowInsets = WindowInsets(0, 0, 0, 0),
-            snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-            topBar = {
-                EverylolTopAppBar(title = "About LCK")
-            }
-        ) { innerPadding ->
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(top = innerPadding.calculateTopPadding(), bottom = 0.dp)
-                    .padding(horizontal = 16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(20.dp)
-            ) {
-                item {
+                .padding(top = innerPadding.calculateTopPadding(), bottom = 0.dp)
+                .padding(horizontal = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
+            item {
 
-                }
             }
         }
     }
+}

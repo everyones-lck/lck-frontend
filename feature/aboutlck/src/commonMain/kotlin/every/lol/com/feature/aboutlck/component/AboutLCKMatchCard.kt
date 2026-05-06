@@ -2,6 +2,7 @@ package every.lol.com.feature.aboutlck.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,12 +24,16 @@ import every.lol.com.core.ui.component.getTeamColor
 @Composable
 fun AboutLCKMatchCard (
     item: MatchDetail,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit = {}
 ) {
     Box(
     modifier = modifier
         .fillMaxWidth()
         .clip(RoundedCornerShape(8.dp))
+        .clickable(
+            onClick = onClick
+        )
         .background(EveryLoLTheme.color.newBg)
         .border(
             width = 1.dp,
