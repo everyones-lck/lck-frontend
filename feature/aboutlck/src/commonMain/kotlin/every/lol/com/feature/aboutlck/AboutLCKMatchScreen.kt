@@ -15,6 +15,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import every.lol.com.core.designsystem.component.EverylolTopAppBar
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
+import every.lol.com.core.model.MatchStatus
+import every.lol.com.core.ui.component.MatchPredicionSection
 import every.lol.com.core.ui.ext.everylolDefault
 import every.lol.com.feature.aboutlck.component.AboutLCKMatchCard
 import every.lol.com.feature.aboutlck.model.AboutLCKIntent
@@ -27,33 +29,41 @@ fun AboutLCKMatchScreen(
     onBackClick: () -> Unit,
     onIntent: (AboutLCKIntent) -> Unit
 ) {
+    val aboutLCKMatchState = state as? AboutLCKUiState.Match
 
-    val aboutLCKState = state as? AboutLCKUiState.Match
-
-        Scaffold(
+    Scaffold(
+        modifier = Modifier
+            .fillMaxSize()
+            .everylolDefault(EveryLoLTheme.color.newBg, false),
+        containerColor = Color.Transparent,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        topBar = {
+            EverylolTopAppBar(onBackClick = onBackClick, title = "About LCK")
+        }
+    ) { innerPadding ->
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .everylolDefault(EveryLoLTheme.color.newBg, false),
-            containerColor = Color.Transparent,
-            contentWindowInsets = WindowInsets(0, 0, 0, 0),
-            snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-            topBar = {
-                EverylolTopAppBar(onBackClick = onBackClick, title = "About LCK")
+                .padding(top = innerPadding.calculateTopPadding(), bottom = 0.dp)
+                .padding(horizontal = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
+            item {
+                AboutLCKMatchCard(
+                    item = aboutLCKMatchState!!.matchData,
+                    modifier = Modifier.padding(top = 20.dp)
+                )
             }
-        ) { innerPadding ->
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(top = innerPadding.calculateTopPadding(), bottom = 0.dp)
-                    .padding(horizontal = 16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(20.dp)
-            ) {
+            if(aboutLCKMatchState!!.matchData.matchStatus == MatchStatus.FINISHED) {
                 item {
-                    AboutLCKMatchCard(
-                        item = aboutLCKState!!.matchData
+                    MatchPredicionSection(
+                        data = aboutLCKMatchState.matchData,
+                        title = "승부예측결과"
                     )
                 }
             }
         }
     }
+}

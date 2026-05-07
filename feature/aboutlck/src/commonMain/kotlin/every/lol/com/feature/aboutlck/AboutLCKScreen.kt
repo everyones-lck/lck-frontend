@@ -119,6 +119,7 @@ fun AboutLCKScreen(
     val aboutLCKState = state as? AboutLCKUiState.AboutLCK
     val ranking = aboutLCKState?.ranking?.groups?.firstOrNull()?.teams ?: emptyList()
     val matches = aboutLCKState?.match?.matches ?: emptyList()
+
     var showCalender by remember { mutableStateOf(false) }
     val supportTeams = aboutLCKState?.supportTeam ?: emptyList()
 

@@ -17,13 +17,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
-import every.lol.com.core.model.aboutlck.match.MatchDetail
+import every.lol.com.core.model.MatchCardModel
 import every.lol.com.core.ui.component.CardTag
 import every.lol.com.core.ui.component.getTeamColor
 
 @Composable
 fun AboutLCKMatchCard (
-    item: MatchDetail,
+    item: MatchCardModel,
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {}
 ) {
@@ -67,13 +67,13 @@ fun AboutLCKMatchCard (
                 Spacer(Modifier.weight(1f))
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     CardTag(
-                        text = item.team1.teamName,
-                        backgroundColor = getTeamColor(item.team1.teamName),
+                        text = item.team1Name,
+                        backgroundColor = getTeamColor(item.team1Name),
                         textColor = EveryLoLTheme.color.black900
                     )
                     CardTag(
-                        text = item.team2.teamName,
-                        backgroundColor = getTeamColor(item.team2.teamName),
+                        text = item.team2Name,
+                        backgroundColor = getTeamColor(item.team2Name),
                         textColor = EveryLoLTheme.color.black900
                     )
                 }
