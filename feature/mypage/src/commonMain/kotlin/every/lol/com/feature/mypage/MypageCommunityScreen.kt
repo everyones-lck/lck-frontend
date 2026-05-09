@@ -159,7 +159,8 @@ fun MypageCommunityScreen(
                                     MypageCommunityItem(
                                         type = MypageUiState.CommunityTab.POST,
                                         title = post.title,
-                                        content = null, //Todo: API 수정 후 반영
+                                        content = post.postContent,
+                                        date = post.postCreatedAt,
                                         postType = post.postType,
                                         onClick = { onIntent(MypageIntent.NavigateToPostDetail(post.id)) }
                                     )
@@ -177,9 +178,10 @@ fun MypageCommunityScreen(
                                 data.comments.forEach { comment ->
                                     MypageCommunityItem(
                                         type = MypageUiState.CommunityTab.COMMENT,
-                                        title = null, // TODO: API 수정 후 반영
+                                        title = comment.postTitle,
                                         content = comment.content,
                                         postType = comment.postType,
+                                        date = comment.createdAt,
                                         onClick = { onIntent(MypageIntent.NavigateToCommentDetail(comment.postId, comment.commentId)) }
                                     )
                                 }

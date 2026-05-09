@@ -62,7 +62,9 @@ class MyPageRepositoryImpl(
                     PostsDetail(
                         id = detail.id,
                         title = detail.title,
-                        postType = detail.postType
+                        postType = detail.postType,
+                        postContent = detail.postContent,
+                        postCreatedAt = detail.postCreatedAt
                     )
                 },
                 isLast = response.isLast
@@ -77,8 +79,10 @@ class MyPageRepositoryImpl(
                     CommentsDetail(
                         commentId = detail.commentId,
                         postId = detail.postId,
+                        postTitle = detail.postTitle,
                         content = detail.content,
-                        postType = detail.postType
+                        postType = detail.postType,
+                        createdAt = detail.createdAt
                     )
                 },
                 isLast = response.isLast

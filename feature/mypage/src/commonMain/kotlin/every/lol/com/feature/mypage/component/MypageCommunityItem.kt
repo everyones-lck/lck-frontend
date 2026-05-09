@@ -43,8 +43,8 @@ fun MypageCommunityItem(
         Row(
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ){
-            TextSection(date) //Todo: 서버 수정 후 날짜 적용
-            TextSection(postType)
+            TextSection(date, false)
+            TextSection(postType, true)
         }
         Text(
             text = title ?: if (type == MypageUiState.CommunityTab.COMMENT) { "댓글을 남긴 게시글 제목 (데이터 추가 필요)" } else { "제목 없음" },
@@ -86,14 +86,15 @@ fun MypageCommunityItem(
 
 @Composable
 private fun TextSection(
-    text : String
+    text : String,
+    isPostType: Boolean
 ){
     Text(
         modifier = Modifier
             .clip(RoundedCornerShape(4.dp))
             .background(EveryLoLTheme.color.grayScale900)
             .padding(4.dp, 3.dp),
-        text = text,
+        text = if(isPostType) "$text 게시판" else text,
         style = EveryLoLTheme.typography.label03,
         color = EveryLoLTheme.color.white200
     )
