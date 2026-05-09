@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -128,7 +127,6 @@ fun MypagePredictionScreen(
                                 color = EveryLoLTheme.color.community600
                             )
                             Text(
-                                modifier = Modifier.width(100.dp),
                                 textAlign = TextAlign.Center,
                                 text = "$rankText%",
                                 style = EveryLoLTheme.typography.playname01,
