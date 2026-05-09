@@ -3,6 +3,7 @@ package every.lol.com.feature.intro
 import every.lol.com.core.common.compressImage
 import every.lol.com.core.common.toImageByteArray
 import every.lol.com.core.domain.usecase.CheckAuthUseCase
+import every.lol.com.core.domain.usecase.GetTermsDetailUseCase
 import every.lol.com.core.domain.usecase.NicknameUseCase
 import every.lol.com.core.domain.usecase.SignupUseCase
 import every.lol.com.core.domain.usecase.SocialLoginUseCase
@@ -34,7 +35,8 @@ class IntroViewModel(
     private val socialLoginUseCase: SocialLoginUseCase,
     private val signupUseCase: SignupUseCase,
     private val nicknameUseCase: NicknameUseCase,
-    private val checkAuthUseCase: CheckAuthUseCase
+    private val checkAuthUseCase: CheckAuthUseCase,
+    private val getTermsDetailUseCase: GetTermsDetailUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<IntroUiState>(IntroUiState.Loading)
@@ -54,7 +56,7 @@ class IntroViewModel(
             is IntroIntent.InputNickName -> handleInputNickName(intent.nickName)
             is IntroIntent.ClickCheckDuplicateNickname -> checkNicknameDuplicate(intent.nickName)
             IntroIntent.ClickSignupSubmit -> handleSignupSubmit()
-            is IntroIntent.ClickTosDetail -> handleTosDetailClick(intent.id)
+            is IntroIntent.ClickTosDetail -> loadTermsDetail(intent.id)
             IntroIntent.ClickBackToSignup -> handleBackToSignup()
             IntroIntent.ClickStartApp -> handleStartApp()
             is IntroIntent.ChangeSelectedTeams -> onTeamsChanged(intent.teams)
@@ -186,9 +188,21 @@ class IntroViewModel(
         _uiState.value = IntroUiState.Signup()
     }
 
-    private fun handleTosDetailClick(id: Int) {
-        _uiState.update { IntroUiState.TosDetail(id) }
+
+    private fun loadTermsDetail(termId: Int) {
+        viewModelScope.launch {
+            getTermsDetailUseCase(termId).onSuccess { response ->
+                _uiState.value = IntroUiState.TosDetail(
+                    title = response.title,
+                    content = response.content,
+                    isLoading = false
+                )
+            }.onFailure { error ->
+                _event.emit(IntroEvent.ShowErrorSnackbar(error))
+            }
+        }
     }
+
     private fun handleStartApp() {
         viewModelScope.launch {
             _event.emit(IntroEvent.NavigateHome)

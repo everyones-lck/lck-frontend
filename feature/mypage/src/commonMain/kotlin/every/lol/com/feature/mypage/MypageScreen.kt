@@ -152,9 +152,11 @@ fun MypageRoute(
             )
         }
         is MypageUiState.TosDetail -> {
+            val tosState = uiState as MypageUiState.TosDetail
             TosScreen(
-                tosId = (uiState as MypageUiState.TosDetail).id,
-                onBackClick = { viewModel.onIntent(MypageIntent.LoadAppInform) }
+                title = tosState.title,
+                content = tosState.content,
+                onBackClick = { viewModel.onIntent(MypageIntent.LoadMypage) }
             )
         }
     }

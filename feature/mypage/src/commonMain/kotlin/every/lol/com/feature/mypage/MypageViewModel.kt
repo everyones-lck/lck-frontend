@@ -4,6 +4,7 @@ import every.lol.com.core.common.compressImage
 import every.lol.com.core.domain.usecase.GetMyCommentsUseCase
 import every.lol.com.core.domain.usecase.GetMyPostsUseCase
 import every.lol.com.core.domain.usecase.GetProfileUseCase
+import every.lol.com.core.domain.usecase.GetTermsDetailUseCase
 import every.lol.com.core.domain.usecase.LogoutUseCase
 import every.lol.com.core.domain.usecase.NicknameUseCase
 import every.lol.com.core.domain.usecase.PatchMyTeamUseCase
@@ -58,6 +59,7 @@ class MypageViewModel(
     private val getMyPredictionsUseCase: GetMyPredictionsUseCase,
     private val getMyPomUseCase: GetMyPomUseCase,
     private val getMyPogUseCase: GetMyPogUseCase,
+    private val getTermsDetailUseCase: GetTermsDetailUseCase
     ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<MypageUiState>(MypageUiState.Loading)
@@ -105,12 +107,10 @@ class MypageViewModel(
                 MypageUiState.MypageMenuType.POST_COMMENT -> loadCommunityData()
                 MypageUiState.MypageMenuType.POG_VOTE -> loadMVPData()
                 MypageUiState.MypageMenuType.PREDICTION -> loadPredictionData()
-                MypageUiState.MypageMenuType.TOS_1 -> handleTosDetailClick(1)
-                MypageUiState.MypageMenuType.TOS_2 -> handleTosDetailClick(2)
+                MypageUiState.MypageMenuType.TOS_1 -> loadTermsDetail(1)
+                MypageUiState.MypageMenuType.TOS_2 -> loadTermsDetail(2)
                 MypageUiState.MypageMenuType.WITHDRAWAL -> _uiState.value = MypageUiState.Withdrawal
-
                 MypageUiState.MypageMenuType.LOGOUT -> handleLogout()
-
                 MypageUiState.MypageMenuType.APP_VERSION -> { /* 토스트 */ }
                 MypageUiState.MypageMenuType.OPEN_SOURCE_LICENSE -> {loadOpenSourceLicense() }
             }
@@ -428,12 +428,23 @@ class MypageViewModel(
         }
     }
 
-    private fun handleTosDetailClick(id: Int) {
-        _uiState.update { MypageUiState.TosDetail(id) }
-    }
-
     private fun setAppVersion(){
         _appVersion.value = "1.0.0"
+    }
+
+    private fun loadTermsDetail(termId: Int) {
+        viewModelScope.launch {
+            getTermsDetailUseCase(termId).onSuccess { response ->
+                _uiState.value = MypageUiState.TosDetail(
+                    title = response.title,
+                    content = response.content,
+                    isLoading = false
+                )
+            }.onFailure { error ->
+                println("error: $error")
+                _event.emit(MypageEvent.ShowErrorSnackbar(error))
+            }
+        }
     }
 
     private suspend fun handleCommunityError(throwable: Throwable) {
