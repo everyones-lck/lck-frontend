@@ -4,6 +4,7 @@ import every.lol.com.core.data.mapper.toResult
 import every.lol.com.core.datastore.AuthLocalDataSource
 import every.lol.com.core.domain.repository.AuthRepository
 import every.lol.com.core.model.Signup
+import every.lol.com.core.model.TermsDetail
 import every.lol.com.core.network.datasource.AuthDataSource
 import every.lol.com.core.network.model.ApiResponse
 import every.lol.com.core.network.model.request.KakaoRequest

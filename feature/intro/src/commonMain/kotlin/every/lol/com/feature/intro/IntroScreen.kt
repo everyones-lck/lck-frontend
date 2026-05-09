@@ -118,11 +118,11 @@ internal fun IntroRoute(
                     EveryLolBackHandler(true) {
                         viewModel.onIntent(IntroIntent.ClickBackToSignup)
                     }
+                    val tosState  = uiState as IntroUiState.TosDetail
                     TosScreen(
-                        tosId = state.id,
-                        onBackClick = {
-                            viewModel.onIntent(IntroIntent.ClickBackToSignup)
-                        }
+                        title = tosState.title,
+                        content = tosState.content,
+                        onBackClick = { viewModel.onIntent(IntroIntent.ClickBackToSignup) }
                     )
                 }
             }

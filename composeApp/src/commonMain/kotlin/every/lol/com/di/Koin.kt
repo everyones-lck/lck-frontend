@@ -9,6 +9,7 @@ import every.lol.com.core.data.repository.CommunityRepositoryImpl
 import every.lol.com.core.data.repository.HomeRepositoryImpl
 import every.lol.com.core.data.repository.MatchesRepositoryImpl
 import every.lol.com.core.data.repository.MyPageRepositoryImpl
+import every.lol.com.core.data.repository.TermsRepositoryImpl
 import every.lol.com.core.datastore.AuthLocalDataSource
 import every.lol.com.core.datastore.AuthPreferences
 import every.lol.com.core.domain.repository.AboutLCKRepository
@@ -17,6 +18,7 @@ import every.lol.com.core.domain.repository.CommunityRepository
 import every.lol.com.core.domain.repository.HomeRepository
 import every.lol.com.core.domain.repository.MatchesRepository
 import every.lol.com.core.domain.repository.MyPagesRepository
+import every.lol.com.core.domain.repository.TermsRepository
 import every.lol.com.core.domain.usecase.CheckAuthUseCase
 import every.lol.com.core.domain.usecase.DeleteCommentUseCase
 import every.lol.com.core.domain.usecase.DeletePostUseCase
@@ -38,6 +40,7 @@ import every.lol.com.core.domain.usecase.GetReadPostUseCase
 import every.lol.com.core.domain.usecase.GetSetPogCandidateUseCase
 import every.lol.com.core.domain.usecase.GetSetPogResultUseCase
 import every.lol.com.core.domain.usecase.GetSupportTeamUseCase
+import every.lol.com.core.domain.usecase.GetTermsDetailUseCase
 import every.lol.com.core.domain.usecase.LogoutUseCase
 import every.lol.com.core.domain.usecase.NicknameUseCase
 import every.lol.com.core.domain.usecase.PatchCommunityPostUseCase
@@ -64,15 +67,17 @@ import every.lol.com.core.network.datasource.CommunityDataSource
 import every.lol.com.core.network.datasource.HomeDataSource
 import every.lol.com.core.network.datasource.MatchesDataSource
 import every.lol.com.core.network.datasource.MyPagesDataSource
+import every.lol.com.core.network.datasource.TermsDataSource
 import every.lol.com.core.network.di.dataSourceModule
 import every.lol.com.core.network.di.networkModule
-import every.lol.com.core.notification.di.notificationModule
 import every.lol.com.core.network.remote.AboutLCKDataSourceImpl
 import every.lol.com.core.network.remote.AuthDataSourceImpl
 import every.lol.com.core.network.remote.CommunityDataSourceImpl
 import every.lol.com.core.network.remote.HomeDataSourceImpl
 import every.lol.com.core.network.remote.MatchesDataSourceImpl
 import every.lol.com.core.network.remote.MyPagesDataSourceImpl
+import every.lol.com.core.network.remote.TermsDataSourceImpl
+import every.lol.com.core.notification.di.notificationModule
 import every.lol.com.feature.aboutlck.AboutLCKViewModel
 import every.lol.com.feature.community.CommunityViewModel
 import every.lol.com.feature.home.HomeViewModel
@@ -93,6 +98,7 @@ val appDependenciesModule = module {
     single { AuthLocalDataSource(get()) }
 
     single<AuthDataSource> { AuthDataSourceImpl(get(named("noAuth"))) }
+    single<TermsDataSource> { TermsDataSourceImpl(get(named("auth"))) }
     single<HomeDataSource> { HomeDataSourceImpl(get(named("auth"))) }
     single<MyPagesDataSource> { MyPagesDataSourceImpl(get(named("auth"))) }
     single<CommunityDataSource> { CommunityDataSourceImpl( get(), get(named("auth")), get(), get()) }
@@ -101,6 +107,7 @@ val appDependenciesModule = module {
 
 
     single<AuthRepository> { AuthRepositoryImpl(get(), get()) }
+    single<TermsRepository> { TermsRepositoryImpl(get()) }
     single<MyPagesRepository> { MyPageRepositoryImpl(get(), get()) }
     single<HomeRepository> { HomeRepositoryImpl(get(), get()) }
     single<CommunityRepository> { CommunityRepositoryImpl(get(), get()) }
@@ -149,6 +156,7 @@ val appDependenciesModule = module {
     factory { GetMyPredictionsUseCase(get()) }
     factory { GetMyPogUseCase(get()) }
     factory { GetMyPomUseCase(get()) }
+    factory { GetTermsDetailUseCase(get()) }
 
     factoryOf(::IntroViewModel)
     factoryOf(::HomeViewModel)
