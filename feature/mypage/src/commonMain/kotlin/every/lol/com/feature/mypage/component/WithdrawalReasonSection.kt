@@ -5,12 +5,13 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.DropdownMenu
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,7 +22,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import everylol.feature.mypage.generated.resources.Res
@@ -44,15 +44,17 @@ fun WithdrawalReasonSection(
     )
 ) {
     var internalValue by remember { mutableStateOf("") }
+    var detailReason by remember { mutableStateOf("") }
     val displayValue = if (value.isNullOrEmpty()) internalValue else value
     var expanded by remember { mutableStateOf(false) }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp, 12.dp),
         contentAlignment = Alignment.CenterEnd
     ) {
-        Box(contentAlignment = Alignment.TopEnd) {
+        Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -81,35 +83,68 @@ fun WithdrawalReasonSection(
                     tint = EveryLoLTheme.color.grayScale600
                 )
             }
-            DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false },
-                modifier = Modifier
-                    .clip(RoundedCornerShape(12.dp)),
-                containerColor = EveryLoLTheme.color.grayScale1000,
-                tonalElevation = 0.dp,
-                shadowElevation = 0.dp,
-                scrollState = rememberScrollState(),
-                offset = DpOffset(x = 0.dp, y = 8.dp),
-            ) {
-                reasons.forEachIndexed { index, reason ->
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                internalValue = reason
-                                onValueChange(reason)
-                                expanded = false
-                            }
-                            .padding(horizontal = 16.dp, vertical = 10.dp),
+            if (expanded) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .padding( 12.dp, 20.dp)
+                        .background(EveryLoLTheme.color.grayScale1000),
+                    verticalArrangement = Arrangement.spacedBy(20.dp)
+                ) {
+                    reasons.forEachIndexed { index, reason ->
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    internalValue = reason
+                                    expanded = false
+                                    if (reason == "직접 작성하기") {
+                                        onValueChange(detailReason)
+                                    } else {
+                                        onValueChange(reason)
+                                    }
+                                }
+                                .padding(horizontal = 16.dp)
                         ) {
-                        Text(
-                            text = reason,
-                            style = EveryLoLTheme.typography.subtitle03,
-                            color = EveryLoLTheme.color.white200
-                        )
+                            Text(
+                                text = reason,
+                                style = EveryLoLTheme.typography.subtitle03,
+                                color = EveryLoLTheme.color.white200
+                            )
+                        }
                     }
                 }
+            }
+            if (displayValue == "직접 작성하기" && !expanded) {
+                BasicTextField(
+                    value = detailReason,
+                    onValueChange = {
+                        if (it.length <= 200) {
+                            detailReason = it
+                            onValueChange(it)
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(EveryLoLTheme.color.grayScale1000)
+                        .heightIn(min = 48.dp, max = 72.dp)
+                        .padding(16.dp, 16.dp, 16.dp, 12.dp),
+                    textStyle = EveryLoLTheme.typography.subtitle03.copy(
+                        color = EveryLoLTheme.color.white200
+                    ),
+                    decorationBox = { innerTextField ->
+                        if (detailReason.isEmpty()) {
+                            Text(
+                                text = "선택 사유를 알려주세요 (최대 200자)",
+                                style = EveryLoLTheme.typography.subtitle03,
+                                color = EveryLoLTheme.color.gray800
+                            )
+                        }
+                        innerTextField()
+                    }
+                )
             }
         }
     }
