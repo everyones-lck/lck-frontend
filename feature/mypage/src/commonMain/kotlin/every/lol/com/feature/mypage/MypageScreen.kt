@@ -64,6 +64,7 @@ fun MypageRoute(
                 MypageEvent.Withdrawal -> onWithdrawalSuccess()
                 is MypageEvent.NavigateToCommentDetail -> navToCommunityRead(event.postId)
                 is MypageEvent.NavigateToPostDetail -> navToCommunityRead(event.postId)
+                is MypageEvent.NavigateToMyVotedDetail -> navToCommunityRead(event.id)
                 is MypageEvent.ShowErrorSnackbar -> {
                     snackbarHostState.showSnackbar(event.throwable.message ?: "에러 발생")
                 }
@@ -125,6 +126,13 @@ fun MypageRoute(
         is MypageUiState.MVP -> {
             MypageMVPScreen(
                 state = uiState as MypageUiState.MVP,
+                onBackClick = { viewModel.onIntent(MypageIntent.LoadMypage) },
+                onIntent = viewModel::onIntent
+            )
+        }
+        is MypageUiState.MVPDetail -> {
+            MypageMVPDetailScreen(
+                state = uiState as MypageUiState.MVPDetail,
                 onBackClick = { viewModel.onIntent(MypageIntent.LoadMypage) },
                 onIntent = viewModel::onIntent
             )

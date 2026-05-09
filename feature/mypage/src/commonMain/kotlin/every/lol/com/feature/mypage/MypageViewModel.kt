@@ -41,6 +41,7 @@ sealed class MypageEvent {
     data object NavigateTos2: MypageEvent()
     data class NavigateToCommentDetail(val postId: Int) : MypageEvent()
     data class NavigateToPostDetail(val postId: Int): MypageEvent()
+    data class NavigateToMyVotedDetail(val id: Int): MypageEvent()
     //data object NavigateOpenSourceLicense: MypageEvent()
     data class ShowErrorSnackbar(val throwable: Throwable) : MypageEvent()
 }
@@ -91,6 +92,7 @@ class MypageViewModel(
             is MypageIntent.Withdrawal -> handleWithdrawal()
             is MypageIntent.NavigateToCommentDetail -> navToCommentDetail(intent.postId, intent.commentId)
             is MypageIntent.NavigateToPostDetail -> navToPostDetail(intent.postId)
+            is MypageIntent.NavigateToMyVotedDetail -> navToMVPDetail(intent.id)
             else -> {}
         }
     }
@@ -101,7 +103,7 @@ class MypageViewModel(
                 MypageUiState.MypageMenuType.APP_INFO -> loadAppInformData()
                 MypageUiState.MypageMenuType.PROFILE_EDIT -> loadProfileEditData()
                 MypageUiState.MypageMenuType.POST_COMMENT -> loadCommunityData()
-                MypageUiState.MypageMenuType.POG_VOTE -> loadMVPData()
+                //MypageUiState.MypageMenuType.POG_VOTE -> loadMVPData()
                 MypageUiState.MypageMenuType.PREDICTION -> loadPredictionData()
                 MypageUiState.MypageMenuType.TOS_1 -> handleTosDetailClick(1)
                 MypageUiState.MypageMenuType.TOS_2 -> handleTosDetailClick(2)
@@ -129,7 +131,7 @@ class MypageViewModel(
                 val menuList = listOf(
                     MypageUiState.MypageMenu(MypageUiState.MypageMenuType.PROFILE_EDIT, "프로필 수정"),
                     MypageUiState.MypageMenu(MypageUiState.MypageMenuType.POST_COMMENT, "My Post / Comment"),
-                    MypageUiState.MypageMenu(MypageUiState.MypageMenuType.POG_VOTE, "POG 투표 내역"),
+                    //MypageUiState.MypageMenu(MypageUiState.MypageMenuType.POG_VOTE, "POG 투표 내역"),
                     MypageUiState.MypageMenu(MypageUiState.MypageMenuType.PREDICTION, "승부예측 투표 내역"),
                     MypageUiState.MypageMenu(MypageUiState.MypageMenuType.LOGOUT, "로그아웃"),
                     MypageUiState.MypageMenu(MypageUiState.MypageMenuType.WITHDRAWAL, "계정 탈퇴"),
@@ -408,6 +410,12 @@ class MypageViewModel(
         }
     }
 
+
+    private fun navToMVPDetail(id: Int) {
+        viewModelScope.launch {
+            _event.emit(MypageEvent.NavigateToMyVotedDetail(id))
+        }
+    }
     private fun handleBackToHome() {
         viewModelScope.launch {
             _event.emit(MypageEvent.NavigateHome)
