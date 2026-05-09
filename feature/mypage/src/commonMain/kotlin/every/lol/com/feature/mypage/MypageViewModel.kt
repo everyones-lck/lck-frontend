@@ -41,7 +41,8 @@ sealed class MypageEvent {
     data object NavigateTos2: MypageEvent()
     data class NavigateToCommentDetail(val postId: Int) : MypageEvent()
     data class NavigateToPostDetail(val postId: Int): MypageEvent()
-    //data object NavigateOpenSourceLicense: MypageEvent()
+    data class NavigateToMyVotedDetail(val id: Int): MypageEvent()
+    data object NavigateOpenSourceLicense: MypageEvent()
     data class ShowErrorSnackbar(val throwable: Throwable) : MypageEvent()
 }
 
@@ -91,6 +92,7 @@ class MypageViewModel(
             is MypageIntent.Withdrawal -> handleWithdrawal()
             is MypageIntent.NavigateToCommentDetail -> navToCommentDetail(intent.postId, intent.commentId)
             is MypageIntent.NavigateToPostDetail -> navToPostDetail(intent.postId)
+            is MypageIntent.NavigateToMyVotedDetail -> navToMVPDetail(intent.id)
             else -> {}
         }
     }
@@ -110,7 +112,7 @@ class MypageViewModel(
                 MypageUiState.MypageMenuType.LOGOUT -> handleLogout()
 
                 MypageUiState.MypageMenuType.APP_VERSION -> { /* 토스트 */ }
-                MypageUiState.MypageMenuType.OPEN_SOURCE_LICENCE -> { /* 로직 */ }
+                MypageUiState.MypageMenuType.OPEN_SOURCE_LICENSE -> {loadOpenSourceLicense() }
             }
         }
     }
@@ -129,7 +131,7 @@ class MypageViewModel(
                 val menuList = listOf(
                     MypageUiState.MypageMenu(MypageUiState.MypageMenuType.PROFILE_EDIT, "프로필 수정"),
                     MypageUiState.MypageMenu(MypageUiState.MypageMenuType.POST_COMMENT, "My Post / Comment"),
-                    MypageUiState.MypageMenu(MypageUiState.MypageMenuType.POG_VOTE, "POG 투표 내역"),
+                    //MypageUiState.MypageMenu(MypageUiState.MypageMenuType.POG_VOTE, "POG 투표 내역"),
                     MypageUiState.MypageMenu(MypageUiState.MypageMenuType.PREDICTION, "승부예측 투표 내역"),
                     MypageUiState.MypageMenu(MypageUiState.MypageMenuType.LOGOUT, "로그아웃"),
                     MypageUiState.MypageMenu(MypageUiState.MypageMenuType.WITHDRAWAL, "계정 탈퇴"),
@@ -271,10 +273,10 @@ class MypageViewModel(
     private fun loadAppInformData() {
         setAppVersion()
 
-        val appInfoMenus = listOf(
+        val appInfoMenus = listOfNotNull(
             MypageUiState.MypageMenu(MypageUiState.MypageMenuType.TOS_1, "개인정보 처리방침"),
             MypageUiState.MypageMenu(MypageUiState.MypageMenuType.TOS_2, "서비스 이용약관"),
-            MypageUiState.MypageMenu(MypageUiState.MypageMenuType.OPEN_SOURCE_LICENCE, "오픈소스 라이선스"),
+            if(platform() == "Android") MypageUiState.MypageMenu(MypageUiState.MypageMenuType.OPEN_SOURCE_LICENSE, "오픈소스 라이선스") else null,
             MypageUiState.MypageMenu(MypageUiState.MypageMenuType.APP_VERSION, "앱버전 (${appVersion.value})", showDivider = false)
         )
         _uiState.value = MypageUiState.AppInform(menuList = appInfoMenus)
@@ -380,6 +382,12 @@ class MypageViewModel(
         }
     }
 
+    private fun loadOpenSourceLicense() {
+        viewModelScope.launch {
+            _event.emit(MypageEvent.NavigateOpenSourceLicense)
+        }
+    }
+
     private fun handleLogout() {
         viewModelScope.launch {
             logoutUseCase().onSuccess {
@@ -408,6 +416,12 @@ class MypageViewModel(
         }
     }
 
+
+    private fun navToMVPDetail(id: Int) {
+        viewModelScope.launch {
+            _event.emit(MypageEvent.NavigateToMyVotedDetail(id))
+        }
+    }
     private fun handleBackToHome() {
         viewModelScope.launch {
             _event.emit(MypageEvent.NavigateHome)

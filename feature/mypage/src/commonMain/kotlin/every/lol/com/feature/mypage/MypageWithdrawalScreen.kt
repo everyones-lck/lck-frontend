@@ -97,9 +97,12 @@ fun MypageWithdrawalScreen(
                         }
                     }
                 }
-                WithdrawalReasonSection(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp), onValueChange = {
-                    isSelectedReason = it.isNotEmpty()
-                })
+                WithdrawalReasonSection(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                    onValueChange = {reasonText ->
+                        isSelectedReason = reasonText.isNotEmpty()
+                    }
+                )
             }
 
         }

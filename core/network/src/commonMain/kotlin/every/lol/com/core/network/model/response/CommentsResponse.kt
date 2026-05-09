@@ -13,6 +13,8 @@ data class CommentsResponse(
 data class CommentsDetailResponse(
     val commentId: Int,
     val postId: Int,
+    val postTitle: String,
     val content: String,
-    val postType: String
+    val postType: String,
+    val createdAt: String
 )

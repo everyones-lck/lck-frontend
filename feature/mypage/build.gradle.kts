@@ -11,5 +11,11 @@ kotlin {
         commonMain.dependencies {
 
         }
+
+        val androidMain by getting {
+            dependencies {
+                implementation(libs.play.services.oss.licenses)
+            }
+        }
     }
 }

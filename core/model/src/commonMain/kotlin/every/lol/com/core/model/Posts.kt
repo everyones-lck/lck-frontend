@@ -8,5 +8,7 @@ data class Posts(
 data class PostsDetail(
     val id: Int,
     val title: String,
-    val postType: String
+    val postType: String,
+    val postContent: String,
+    val postCreatedAt: String
 )
