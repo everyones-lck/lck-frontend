@@ -83,7 +83,7 @@ sealed interface MypageUiState {
     )
     data class TosDetail(val id: Int): MypageUiState
     enum class MypageMenuType {
-        PROFILE_EDIT, POST_COMMENT, /*POG_VOTE,*/ PREDICTION, LOGOUT, WITHDRAWAL, APP_INFO,TOS_1,TOS_2,OPEN_SOURCE_LICENCE,APP_VERSION
+        PROFILE_EDIT, POST_COMMENT, POG_VOTE, PREDICTION, LOGOUT, WITHDRAWAL, APP_INFO,TOS_1,TOS_2,OPEN_SOURCE_LICENSE,APP_VERSION
     }
 }
 

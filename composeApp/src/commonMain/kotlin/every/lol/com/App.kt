@@ -46,7 +46,9 @@ import org.koin.core.annotation.KoinExperimentalAPI
 
 @OptIn(KoinExperimentalAPI::class)
 @Composable
-fun App() {
+fun App(
+    onOpenSourceLicenseClick: () -> Unit = {}
+) {
     PreComposeApp {
         val navController = rememberNavController()
 
@@ -219,7 +221,8 @@ fun App() {
                         },
                         navToCommunityRead = { postId ->
                             navController.navigate(Route.Read(postId))
-                        }
+                        },
+                        onOpenSourceLicenseClick = onOpenSourceLicenseClick
                     )
                 }
             }

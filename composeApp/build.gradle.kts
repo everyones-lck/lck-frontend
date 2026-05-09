@@ -4,6 +4,7 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.everylol.application)
+    alias(libs.plugins.oss)
 }
 
 val localProperties = Properties()
@@ -39,6 +40,7 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.kakao.sdk.user)
+            implementation(libs.play.services.oss.licenses)
         }
 
         commonMain.dependencies {

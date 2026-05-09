@@ -42,7 +42,7 @@ sealed class MypageEvent {
     data class NavigateToCommentDetail(val postId: Int) : MypageEvent()
     data class NavigateToPostDetail(val postId: Int): MypageEvent()
     data class NavigateToMyVotedDetail(val id: Int): MypageEvent()
-    //data object NavigateOpenSourceLicense: MypageEvent()
+    data object NavigateOpenSourceLicense: MypageEvent()
     data class ShowErrorSnackbar(val throwable: Throwable) : MypageEvent()
 }
 
@@ -103,7 +103,7 @@ class MypageViewModel(
                 MypageUiState.MypageMenuType.APP_INFO -> loadAppInformData()
                 MypageUiState.MypageMenuType.PROFILE_EDIT -> loadProfileEditData()
                 MypageUiState.MypageMenuType.POST_COMMENT -> loadCommunityData()
-                //MypageUiState.MypageMenuType.POG_VOTE -> loadMVPData()
+                MypageUiState.MypageMenuType.POG_VOTE -> loadMVPData()
                 MypageUiState.MypageMenuType.PREDICTION -> loadPredictionData()
                 MypageUiState.MypageMenuType.TOS_1 -> handleTosDetailClick(1)
                 MypageUiState.MypageMenuType.TOS_2 -> handleTosDetailClick(2)
@@ -112,7 +112,7 @@ class MypageViewModel(
                 MypageUiState.MypageMenuType.LOGOUT -> handleLogout()
 
                 MypageUiState.MypageMenuType.APP_VERSION -> { /* 토스트 */ }
-                MypageUiState.MypageMenuType.OPEN_SOURCE_LICENCE -> { /* 로직 */ }
+                MypageUiState.MypageMenuType.OPEN_SOURCE_LICENSE -> {loadOpenSourceLicense() }
             }
         }
     }
@@ -273,10 +273,10 @@ class MypageViewModel(
     private fun loadAppInformData() {
         setAppVersion()
 
-        val appInfoMenus = listOf(
+        val appInfoMenus = listOfNotNull(
             MypageUiState.MypageMenu(MypageUiState.MypageMenuType.TOS_1, "개인정보 처리방침"),
             MypageUiState.MypageMenu(MypageUiState.MypageMenuType.TOS_2, "서비스 이용약관"),
-            MypageUiState.MypageMenu(MypageUiState.MypageMenuType.OPEN_SOURCE_LICENCE, "오픈소스 라이선스"),
+            if(platform() == "Android") MypageUiState.MypageMenu(MypageUiState.MypageMenuType.OPEN_SOURCE_LICENSE, "오픈소스 라이선스") else null,
             MypageUiState.MypageMenu(MypageUiState.MypageMenuType.APP_VERSION, "앱버전 (${appVersion.value})", showDivider = false)
         )
         _uiState.value = MypageUiState.AppInform(menuList = appInfoMenus)
@@ -379,6 +379,12 @@ class MypageViewModel(
             }.onFailure { error ->
                 _event.emit(MypageEvent.ShowErrorSnackbar(error))
             }
+        }
+    }
+
+    private fun loadOpenSourceLicense() {
+        viewModelScope.launch {
+            _event.emit(MypageEvent.NavigateOpenSourceLicense)
         }
     }
 

@@ -45,7 +45,8 @@ fun MypageRoute(
     onBackClick: () -> Unit,
     onLogoutSuccess:() -> Unit,
     onWithdrawalSuccess:() -> Unit,
-    navToCommunityRead: (Int) -> Unit
+    navToCommunityRead: (Int) -> Unit,
+    onOpenSourceLicenseClick: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -68,6 +69,7 @@ fun MypageRoute(
                 is MypageEvent.ShowErrorSnackbar -> {
                     snackbarHostState.showSnackbar(event.throwable.message ?: "에러 발생")
                 }
+                is MypageEvent.NavigateOpenSourceLicense -> onOpenSourceLicenseClick()
                 else -> {}
             }
         }
