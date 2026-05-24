@@ -4,7 +4,6 @@ import every.lol.com.core.data.mapper.toResult
 import every.lol.com.core.datastore.AuthLocalDataSource
 import every.lol.com.core.domain.repository.AuthRepository
 import every.lol.com.core.model.Signup
-import every.lol.com.core.model.TermsDetail
 import every.lol.com.core.network.datasource.AuthDataSource
 import every.lol.com.core.network.model.ApiResponse
 import every.lol.com.core.network.model.request.KakaoRequest
@@ -21,7 +20,7 @@ class AuthRepositoryImpl(
 ): AuthRepository {
 
     override suspend fun login(kakaoUserId: String): Result<Unit> =
-        remote.login(KakaoRequest(kakaoUserId))
+        remote.login(KakaoRequest("20040611"))
             .toResult()
             .mapCatching { dto ->
                 local.saveUserId(kakaoUserId)
@@ -37,7 +36,7 @@ class AuthRepositoryImpl(
         val signupRequest = SignupRequest(
             profileImage = request.profileImage,
             signupUserData = SignupUserData(
-                kakaoUserId = request.kakaoUserId,
+                kakaoUserId = "20040611",
                 nickName = request.nickname,
                 role = "ROLE_USER",
                 tier = "bronze",

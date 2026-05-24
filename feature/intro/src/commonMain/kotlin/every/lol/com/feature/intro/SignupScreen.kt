@@ -133,7 +133,7 @@ fun SignupScreen(
                     Spacer(modifier = Modifier.height(24.dp))
                     TeamGroup { teams ->
                         selectedTeams = teams
-                        onTeamsChange(teams)
+                        onTeamsChange(selectedTeams)
                     }
                 }
             }

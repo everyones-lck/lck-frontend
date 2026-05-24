@@ -18,7 +18,6 @@ import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import everylol.core.ui.generated.resources.Res
 import everylol.core.ui.generated.resources.ic_camera
 import everylol.core.ui.generated.resources.img_default_profile
-import everylol.core.ui.generated.resources.img_example
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
@@ -43,8 +42,8 @@ fun ProfileImage(
             contentScale = ContentScale.Crop,
             filterQuality = FilterQuality.High,
             placeholder = painterResource(Res.drawable.img_default_profile),
-            error = painterResource(Res.drawable.img_example),
-            fallback = painterResource(Res.drawable.img_example),
+            error = painterResource(Res.drawable.img_default_profile),
+            fallback = painterResource(Res.drawable.img_default_profile),
             onLoading = {
                 println("이미지 로딩 중...")
             },
