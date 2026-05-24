@@ -34,5 +34,6 @@ sealed interface IntroIntent {
     data object ClickSignupSubmit : IntroIntent
     data class ClickTosDetail(val id: Int) : IntroIntent
     data object ClickBackToSignup : IntroIntent
+    data object ClickBackToLogin : IntroIntent
     data object ClickStartApp : IntroIntent
 }

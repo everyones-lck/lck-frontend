@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -83,7 +84,7 @@ fun SignupScreen(
                 .fillMaxSize()
                 .everylolDefault(EveryLoLTheme.color.newBg),
             containerColor = Color.Transparent,
-            contentWindowInsets = WindowInsets(0, 0, 0, 0),
+            contentWindowInsets = WindowInsets.navigationBars,
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
             topBar = {
                 EverylolTopAppBar(onBackClick = onBackClick, title = "회원가입")
@@ -132,7 +133,7 @@ fun SignupScreen(
                     Spacer(modifier = Modifier.height(24.dp))
                     TeamGroup { teams ->
                         selectedTeams = teams
-                        onTeamsChange(teams)
+                        onTeamsChange(selectedTeams)
                     }
                 }
             }

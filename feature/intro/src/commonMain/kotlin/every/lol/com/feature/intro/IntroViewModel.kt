@@ -58,6 +58,7 @@ class IntroViewModel(
             IntroIntent.ClickSignupSubmit -> handleSignupSubmit()
             is IntroIntent.ClickTosDetail -> loadTermsDetail(intent.id)
             IntroIntent.ClickBackToSignup -> handleBackToSignup()
+            IntroIntent.ClickBackToLogin -> handleBackToLogin()
             IntroIntent.ClickStartApp -> handleStartApp()
             is IntroIntent.ChangeSelectedTeams -> onTeamsChanged(intent.teams)
             is IntroIntent.ChangeProfileImage -> onProfileImageChanged(intent.image)
@@ -186,6 +187,10 @@ class IntroViewModel(
 
     private fun handleBackToSignup() {
         _uiState.value = IntroUiState.Signup()
+    }
+
+    private fun handleBackToLogin() {
+        _uiState.value = IntroUiState.Login
     }
 
 

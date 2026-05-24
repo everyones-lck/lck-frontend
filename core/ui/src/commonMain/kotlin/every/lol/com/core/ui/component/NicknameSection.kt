@@ -17,6 +17,7 @@ import every.lol.com.core.designsystem.component.EverylolTextField
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import everylol.core.ui.generated.resources.Res
 import everylol.core.ui.generated.resources.ic_check
+import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
@@ -50,6 +51,14 @@ fun NicknameSection(
     }
 
     val dynamicHint = if (isProfileEdit) originalNickname else "닉네임을 입력해주세요"
+
+    LaunchedEffect(nickName) {
+        if (isNotEmpty && isProperLength && isNoSpace && isChanged) {
+            delay(500L)
+            onCheckNickName()
+        }
+    }
+
     LaunchedEffect(textFieldStatus) {
         onValidationChanged(textFieldStatus == 1 || (isProfileEdit && textFieldStatus == 2))
     }
