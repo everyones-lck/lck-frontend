@@ -46,7 +46,7 @@ fun NicknameSection(
     val textFieldStatus = when {
         !isNotEmpty -> 0
         isAllValid -> 1
-        isProfileEdit  && !isChanged -> 2
+        isChanged -> 2
         else -> 3
     }
 
