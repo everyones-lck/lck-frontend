@@ -151,7 +151,7 @@ fun LiveResultScreen(
                         .padding(top = 24.dp),
                     contentAlignment = Alignment.TopCenter
                 ) {
-                    CircularProgressIndicator()
+                    CircularProgressIndicator(color = EveryLoLTheme.color.grayScale200)
                 }
             }
 

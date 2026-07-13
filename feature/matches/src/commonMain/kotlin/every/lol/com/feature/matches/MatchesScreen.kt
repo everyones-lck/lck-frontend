@@ -78,7 +78,7 @@ fun MatchesRoute(
                     .background(EveryLoLTheme.color.newBg),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator()
+                CircularProgressIndicator(color = EveryLoLTheme.color.grayScale200)
             }
         }
 
