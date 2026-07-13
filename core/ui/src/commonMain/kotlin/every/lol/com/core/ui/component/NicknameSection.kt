@@ -96,31 +96,38 @@ private fun NicknameValidationGroup(
 
     val isEmpty = nickName.isEmpty()
 
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    val validations = buildList {
         if (!isEmpty) {
-            NicknameValidation(
-                status = if (!isChanged) 0 else if (isDuplicateChecked) 1 else 2,
-                message = "중복된 닉네임은 사용할 수 없습니다"
+            add(
+                (if (!isChanged) 0 else if (isDuplicateChecked) 1 else 2) to
+                    "중복된 닉네임은 사용할 수 없습니다"
             )
         }
 
-        NicknameValidation(
-            status = when {
+        add(
+            (when {
                 !isChanged || isEmpty -> 0
                 isProperLength -> 1
                 else -> 2
-            },
-            message = "닉네임은 최대 10글자까지 입력 가능합니다"
+            }) to "닉네임은 최대 10글자까지 입력 가능합니다"
         )
 
-        NicknameValidation(
-            status = when {
+        add(
+            (when {
                 !isChanged || isEmpty -> 0
                 isNoSpace -> 1
                 else -> 2
-            },
-            message = "닉네임 사이에는 공백을 입력할 수 없습니다"
+            }) to "닉네임 사이에는 공백을 입력할 수 없습니다"
         )
+    }
+
+    val hasError = validations.any { (status, _) -> status == 2 }
+    val visibleValidations = if (hasError) validations.filter { (status, _) -> status == 2 } else validations
+
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        visibleValidations.forEach { (status, message) ->
+            NicknameValidation(status = status, message = message)
+        }
     }
 }
 
