@@ -115,6 +115,7 @@ class CommunityViewModel(
                 communityLoadJob?.cancel()
                 _uiState.value = CommunityUiState.Write(
                     postId = intent.postId,
+                    selectedTab = intent.tab,
                     title = intent.title,
                     content = intent.content,
                     selectedMedias = intent.medias,
@@ -296,6 +297,9 @@ class CommunityViewModel(
                 _uiState.update {
                     CommunityUiState.Write(
                         postId = postId,
+                        selectedTab = CommunityUiState.WriteTab.entries.find {
+                            it.displayName == post.postType
+                        } ?: CommunityUiState.WriteTab.TALK,
                         title = post.postTitle,
                         content = contentBuilder.toString(),
                         selectedMedias = mediaItems,
