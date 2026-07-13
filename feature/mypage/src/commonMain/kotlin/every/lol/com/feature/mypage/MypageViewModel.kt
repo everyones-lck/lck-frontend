@@ -228,10 +228,12 @@ class MypageViewModel(
             return
         }
 
+        val isImageRemoved = current.profileImage == null && current.originalProfileImage != null
+
         val isImageChanged = when {
             current.profileImage is ByteArray -> true
             current.profileImage is String && !(current.profileImage as String).startsWith("http") -> true
-            current.profileImage == null && current.originalProfileImage != null -> true
+            isImageRemoved -> true
             else -> false
         }
 
@@ -257,7 +259,8 @@ class MypageViewModel(
 
                     patchProfileUseCase(
                         nickname = if (isNicknameChanged) current.nickName else null,
-                        profileImage = compressedImage
+                        profileImage = compressedImage,
+                        isDefaultImage = isImageRemoved
                     ).getOrThrow()
                 }
 
