@@ -26,7 +26,7 @@ import everylol.core.ui.generated.resources.ic_double_arrow_right
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
-fun MatchPredicionSection(
+fun MatchPredictionSection(
     data: MatchCardModel,
     title: String,
     onPredictionClick: (() -> Unit)? = null,

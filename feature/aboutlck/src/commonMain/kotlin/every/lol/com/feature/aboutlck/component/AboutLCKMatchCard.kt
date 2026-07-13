@@ -31,14 +31,14 @@ fun AboutLCKMatchCard (
     modifier = modifier
         .fillMaxWidth()
         .clip(RoundedCornerShape(8.dp))
-        .clickable(
-            onClick = onClick
-        )
         .background(EveryLoLTheme.color.newBg)
         .border(
             width = 1.dp,
             color = EveryLoLTheme.color.grayScale900,
             shape = RoundedCornerShape(8.dp)
+        )
+        .clickable(
+            onClick = onClick
         )
         .padding(20.dp, 28.dp)
     ) {

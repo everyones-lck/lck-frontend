@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.dp
 import every.lol.com.core.designsystem.component.EverylolTopAppBar
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.core.model.MatchStatus
-import every.lol.com.core.ui.component.MatchPredicionSection
+import every.lol.com.core.ui.component.MatchPredictionSection
 import every.lol.com.core.ui.ext.everylolDefault
 import every.lol.com.feature.aboutlck.component.AboutLCKMatchCard
 import every.lol.com.feature.aboutlck.model.AboutLCKIntent
@@ -58,7 +58,7 @@ fun AboutLCKMatchScreen(
             }
             if(aboutLCKMatchState!!.matchData.matchStatus == MatchStatus.FINISHED) {
                 item {
-                    MatchPredicionSection(
+                    MatchPredictionSection(
                         data = aboutLCKMatchState.matchData,
                         title = "승부예측결과"
                     )

@@ -36,7 +36,7 @@ fun AboutLCKTeamScreen(
             contentWindowInsets = WindowInsets(0, 0, 0, 0),
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
             topBar = {
-                EverylolTopAppBar(title = "About LCK")
+                EverylolTopAppBar(onBackClick = onBackClick, title = "About LCK")
             }
         ) { innerPadding ->
             LazyColumn(

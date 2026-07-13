@@ -1,5 +1,6 @@
 package every.lol.com.feature.aboutlck
 
+import every.lol.com.core.common.formatMillisToDate
 import every.lol.com.core.domain.usecase.GetHomeRankingUseCase
 import every.lol.com.core.domain.usecase.GetMatchVoteRateUseCase
 import every.lol.com.core.domain.usecase.GetMatchesUseCase
@@ -16,12 +17,9 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 import moe.tlaster.precompose.viewmodel.ViewModel
 import moe.tlaster.precompose.viewmodel.viewModelScope
 import kotlin.time.Clock
-import kotlin.time.Instant
 
 sealed interface AboutLCKEvent{
     data class ShowToast(val message: String): AboutLCKEvent
@@ -59,9 +57,11 @@ class AboutLCKViewModel(
     fun onIntent(intent: AboutLCKIntent) {
         when (intent) {
             AboutLCKIntent.LoadInitial -> loadInitial()
+            AboutLCKIntent.RefreshHome -> loadMatches(isRefresh = true)
             is AboutLCKIntent.Match -> loadMatchPage(intent.matchId, intent.matchData)
             is AboutLCKIntent.ChangeDate -> loadDate(intent.date)
-            else -> {}
+            is AboutLCKIntent.Team -> {} // TODO: Team 화면 전환 로직 연결
+            is AboutLCKIntent.Player -> {} // TODO: Player 화면 전환 로직 연결
         }
     }
 
@@ -89,13 +89,7 @@ class AboutLCKViewModel(
     }
 
     private fun loadDate(date: String? = null) {
-        val targetDate = if (date != null) {
-            date
-        } else {
-            val nowMs = Clock.System.now().toEpochMilliseconds()
-            val instant = Instant.fromEpochMilliseconds(nowMs)
-            instant.toLocalDateTime(TimeZone.currentSystemDefault()).date.toString()
-        }
+        val targetDate = date ?: formatMillisToDate(Clock.System.now().toEpochMilliseconds())
         cachedDate = targetDate
 
         _uiState.update { state ->

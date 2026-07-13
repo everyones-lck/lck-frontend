@@ -38,6 +38,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import every.lol.com.core.common.formatMillisToDate
 import every.lol.com.core.designsystem.component.EverylolTopAppBar
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
+import every.lol.com.core.model.MatchCardModel
+import every.lol.com.core.model.MatchStatus
+import every.lol.com.core.model.aboutlck.match.MatchDetail
 import every.lol.com.core.ui.component.LckRankingSection
 import every.lol.com.core.ui.ext.everylolDefault
 import every.lol.com.feature.aboutlck.component.AboutLCKMatchCard
@@ -118,7 +121,7 @@ fun AboutLCKScreen(
 
     val aboutLCKState = state as? AboutLCKUiState.AboutLCK
     val ranking = aboutLCKState?.ranking?.groups?.firstOrNull()?.teams ?: emptyList()
-    val matches = aboutLCKState?.match?.matches ?: emptyList()
+    val matches = aboutLCKState?.match?.matches?.map { it.toMatchCardModel() } ?: emptyList()
 
     var showCalender by remember { mutableStateOf(false) }
     val supportTeams = aboutLCKState?.supportTeam ?: emptyList()
@@ -190,8 +193,7 @@ fun AboutLCKScreen(
                             AboutLCKMatchCard(
                                 item = matchItem,
                                 onClick = {
-                                    onIntent(AboutLCKIntent.Match(matchItem.matchId, matchItem))
-                                    println("matchId: ${matchItem.matchId}")
+                                    onIntent(AboutLCKIntent.Match(matchItem.matchId.toInt(), matchItem))
                                 }
                             )
                         }
@@ -237,3 +239,21 @@ fun AboutLCKScreen(
         }
     }
 }
+
+private fun MatchDetail.toMatchCardModel(): MatchCardModel = MatchCardModel(
+    matchId = matchId.toLong(),
+    matchDate = matchDate,
+    matchStatus = MatchStatus.valueOf(matchStatus),
+    seasonName = seasonName,
+    groupName = groupName,
+    roundName = roundName ?: "",
+    team1Id = team1.teamId,
+    team1Name = team1.teamName,
+    team2Id = team2.teamId,
+    team2Name = team2.teamName,
+    actualWinnerTeamName = when {
+        team1.winner -> team1.teamName
+        team2.winner -> team2.teamName
+        else -> null
+    }
+)
