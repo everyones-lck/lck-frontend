@@ -13,5 +13,7 @@ data class PostsResponse(
 data class PostsDetailResponse(
     val id: Int,
     val title: String,
-    val postType: String
+    val postType: String,
+    val postContent: String,
+    val postCreatedAt: String
 )

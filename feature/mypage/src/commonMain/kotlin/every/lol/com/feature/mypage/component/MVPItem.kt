@@ -47,17 +47,21 @@ fun MVPItem(
                         .clip(RoundedCornerShape(24.dp))
                         .background(team.getTeamBrush())
                 )
-                Text(
-                    text = mvp.playerName,
-                    style = EveryLoLTheme.typography.heading02,
-                    color = EveryLoLTheme.color.white200
-                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = "1세트", //추후 수정
+                        style = EveryLoLTheme.typography.body01,
+                        color = EveryLoLTheme.color.grayScale100
+                    )
+                    Text(
+                        text = mvp.playerName,
+                        style = EveryLoLTheme.typography.heading02,
+                        color = EveryLoLTheme.color.white200
+                    )
+                }
             }
-            Text(
-                text = mvp.matchDate,
-                style = EveryLoLTheme.typography.label03,
-                color = EveryLoLTheme.color.white200
-            )
         }
         HorizontalDivider(
             modifier = Modifier.fillMaxWidth(),

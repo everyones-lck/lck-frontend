@@ -20,18 +20,19 @@ import every.lol.com.core.designsystem.component.EverylolTopAppBar
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.core.ui.component.DefaultScreen
 import every.lol.com.core.ui.ext.everylolDefault
-import every.lol.com.feature.mypage.component.MyVotedMatchItem
+import every.lol.com.feature.mypage.component.MVPItem
 import every.lol.com.feature.mypage.model.MypageIntent
 import every.lol.com.feature.mypage.model.MypageUiState
 
 @Composable
-fun MypageMVPScreen(
+fun MypageMVPDetailScreen(
     state: MypageUiState,
     onBackClick: () -> Unit={},
     onIntent: (MypageIntent) -> Unit
 ){
     val snackbarHostState = remember { SnackbarHostState() }
     val mvpState = state as? MypageUiState.MVP
+
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             modifier = Modifier
@@ -41,7 +42,7 @@ fun MypageMVPScreen(
             contentWindowInsets = WindowInsets(0, 0, 0, 0),
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
             topBar = {
-                EverylolTopAppBar(onBackClick = onBackClick, title = "MVP 투표내역")
+                EverylolTopAppBar(onBackClick = onBackClick, title = "2026 LCK 투표 내역")
             }
         ) { innerPadding ->
             Column(
@@ -63,12 +64,7 @@ fun MypageMVPScreen(
                     }
                     else{
                         it.mvpList.forEach { mvp ->
-                            MyVotedMatchItem(
-                                mvp = mvp,
-                                onClick = {id->
-                                    onIntent(MypageIntent.NavigateToMyVotedDetail(id))
-                                }
-                            )
+                            MVPItem(mvp = mvp)
                         }
                     }
                 }

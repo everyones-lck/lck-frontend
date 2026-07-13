@@ -45,7 +45,8 @@ fun MypageRoute(
     onBackClick: () -> Unit,
     onLogoutSuccess:() -> Unit,
     onWithdrawalSuccess:() -> Unit,
-    navToCommunityRead: (Int) -> Unit
+    navToCommunityRead: (Int) -> Unit,
+    onOpenSourceLicenseClick: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -64,9 +65,11 @@ fun MypageRoute(
                 MypageEvent.Withdrawal -> onWithdrawalSuccess()
                 is MypageEvent.NavigateToCommentDetail -> navToCommunityRead(event.postId)
                 is MypageEvent.NavigateToPostDetail -> navToCommunityRead(event.postId)
+                is MypageEvent.NavigateToMyVotedDetail -> navToCommunityRead(event.id)
                 is MypageEvent.ShowErrorSnackbar -> {
                     snackbarHostState.showSnackbar(event.throwable.message ?: "에러 발생")
                 }
+                is MypageEvent.NavigateOpenSourceLicense -> onOpenSourceLicenseClick()
                 else -> {}
             }
         }
@@ -129,6 +132,13 @@ fun MypageRoute(
                 onIntent = viewModel::onIntent
             )
         }
+        is MypageUiState.MVPDetail -> {
+            MypageMVPDetailScreen(
+                state = uiState as MypageUiState.MVPDetail,
+                onBackClick = { viewModel.onIntent(MypageIntent.LoadMypage) },
+                onIntent = viewModel::onIntent
+            )
+        }
         is MypageUiState.Loading -> {
 
         }
@@ -142,9 +152,11 @@ fun MypageRoute(
             )
         }
         is MypageUiState.TosDetail -> {
+            val tosState = uiState as MypageUiState.TosDetail
             TosScreen(
-                tosId = (uiState as MypageUiState.TosDetail).id,
-                onBackClick = { viewModel.onIntent(MypageIntent.LoadAppInform) }
+                title = tosState.title,
+                content = tosState.content,
+                onBackClick = { viewModel.onIntent(MypageIntent.LoadMypage) }
             )
         }
     }
@@ -156,6 +168,7 @@ private fun MypageScreen(
     onBackClick: () -> Unit,
     onIntent: (MypageIntent) -> Unit
 ){
+
     val myPageState = (state as? MypageUiState.Mypage) ?: return
     val myInform = myPageState.myInform
     val menuList = myPageState.menuList
@@ -190,7 +203,11 @@ private fun MypageScreen(
                     verticalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
                     ProfileImage(profile = myInform.profileImage)
-                    Text(myInform.nickName,style=EveryLoLTheme.typography.title02, color = EveryLoLTheme.color.grayScale200)
+                    Text(
+                        myInform.nickName,
+                        style=EveryLoLTheme.typography.title02,
+                        color = EveryLoLTheme.color.grayScale200
+                    )
                     TeamGroup(
                         isSelectable = false,
                         selectedTeams = myInform.teamIds

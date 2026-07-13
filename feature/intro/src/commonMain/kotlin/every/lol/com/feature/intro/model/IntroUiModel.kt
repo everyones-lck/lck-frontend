@@ -17,7 +17,11 @@ sealed interface IntroUiState {
         val isLoading: Boolean = false
     ) : IntroUiState
     data class SignupComplete(val nickName: String) : IntroUiState
-    data class TosDetail(val id: Int) : IntroUiState
+    data class TosDetail(
+        val title: String,
+        val content: String,
+        val isLoading: Boolean = false
+    ) : IntroUiState
 }
 
 sealed interface IntroIntent {
@@ -30,5 +34,6 @@ sealed interface IntroIntent {
     data object ClickSignupSubmit : IntroIntent
     data class ClickTosDetail(val id: Int) : IntroIntent
     data object ClickBackToSignup : IntroIntent
+    data object ClickBackToLogin : IntroIntent
     data object ClickStartApp : IntroIntent
 }

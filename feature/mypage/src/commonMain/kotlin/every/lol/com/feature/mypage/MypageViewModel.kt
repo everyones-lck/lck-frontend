@@ -4,6 +4,7 @@ import every.lol.com.core.common.compressImage
 import every.lol.com.core.domain.usecase.GetMyCommentsUseCase
 import every.lol.com.core.domain.usecase.GetMyPostsUseCase
 import every.lol.com.core.domain.usecase.GetProfileUseCase
+import every.lol.com.core.domain.usecase.GetTermsDetailUseCase
 import every.lol.com.core.domain.usecase.LogoutUseCase
 import every.lol.com.core.domain.usecase.NicknameUseCase
 import every.lol.com.core.domain.usecase.PatchMyTeamUseCase
@@ -41,7 +42,8 @@ sealed class MypageEvent {
     data object NavigateTos2: MypageEvent()
     data class NavigateToCommentDetail(val postId: Int) : MypageEvent()
     data class NavigateToPostDetail(val postId: Int): MypageEvent()
-    //data object NavigateOpenSourceLicense: MypageEvent()
+    data class NavigateToMyVotedDetail(val id: Int): MypageEvent()
+    data object NavigateOpenSourceLicense: MypageEvent()
     data class ShowErrorSnackbar(val throwable: Throwable) : MypageEvent()
 }
 
@@ -57,6 +59,7 @@ class MypageViewModel(
     private val getMyPredictionsUseCase: GetMyPredictionsUseCase,
     private val getMyPomUseCase: GetMyPomUseCase,
     private val getMyPogUseCase: GetMyPogUseCase,
+    private val getTermsDetailUseCase: GetTermsDetailUseCase
     ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<MypageUiState>(MypageUiState.Loading)
@@ -91,6 +94,7 @@ class MypageViewModel(
             is MypageIntent.Withdrawal -> handleWithdrawal()
             is MypageIntent.NavigateToCommentDetail -> navToCommentDetail(intent.postId, intent.commentId)
             is MypageIntent.NavigateToPostDetail -> navToPostDetail(intent.postId)
+            is MypageIntent.NavigateToMyVotedDetail -> navToMVPDetail(intent.id)
             else -> {}
         }
     }
@@ -103,14 +107,12 @@ class MypageViewModel(
                 MypageUiState.MypageMenuType.POST_COMMENT -> loadCommunityData()
                 MypageUiState.MypageMenuType.POG_VOTE -> loadMVPData()
                 MypageUiState.MypageMenuType.PREDICTION -> loadPredictionData()
-                MypageUiState.MypageMenuType.TOS_1 -> handleTosDetailClick(1)
-                MypageUiState.MypageMenuType.TOS_2 -> handleTosDetailClick(2)
+                MypageUiState.MypageMenuType.TOS_1 -> loadTermsDetail(1)
+                MypageUiState.MypageMenuType.TOS_2 -> loadTermsDetail(2)
                 MypageUiState.MypageMenuType.WITHDRAWAL -> _uiState.value = MypageUiState.Withdrawal
-
                 MypageUiState.MypageMenuType.LOGOUT -> handleLogout()
-
                 MypageUiState.MypageMenuType.APP_VERSION -> { /* 토스트 */ }
-                MypageUiState.MypageMenuType.OPEN_SOURCE_LICENCE -> { /* 로직 */ }
+                MypageUiState.MypageMenuType.OPEN_SOURCE_LICENSE -> {loadOpenSourceLicense() }
             }
         }
     }
@@ -129,7 +131,7 @@ class MypageViewModel(
                 val menuList = listOf(
                     MypageUiState.MypageMenu(MypageUiState.MypageMenuType.PROFILE_EDIT, "프로필 수정"),
                     MypageUiState.MypageMenu(MypageUiState.MypageMenuType.POST_COMMENT, "My Post / Comment"),
-                    MypageUiState.MypageMenu(MypageUiState.MypageMenuType.POG_VOTE, "POG 투표 내역"),
+                    //MypageUiState.MypageMenu(MypageUiState.MypageMenuType.POG_VOTE, "POG 투표 내역"),
                     MypageUiState.MypageMenu(MypageUiState.MypageMenuType.PREDICTION, "승부예측 투표 내역"),
                     MypageUiState.MypageMenu(MypageUiState.MypageMenuType.LOGOUT, "로그아웃"),
                     MypageUiState.MypageMenu(MypageUiState.MypageMenuType.WITHDRAWAL, "계정 탈퇴"),
@@ -271,10 +273,10 @@ class MypageViewModel(
     private fun loadAppInformData() {
         setAppVersion()
 
-        val appInfoMenus = listOf(
+        val appInfoMenus = listOfNotNull(
             MypageUiState.MypageMenu(MypageUiState.MypageMenuType.TOS_1, "개인정보 처리방침"),
             MypageUiState.MypageMenu(MypageUiState.MypageMenuType.TOS_2, "서비스 이용약관"),
-            MypageUiState.MypageMenu(MypageUiState.MypageMenuType.OPEN_SOURCE_LICENCE, "오픈소스 라이선스"),
+            if(platform() == "Android") MypageUiState.MypageMenu(MypageUiState.MypageMenuType.OPEN_SOURCE_LICENSE, "오픈소스 라이선스") else null,
             MypageUiState.MypageMenu(MypageUiState.MypageMenuType.APP_VERSION, "앱버전 (${appVersion.value})", showDivider = false)
         )
         _uiState.value = MypageUiState.AppInform(menuList = appInfoMenus)
@@ -380,6 +382,12 @@ class MypageViewModel(
         }
     }
 
+    private fun loadOpenSourceLicense() {
+        viewModelScope.launch {
+            _event.emit(MypageEvent.NavigateOpenSourceLicense)
+        }
+    }
+
     private fun handleLogout() {
         viewModelScope.launch {
             logoutUseCase().onSuccess {
@@ -408,18 +416,35 @@ class MypageViewModel(
         }
     }
 
+
+    private fun navToMVPDetail(id: Int) {
+        viewModelScope.launch {
+            _event.emit(MypageEvent.NavigateToMyVotedDetail(id))
+        }
+    }
     private fun handleBackToHome() {
         viewModelScope.launch {
             _event.emit(MypageEvent.NavigateHome)
         }
     }
 
-    private fun handleTosDetailClick(id: Int) {
-        _uiState.update { MypageUiState.TosDetail(id) }
-    }
-
     private fun setAppVersion(){
         _appVersion.value = "1.0.0"
+    }
+
+    private fun loadTermsDetail(termId: Int) {
+        viewModelScope.launch {
+            getTermsDetailUseCase(termId).onSuccess { response ->
+                _uiState.value = MypageUiState.TosDetail(
+                    title = response.title,
+                    content = response.content,
+                    isLoading = false
+                )
+            }.onFailure { error ->
+                println("error: $error")
+                _event.emit(MypageEvent.ShowErrorSnackbar(error))
+            }
+        }
     }
 
     private suspend fun handleCommunityError(throwable: Throwable) {

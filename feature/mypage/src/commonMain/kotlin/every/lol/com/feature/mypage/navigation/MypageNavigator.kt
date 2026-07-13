@@ -16,14 +16,16 @@ fun NavGraphBuilder.mypageNavGraph(
     onBackClick: () -> Unit,
     onLogoutSuccess: () -> Unit,
     onWithdrawalSuccess: () -> Unit,
-    navToCommunityRead: (Int) -> Unit
+    navToCommunityRead: (Int) -> Unit,
+    onOpenSourceLicenseClick: () -> Unit
 ) {
     composable<Route.Mypage> {
         MypageRoute(
             onBackClick = onBackClick,
             onLogoutSuccess = onLogoutSuccess,
             onWithdrawalSuccess = onWithdrawalSuccess,
-            navToCommunityRead = navToCommunityRead
+            navToCommunityRead = navToCommunityRead,
+            onOpenSourceLicenseClick = onOpenSourceLicenseClick
         )
     }
 }

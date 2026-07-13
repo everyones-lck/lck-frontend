@@ -63,68 +63,66 @@ internal fun IntroRoute(
     Scaffold(
         snackbarHost = { EverylolToastHost(snackbarHostState) }
     ) { paddingValues ->
-        Box(modifier = Modifier.padding(paddingValues)) {
-            when (val state = uiState) {
-                is IntroUiState.Loading -> {
-                    LoadingScreen()
-                }
+        when (val state = uiState) {
+            is IntroUiState.Loading -> {
+                LoadingScreen()
+            }
 
-                is IntroUiState.Login -> {
-                    LoginScreen(
-                        onClick = {
-                            viewModel.onIntent(IntroIntent.ClickLogin("kakaoToken"))
-                                  },
-                        onLongClick = { /* viewModel.putUserInitial() */ }
-                    )
-                }
+            is IntroUiState.Login -> {
+                LoginScreen(
+                    onClick = {
+                        viewModel.onIntent(IntroIntent.ClickLogin("kakaoToken"))
+                    },
+                    onLongClick = { /* viewModel.putUserInitial() */ }
+                )
+            }
 
-                is IntroUiState.Signup -> {
-                    SignupScreen(
-                            state = state,
-                            onValueChange = { nickName ->
-                                viewModel.onIntent(IntroIntent.InputNickName(nickName))
-                            },
-                            onProfileImageChange = { image ->
-                                viewModel.onIntent(IntroIntent.ChangeProfileImage(image))
-                            },
-                            onTeamsChange = { teams ->
-                                viewModel.onIntent(IntroIntent.ChangeSelectedTeams(teams))
-                            },
-                            checkNickName = { nickName ->
-                                viewModel.onIntent(IntroIntent.ClickCheckDuplicateNickname(nickName))
-                            },
-                            onBackClick = {
-                                viewModel.onIntent(IntroIntent.ClickBackToSignup)
-                            },
-                            onSignupClick = {
-                                viewModel.onIntent(IntroIntent.ClickSignupSubmit)
-                            },
-                            onNavigateToTermDetail = { id ->
-                                viewModel.onIntent(IntroIntent.ClickTosDetail(id))
-                            }
-                        )
-                }
-
-                is IntroUiState.SignupComplete -> {
-                    CompleteScreen(
-                        nickName = state.nickName,
-                        onGoHomeClick = {
-                            viewModel.onIntent(IntroIntent.ClickStartApp)
-                        }
-                    )
-                }
-
-                is IntroUiState.TosDetail -> {
-                    EveryLolBackHandler(true) {
-                        viewModel.onIntent(IntroIntent.ClickBackToSignup)
+            is IntroUiState.Signup -> {
+                SignupScreen(
+                    state = state,
+                    onValueChange = { nickName ->
+                        viewModel.onIntent(IntroIntent.InputNickName(nickName))
+                    },
+                    onProfileImageChange = { image ->
+                        viewModel.onIntent(IntroIntent.ChangeProfileImage(image))
+                    },
+                    onTeamsChange = { teams ->
+                        viewModel.onIntent(IntroIntent.ChangeSelectedTeams(teams))
+                    },
+                    checkNickName = { nickName ->
+                        viewModel.onIntent(IntroIntent.ClickCheckDuplicateNickname(nickName))
+                    },
+                    onBackClick = {
+                        viewModel.onIntent(IntroIntent.ClickBackToLogin)
+                    },
+                    onSignupClick = {
+                        viewModel.onIntent(IntroIntent.ClickSignupSubmit)
+                    },
+                    onNavigateToTermDetail = { id ->
+                        viewModel.onIntent(IntroIntent.ClickTosDetail(id))
                     }
-                    TosScreen(
-                        tosId = state.id,
-                        onBackClick = {
-                            viewModel.onIntent(IntroIntent.ClickBackToSignup)
-                        }
-                    )
+                )
+            }
+
+            is IntroUiState.SignupComplete -> {
+                CompleteScreen(
+                    nickName = state.nickName,
+                    onGoHomeClick = {
+                        viewModel.onIntent(IntroIntent.ClickStartApp)
+                    }
+                )
+            }
+
+            is IntroUiState.TosDetail -> {
+                EveryLolBackHandler(true) {
+                    viewModel.onIntent(IntroIntent.ClickBackToSignup)
                 }
+                val tosState = uiState as IntroUiState.TosDetail
+                TosScreen(
+                    title = tosState.title,
+                    content = tosState.content,
+                    onBackClick = { viewModel.onIntent(IntroIntent.ClickBackToSignup) }
+                )
             }
         }
     }

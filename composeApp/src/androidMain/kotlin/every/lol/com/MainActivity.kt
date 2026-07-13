@@ -1,14 +1,16 @@
 package every.lol.com
 
+import android.content.Intent
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.ui.platform.LocalContext
+import com.google.android.gms.oss.licenses.v2.OssLicensesMenuActivity
 import com.kakao.sdk.common.KakaoSdk
 import every.lol.com.core.common.AppContext
-import every.lol.com.core.designsystem.theme.EveryLoLTheme
 import every.lol.com.di.androidModule
 import every.lol.com.di.androidNetworkModule
 import every.lol.com.di.initKoin
@@ -41,9 +43,15 @@ class MainActivity : ComponentActivity() {
         window.setBackgroundDrawable(ColorDrawable(bgColor))
 
         setContent {
-            EveryLoLTheme {
-                App()
-            }
+            val context = LocalContext.current
+
+            App(
+                onOpenSourceLicenseClick = {
+                    val intent = Intent(context, OssLicensesMenuActivity::class.java)
+                    context.startActivity(intent)
+                    OssLicensesMenuActivity.setActivityTitle("오픈소스 라이선스")
+                }
+            )
         }
     }
 }

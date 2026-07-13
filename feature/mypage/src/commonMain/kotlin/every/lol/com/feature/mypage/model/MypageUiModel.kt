@@ -22,6 +22,12 @@ sealed interface MypageUiState {
         val isLoading: Boolean = false
     ):MypageUiState
 
+    data class MVPDetail(
+        val matchName: String,
+        val pog: MVPItem? = null,
+        val pom: MVPItem? = null,
+        val isLoading: Boolean = false
+    ): MypageUiState
     data class MVPItem(
         val id: Int,
         val matchDate: String,
@@ -75,9 +81,13 @@ sealed interface MypageUiState {
         val title: String,
         val showDivider: Boolean = true
     )
-    data class TosDetail(val id: Int): MypageUiState
+    data class TosDetail(
+        val title: String = "",
+        val content: String = "",
+        val isLoading: Boolean = false
+    ) : MypageUiState
     enum class MypageMenuType {
-        PROFILE_EDIT, POST_COMMENT, POG_VOTE, PREDICTION, LOGOUT, WITHDRAWAL, APP_INFO,TOS_1,TOS_2,OPEN_SOURCE_LICENCE,APP_VERSION
+        PROFILE_EDIT, POST_COMMENT, POG_VOTE, PREDICTION, LOGOUT, WITHDRAWAL, APP_INFO,TOS_1,TOS_2,OPEN_SOURCE_LICENSE,APP_VERSION
     }
 }
 
@@ -97,5 +107,7 @@ sealed interface MypageIntent{
     data class ClickCheckDuplicateNickname(val nickName: String) : MypageIntent
     data object Withdrawal : MypageIntent
     data class NavigateToCommentDetail(val postId: Int, val commentId: Int) : MypageIntent
+    data class LoadTos(val id: Int) : MypageIntent
     data class NavigateToPostDetail(val postId: Int) : MypageIntent
+    data class NavigateToMyVotedDetail(val id: Int) : MypageIntent
 }

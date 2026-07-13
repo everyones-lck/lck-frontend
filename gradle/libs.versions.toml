@@ -59,6 +59,10 @@ reorderable = "3.0.0"
 media3Exoplayer = "1.10.0"
 media3Ui = "1.10.0"
 
+#oss
+playServicesOssLicenses = "17.5.1"
+oss-plugin = "0.12.0"
+
 [libraries]
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
 kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
@@ -137,6 +141,7 @@ kakao-sdk-user = { group = "com.kakao.sdk", name = "v2-user", version.ref = "kak
 compose-reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
 androidx-media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "media3Exoplayer" }
 androidx-media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "media3Ui" }
+play-services-oss-licenses = { group = "com.google.android.gms", name = "play-services-oss-licenses", version.ref = "playServicesOssLicenses" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
@@ -157,3 +162,6 @@ everylol-application = { id = "everylol.application", version = "unspecified" }
 everylol-compose = { id = "everylol.compose", version = "unspecified" }
 everylol-feature = { id = "everylol.feature", version = "unspecified" }
 everylol-library = { id = "everylol.library", version = "unspecified" }
+
+#OSS
+oss = { id = "com.google.android.gms.oss-licenses-plugin", version.ref = "oss-plugin" }
