@@ -1,6 +1,7 @@
 package every.lol.com.feature.aboutlck.model
 
 import androidx.compose.runtime.Immutable
+import every.lol.com.core.model.MatchCardModel
 import every.lol.com.core.model.Ranking
 import every.lol.com.core.model.aboutlck.match.AboutLCKMatch
 
@@ -9,14 +10,35 @@ sealed interface AboutLCKUiState {
     data object Loading : AboutLCKUiState
 
     data class AboutLCK(
+        val date: String?=null,
         val isLoading: Boolean = false,
         val ranking: Ranking?= null,
         val supportTeam: List<Int> = emptyList(),
         val match: AboutLCKMatch?= null
         ) : AboutLCKUiState
+
+    data class Match(
+        val matchId: Int,
+        val matchData: MatchCardModel,
+        val isLoading: Boolean=false
+    ): AboutLCKUiState
+
+    data class Team(
+        val teamId: Int,
+        val isLoading: Boolean=false
+    ): AboutLCKUiState
+
+    data class Player(
+        val playerId: Int,
+        val isLoading: Boolean=false
+    ): AboutLCKUiState
 }
 
 sealed interface AboutLCKIntent {
     data object LoadInitial : AboutLCKIntent
     data object RefreshHome : AboutLCKIntent
+    data class ChangeDate(val date: String) : AboutLCKIntent
+    data class Match(val matchId: Int, val matchData: MatchCardModel) : AboutLCKIntent
+    data class Team(val teamId: Int) : AboutLCKIntent
+    data class Player(val playerId: Int) : AboutLCKIntent
 }

@@ -15,7 +15,7 @@ kotlin {
             implementation(project(":core:datastore"))
             implementation(project(":core:common"))
             api(project(":core:domain"))
-            implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
+            implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1")
             implementation(libs.koin.core)
         }
     }

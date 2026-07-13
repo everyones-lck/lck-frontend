@@ -2,6 +2,7 @@ package every.lol.com.feature.aboutlck.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,14 +17,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
-import every.lol.com.core.model.aboutlck.match.MatchDetail
+import every.lol.com.core.model.MatchCardModel
 import every.lol.com.core.ui.component.CardTag
 import every.lol.com.core.ui.component.getTeamColor
 
 @Composable
 fun AboutLCKMatchCard (
-    item: MatchDetail,
-    modifier: Modifier = Modifier
+    item: MatchCardModel,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit = {}
 ) {
     Box(
     modifier = modifier
@@ -34,6 +36,9 @@ fun AboutLCKMatchCard (
             width = 1.dp,
             color = EveryLoLTheme.color.grayScale900,
             shape = RoundedCornerShape(8.dp)
+        )
+        .clickable(
+            onClick = onClick
         )
         .padding(20.dp, 28.dp)
     ) {
@@ -62,13 +67,13 @@ fun AboutLCKMatchCard (
                 Spacer(Modifier.weight(1f))
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     CardTag(
-                        text = item.team1.teamName,
-                        backgroundColor = getTeamColor(item.team1.teamName),
+                        text = item.team1Name,
+                        backgroundColor = getTeamColor(item.team1Name),
                         textColor = EveryLoLTheme.color.black900
                     )
                     CardTag(
-                        text = item.team2.teamName,
-                        backgroundColor = getTeamColor(item.team2.teamName),
+                        text = item.team2Name,
+                        backgroundColor = getTeamColor(item.team2Name),
                         textColor = EveryLoLTheme.color.black900
                     )
                 }

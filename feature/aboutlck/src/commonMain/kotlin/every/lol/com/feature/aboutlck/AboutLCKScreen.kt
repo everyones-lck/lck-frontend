@@ -15,23 +15,32 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import every.lol.com.core.common.formatMillisToDate
 import every.lol.com.core.designsystem.component.EverylolTopAppBar
 import every.lol.com.core.designsystem.theme.EveryLoLTheme
+import every.lol.com.core.model.MatchCardModel
+import every.lol.com.core.model.MatchStatus
+import every.lol.com.core.model.aboutlck.match.MatchDetail
 import every.lol.com.core.ui.component.LckRankingSection
 import every.lol.com.core.ui.ext.everylolDefault
 import every.lol.com.feature.aboutlck.component.AboutLCKMatchCard
@@ -40,7 +49,7 @@ import every.lol.com.feature.aboutlck.model.AboutLCKIntent
 import every.lol.com.feature.aboutlck.model.AboutLCKUiState
 import moe.tlaster.precompose.koin.koinViewModel
 
-
+@OptIn(ExperimentalMultiplatform::class)
 @Composable
 fun AboutLCKRoute(
     viewModel: AboutLCKViewModel = koinViewModel(AboutLCKViewModel ::class)
@@ -58,23 +67,48 @@ fun AboutLCKRoute(
         }
     }
 
-    println(aboutLCK)
-    if(aboutLCK == null){
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(EveryLoLTheme.color.newBg),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator(color = EveryLoLTheme.color.grayScale200)
+    when(uiState){
+        is AboutLCKUiState.Loading -> {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(EveryLoLTheme.color.newBg),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = EveryLoLTheme.color.grayScale200)
+            }
         }
-
-    }else {
-        AboutLCKScreen(
-            state = uiState,
-            snackbarHostState = snackbarHostState,
-            onIntent = viewModel::onIntent
-        )
+        is AboutLCKUiState.AboutLCK -> {
+            AboutLCKScreen(
+                state = uiState,
+                snackbarHostState = snackbarHostState,
+                onIntent = viewModel::onIntent
+            )
+        }
+        is AboutLCKUiState.Match -> {
+            AboutLCKMatchScreen(
+                state = uiState as AboutLCKUiState.Match,
+                snackbarHostState = snackbarHostState,
+                onBackClick = { viewModel.onIntent(AboutLCKIntent.LoadInitial) },
+                onIntent = viewModel::onIntent
+            )
+        }
+        is AboutLCKUiState.Team -> {
+            AboutLCKTeamScreen(
+                state = uiState as AboutLCKUiState.Team,
+                snackbarHostState = snackbarHostState,
+                onBackClick = { viewModel.onIntent(AboutLCKIntent.LoadInitial) },
+                onIntent = viewModel::onIntent
+            )
+        }
+        is AboutLCKUiState.Player -> {
+            AboutLCKPlayerScreen(
+                state = uiState as AboutLCKUiState.Player,
+                snackbarHostState = snackbarHostState,
+                onBackClick = { viewModel.onIntent(AboutLCKIntent.LoadInitial) },
+                onIntent = viewModel::onIntent
+            )
+        }
     }
 }
 
@@ -87,9 +121,40 @@ fun AboutLCKScreen(
 
     val aboutLCKState = state as? AboutLCKUiState.AboutLCK
     val ranking = aboutLCKState?.ranking?.groups?.firstOrNull()?.teams ?: emptyList()
-    val matches = aboutLCKState?.match?.matches ?: emptyList()
-    var showCalender =  remember { mutableStateOf(false) }
+    val matches = aboutLCKState?.match?.matches?.map { it.toMatchCardModel() } ?: emptyList()
+
+    var showCalender by remember { mutableStateOf(false) }
     val supportTeams = aboutLCKState?.supportTeam ?: emptyList()
+
+    val date = aboutLCKState?.date
+
+    val datePickerState = rememberDatePickerState()
+
+
+    if (showCalender) {
+        DatePickerDialog(
+            onDismissRequest = { showCalender = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    val selectedMillis = datePickerState.selectedDateMillis
+                    if (selectedMillis != null) {
+                        val formattedDate = formatMillisToDate(selectedMillis)
+                        onIntent(AboutLCKIntent.ChangeDate(formattedDate))
+                    }
+                    showCalender = false
+                }) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showCalender = false }) {
+                    Text("Cancel")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
@@ -114,9 +179,9 @@ fun AboutLCKScreen(
                 item {
                     DateSelectSection(
                         modifier = Modifier.padding(top = 24.dp),
-                        date = "2026-04-05",
+                        date = date.toString(),
                         showDatePicker = {
-                            showCalender.value = true
+                            showCalender = true
                         }
                     )
                 }
@@ -126,7 +191,10 @@ fun AboutLCKScreen(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             AboutLCKMatchCard(
-                                item = matchItem
+                                item = matchItem,
+                                onClick = {
+                                    onIntent(AboutLCKIntent.Match(matchItem.matchId.toInt(), matchItem))
+                                }
                             )
                         }
                     }
@@ -171,3 +239,21 @@ fun AboutLCKScreen(
         }
     }
 }
+
+private fun MatchDetail.toMatchCardModel(): MatchCardModel = MatchCardModel(
+    matchId = matchId.toLong(),
+    matchDate = matchDate,
+    matchStatus = MatchStatus.valueOf(matchStatus),
+    seasonName = seasonName,
+    groupName = groupName,
+    roundName = roundName ?: "",
+    team1Id = team1.teamId,
+    team1Name = team1.teamName,
+    team2Id = team2.teamId,
+    team2Name = team2.teamName,
+    actualWinnerTeamName = when {
+        team1.winner -> team1.teamName
+        team2.winner -> team2.teamName
+        else -> null
+    }
+)
