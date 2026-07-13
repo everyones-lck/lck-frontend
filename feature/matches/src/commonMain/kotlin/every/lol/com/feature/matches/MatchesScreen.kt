@@ -18,6 +18,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -31,6 +32,8 @@ import every.lol.com.feature.matches.component.TopBar
 import every.lol.com.feature.matches.model.MatchIntent
 import every.lol.com.feature.matches.model.MatchUiState
 import moe.tlaster.precompose.koin.koinViewModel
+
+private const val CHZZK_LCK_URL = "https://chzzk.naver.com/9381e7d6816e6d915a44a13c0195b202"
 
 @Composable
 fun MatchesRoute(
@@ -96,6 +99,8 @@ fun MatchesScreen(
     onPredictionClick: (Long) -> Unit,
     onToggleMatchCard: (Int) -> Unit
 ) {
+    val uriHandler = LocalUriHandler.current
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -118,6 +123,9 @@ fun MatchesScreen(
                 if (isExpanded) {
                     DetailMatchCard(
                         item = item,
+                        onWatchClick = {
+                            uriHandler.openUri(CHZZK_LCK_URL)
+                        },
                         onPredictionClick = {
                             onPredictionClick(item.matchId)
                         },
