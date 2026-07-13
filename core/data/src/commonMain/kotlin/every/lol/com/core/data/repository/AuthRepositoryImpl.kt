@@ -20,7 +20,7 @@ class AuthRepositoryImpl(
 ): AuthRepository {
 
     override suspend fun login(kakaoUserId: String): Result<Unit> =
-        remote.login(KakaoRequest("20040611"))
+        remote.login(KakaoRequest(kakaoUserId))
             .toResult()
             .mapCatching { dto ->
                 local.saveUserId(kakaoUserId)
@@ -36,7 +36,7 @@ class AuthRepositoryImpl(
         val signupRequest = SignupRequest(
             profileImage = request.profileImage,
             signupUserData = SignupUserData(
-                kakaoUserId = "20040611",
+                kakaoUserId = request.kakaoUserId,
                 nickName = request.nickname,
                 role = "ROLE_USER",
                 tier = "bronze",
