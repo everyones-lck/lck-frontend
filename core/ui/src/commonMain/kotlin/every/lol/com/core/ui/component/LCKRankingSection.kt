@@ -92,8 +92,10 @@ fun LckRankingSection(
                 )
             }
             top3.forEach { team ->
+                val isMyTeam = supportTeams.contains(fromTeamName(team.teamName).id)
                 TopRankCard(
                     team = team,
+                    isFavorite = isMyTeam,
                     onClick = onTeamClick,
                     //cardBackground = cardBackground
                 )
@@ -173,6 +175,7 @@ private fun FavoriteRankCard(
 @Composable
 private fun TopRankCard(
     team: RankingTeam,
+    isFavorite: Boolean = false,
     onClick: (Long) -> Unit
 ) {
 
@@ -201,7 +204,8 @@ private fun TopRankCard(
         shape = RoundedCornerShape(4.dp),
         colors = CardDefaults.cardColors(
             containerColor = EveryLoLTheme.color.grayScale1000
-        )
+        ),
+        border = if (isFavorite) BorderStroke(1.dp, getTeamColor(team.teamName)) else null
     ) {
         Box(
             modifier = Modifier
